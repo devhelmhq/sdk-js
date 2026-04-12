@@ -1,6 +1,6 @@
 import type {ApiClient} from '../http.js'
 import type {ServiceSubscriptionDto, Page} from '../types.js'
-import {apiPost, apiDelete, fetchAllPages, fetchPage, unwrapSingle} from '../http.js'
+import {apiGet, apiPost, apiDelete, fetchAllPages, fetchPage, unwrapSingle} from '../http.js'
 
 export class Dependencies {
   constructor(private readonly client: ApiClient) {}
@@ -13,6 +13,12 @@ export class Dependencies {
   /** List service subscriptions with manual page control. */
   async listPage(page: number, size: number): Promise<Page<ServiceSubscriptionDto>> {
     return fetchPage<ServiceSubscriptionDto>(this.client, '/api/v1/service-subscriptions', page, size)
+  }
+
+  /** Get a single service subscription by ID. */
+  async get(id: string | number): Promise<ServiceSubscriptionDto> {
+    const resp = await apiGet<{data?: ServiceSubscriptionDto}>(this.client, `/api/v1/service-subscriptions/${id}`)
+    return unwrapSingle(resp)
   }
 
   /** Track (subscribe to) a service from the catalog by its slug. */

@@ -63,6 +63,7 @@ async function run() {
     case 'notification-policies.create': return client.notificationPolicies.create(JSON.parse(rest[0]))
     case 'notification-policies.update': return client.notificationPolicies.update(rest[0], JSON.parse(rest[1]))
     case 'notification-policies.delete': return void await client.notificationPolicies.delete(rest[0])
+    case 'notification-policies.test': return void await client.notificationPolicies.test(rest[0])
 
     // ── Environments ──
     case 'environments.list': return client.environments.list()
@@ -90,6 +91,8 @@ async function run() {
     case 'resource-groups.create': return client.resourceGroups.create(JSON.parse(rest[0]))
     case 'resource-groups.update': return client.resourceGroups.update(rest[0], JSON.parse(rest[1]))
     case 'resource-groups.delete': return void await client.resourceGroups.delete(rest[0])
+    case 'resource-groups.add-member': return void await client.resourceGroups.addMember(rest[0], rest[1], rest[2])
+    case 'resource-groups.remove-member': return void await client.resourceGroups.removeMember(rest[0], rest[1])
 
     // ── Webhooks ──
     case 'webhooks.list': return client.webhooks.list()
@@ -97,6 +100,7 @@ async function run() {
     case 'webhooks.create': return client.webhooks.create(JSON.parse(rest[0]))
     case 'webhooks.update': return client.webhooks.update(rest[0], JSON.parse(rest[1]))
     case 'webhooks.delete': return void await client.webhooks.delete(rest[0])
+    case 'webhooks.test': return client.webhooks.test(rest[0])
 
     // ── API Keys ──
     case 'api-keys.list': return client.apiKeys.list()
@@ -106,6 +110,7 @@ async function run() {
 
     // ── Dependencies ──
     case 'dependencies.list': return client.dependencies.list()
+    case 'dependencies.get': return client.dependencies.get(rest[0])
     case 'dependencies.track': return client.dependencies.track(rest[0])
     case 'dependencies.delete': return void await client.dependencies.delete(rest[0])
 
