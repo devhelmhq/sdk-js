@@ -42,6 +42,27 @@ export type {
   UpdateWebhookEndpointRequest,
   CreateApiKeyRequest,
   AcquireDeployLockRequest,
+  StatusPageDto,
+  StatusPageComponentDto,
+  StatusPageComponentGroupDto,
+  StatusPageIncidentDto,
+  StatusPageIncidentUpdateDto,
+  StatusPageIncidentComponentDto,
+  StatusPageSubscriberDto,
+  StatusPageCustomDomainDto,
+  StatusPageBranding,
+  CreateStatusPageRequest,
+  UpdateStatusPageRequest,
+  CreateStatusPageComponentRequest,
+  UpdateStatusPageComponentRequest,
+  CreateStatusPageComponentGroupRequest,
+  UpdateStatusPageComponentGroupRequest,
+  CreateStatusPageIncidentRequest,
+  UpdateStatusPageIncidentRequest,
+  CreateStatusPageIncidentUpdateRequest,
+  AddCustomDomainRequest,
+  AdminAddSubscriberRequest,
+  PublishStatusPageIncidentRequest,
 } from './types.js'
 
 // Re-export resource classes for advanced usage (custom composition)
@@ -58,3 +79,4 @@ export {ApiKeys} from './resources/api-keys.js'
 export {Dependencies} from './resources/dependencies.js'
 export {DeployLock} from './resources/deploy-lock.js'
 export {Status} from './resources/status.js'
+export {StatusPages} from './resources/status-pages.js'

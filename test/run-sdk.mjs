@@ -123,6 +123,47 @@ async function run() {
     // ── Status ──
     case 'status.overview': return client.status.overview()
 
+    // ── Status Pages ──
+    case 'status-pages.list': return client.statusPages.list()
+    case 'status-pages.get': return client.statusPages.get(rest[0])
+    case 'status-pages.create': return client.statusPages.create(JSON.parse(rest[0]))
+    case 'status-pages.update': return client.statusPages.update(rest[0], JSON.parse(rest[1]))
+    case 'status-pages.delete': return void await client.statusPages.delete(rest[0])
+
+    // ── Status Page Components ──
+    case 'status-pages.components.list': return client.statusPages.components.list(rest[0])
+    case 'status-pages.components.create': return client.statusPages.components.create(rest[0], JSON.parse(rest[1]))
+    case 'status-pages.components.update': return client.statusPages.components.update(rest[0], rest[1], JSON.parse(rest[2]))
+    case 'status-pages.components.delete': return void await client.statusPages.components.delete(rest[0], rest[1])
+    case 'status-pages.components.reorder': return void await client.statusPages.components.reorder(rest[0], JSON.parse(rest[1]))
+
+    // ── Status Page Groups ──
+    case 'status-pages.groups.list': return client.statusPages.groups.list(rest[0])
+    case 'status-pages.groups.create': return client.statusPages.groups.create(rest[0], JSON.parse(rest[1]))
+    case 'status-pages.groups.update': return client.statusPages.groups.update(rest[0], rest[1], JSON.parse(rest[2]))
+    case 'status-pages.groups.delete': return void await client.statusPages.groups.delete(rest[0], rest[1])
+
+    // ── Status Page Incidents ──
+    case 'status-pages.incidents.list': return client.statusPages.incidents.list(rest[0])
+    case 'status-pages.incidents.get': return client.statusPages.incidents.get(rest[0], rest[1])
+    case 'status-pages.incidents.create': return client.statusPages.incidents.create(rest[0], JSON.parse(rest[1]))
+    case 'status-pages.incidents.update': return client.statusPages.incidents.update(rest[0], rest[1], JSON.parse(rest[2]))
+    case 'status-pages.incidents.post-update': return client.statusPages.incidents.postUpdate(rest[0], rest[1], JSON.parse(rest[2]))
+    case 'status-pages.incidents.publish': return client.statusPages.incidents.publish(rest[0], rest[1], rest[2] ? JSON.parse(rest[2]) : undefined)
+    case 'status-pages.incidents.dismiss': return void await client.statusPages.incidents.dismiss(rest[0], rest[1])
+    case 'status-pages.incidents.delete': return void await client.statusPages.incidents.delete(rest[0], rest[1])
+
+    // ── Status Page Subscribers ──
+    case 'status-pages.subscribers.list': return client.statusPages.subscribers.list(rest[0])
+    case 'status-pages.subscribers.add': return client.statusPages.subscribers.add(rest[0], JSON.parse(rest[1]))
+    case 'status-pages.subscribers.remove': return void await client.statusPages.subscribers.remove(rest[0], rest[1])
+
+    // ── Status Page Domains ──
+    case 'status-pages.domains.list': return client.statusPages.domains.list(rest[0])
+    case 'status-pages.domains.add': return client.statusPages.domains.add(rest[0], JSON.parse(rest[1]))
+    case 'status-pages.domains.verify': return client.statusPages.domains.verify(rest[0], rest[1])
+    case 'status-pages.domains.remove': return void await client.statusPages.domains.remove(rest[0], rest[1])
+
     default:
       process.stderr.write(JSON.stringify({error: `Unknown operation: ${resource}.${action}`}))
       process.exit(2)
