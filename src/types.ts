@@ -23,6 +23,18 @@ export type DashboardOverviewDto = Schemas['DashboardOverviewDto']
 export type DeployLockDto = Schemas['DeployLockDto']
 export type AssertionTestResultDto = Schemas['AssertionTestResultDto']
 
+// ── Status Page DTOs ──────────────────────────────────────────────────
+
+export type StatusPageDto = Schemas['StatusPageDto']
+export type StatusPageComponentDto = Schemas['StatusPageComponentDto']
+export type StatusPageComponentGroupDto = Schemas['StatusPageComponentGroupDto']
+export type StatusPageIncidentDto = Schemas['StatusPageIncidentDto']
+export type StatusPageIncidentUpdateDto = Schemas['StatusPageIncidentUpdateDto']
+export type StatusPageIncidentComponentDto = Schemas['StatusPageIncidentComponentDto']
+export type StatusPageSubscriberDto = Schemas['StatusPageSubscriberDto']
+export type StatusPageCustomDomainDto = Schemas['StatusPageCustomDomainDto']
+export type StatusPageBranding = Schemas['StatusPageBranding']
+
 // ── Request types ──────────────────────────────────────────────────────
 
 export type CreateMonitorRequest = Schemas['CreateMonitorRequest']
@@ -44,6 +56,21 @@ export type CreateWebhookEndpointRequest = Schemas['CreateWebhookEndpointRequest
 export type UpdateWebhookEndpointRequest = Schemas['UpdateWebhookEndpointRequest']
 export type CreateApiKeyRequest = Schemas['CreateApiKeyRequest']
 export type AcquireDeployLockRequest = Schemas['AcquireDeployLockRequest']
+
+// ── Status Page Request types ─────────────────────────────────────────
+
+export type CreateStatusPageRequest = Schemas['CreateStatusPageRequest']
+export type UpdateStatusPageRequest = Schemas['UpdateStatusPageRequest']
+export type CreateStatusPageComponentRequest = Schemas['CreateStatusPageComponentRequest']
+export type UpdateStatusPageComponentRequest = Schemas['UpdateStatusPageComponentRequest']
+export type CreateStatusPageComponentGroupRequest = Schemas['CreateStatusPageComponentGroupRequest']
+export type UpdateStatusPageComponentGroupRequest = Schemas['UpdateStatusPageComponentGroupRequest']
+export type CreateStatusPageIncidentRequest = Schemas['CreateStatusPageIncidentRequest']
+export type UpdateStatusPageIncidentRequest = Schemas['UpdateStatusPageIncidentRequest']
+export type CreateStatusPageIncidentUpdateRequest = Schemas['CreateStatusPageIncidentUpdateRequest']
+export type AddCustomDomainRequest = Schemas['AddCustomDomainRequest']
+export type AdminAddSubscriberRequest = Schemas['AdminAddSubscriberRequest']
+export type PublishStatusPageIncidentRequest = Schemas['PublishStatusPageIncidentRequest']
 
 // ── Pagination ─────────────────────────────────────────────────────────
 

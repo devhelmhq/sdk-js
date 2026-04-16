@@ -13,6 +13,7 @@ import {ApiKeys} from './resources/api-keys.js'
 import {Dependencies} from './resources/dependencies.js'
 import {DeployLock} from './resources/deploy-lock.js'
 import {Status} from './resources/status.js'
+import {StatusPages} from './resources/status-pages.js'
 
 /**
  * DevHelm API client.
@@ -46,6 +47,7 @@ export class Devhelm {
   readonly dependencies: Dependencies
   readonly deployLock: DeployLock
   readonly status: Status
+  readonly statusPages: StatusPages
 
   constructor(config: DevhelmConfig) {
     const client = buildClient(config)
@@ -62,5 +64,6 @@ export class Devhelm {
     this.dependencies = new Dependencies(client)
     this.deployLock = new DeployLock(client)
     this.status = new Status(client)
+    this.statusPages = new StatusPages(client)
   }
 }
