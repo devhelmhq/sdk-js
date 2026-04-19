@@ -4,60 +4,58 @@ import type {
   MonitorVersionDto, CheckResultDto, AssertionTestResultDto,
   Page, CursorPage,
 } from '../types.js'
-import {apiGet, apiPost, apiPut, apiDelete, fetchAllPages, fetchPage, fetchCursorPage, unwrapSingle} from '../http.js'
+import {
+  MonitorDtoSchema, MonitorVersionDtoSchema,
+  CheckResultDtoSchema, AssertionTestResultDtoSchema,
+} from '../schemas.js'
+import {fetchAllPages, fetchPage, fetchCursorPage, fetchSingle} from '../http.js'
 
 export class Monitors {
   constructor(private readonly client: ApiClient) {}
 
   /** List all monitors (auto-paginates). */
   async list(): Promise<MonitorDto[]> {
-    return fetchAllPages<MonitorDto>(this.client, '/api/v1/monitors')
+    return fetchAllPages(this.client, '/api/v1/monitors', MonitorDtoSchema)
   }
 
   /** List monitors with manual page control. */
   async listPage(page: number, size: number): Promise<Page<MonitorDto>> {
-    return fetchPage<MonitorDto>(this.client, '/api/v1/monitors', page, size)
+    return fetchPage(this.client, '/api/v1/monitors', MonitorDtoSchema, page, size)
   }
 
   /** Get a single monitor by ID. */
   async get(id: string | number): Promise<MonitorDto> {
-    const resp = await apiGet<{data?: MonitorDto}>(this.client, `/api/v1/monitors/${id}`)
-    return unwrapSingle(resp)
+    return fetchSingle(this.client, 'GET', `/api/v1/monitors/${id}`, MonitorDtoSchema)
   }
 
   /** Create a new monitor. */
   async create(body: CreateMonitorRequest): Promise<MonitorDto> {
-    const resp = await apiPost<{data?: MonitorDto}>(this.client, '/api/v1/monitors', body)
-    return unwrapSingle(resp)
+    return fetchSingle(this.client, 'POST', '/api/v1/monitors', MonitorDtoSchema, body)
   }
 
   /** Update an existing monitor. */
   async update(id: string | number, body: UpdateMonitorRequest): Promise<MonitorDto> {
-    const resp = await apiPut<{data?: MonitorDto}>(this.client, `/api/v1/monitors/${id}`, body)
-    return unwrapSingle(resp)
+    return fetchSingle(this.client, 'PUT', `/api/v1/monitors/${id}`, MonitorDtoSchema, body)
   }
 
   /** Delete a monitor. */
   async delete(id: string | number): Promise<void> {
-    await apiDelete(this.client, `/api/v1/monitors/${id}`)
+    await fetchSingle(this.client, 'DELETE', `/api/v1/monitors/${id}`, MonitorDtoSchema)
   }
 
   /** Pause a monitor. */
   async pause(id: string | number): Promise<MonitorDto> {
-    const resp = await apiPost<{data?: MonitorDto}>(this.client, `/api/v1/monitors/${id}/pause`)
-    return unwrapSingle(resp)
+    return fetchSingle(this.client, 'POST', `/api/v1/monitors/${id}/pause`, MonitorDtoSchema)
   }
 
   /** Resume a paused monitor. */
   async resume(id: string | number): Promise<MonitorDto> {
-    const resp = await apiPost<{data?: MonitorDto}>(this.client, `/api/v1/monitors/${id}/resume`)
-    return unwrapSingle(resp)
+    return fetchSingle(this.client, 'POST', `/api/v1/monitors/${id}/resume`, MonitorDtoSchema)
   }
 
   /** Trigger an ad-hoc test run for a monitor. */
   async test(id: string | number): Promise<AssertionTestResultDto> {
-    const resp = await apiPost<{data?: AssertionTestResultDto}>(this.client, `/api/v1/monitors/${id}/test`)
-    return unwrapSingle(resp)
+    return fetchSingle(this.client, 'POST', `/api/v1/monitors/${id}/test`, AssertionTestResultDtoSchema)
   }
 
   /** List check results (cursor-paginated). */
@@ -65,7 +63,7 @@ export class Monitors {
     id: string | number,
     options: {cursor?: string; limit?: number} = {},
   ): Promise<CursorPage<CheckResultDto>> {
-    return fetchCursorPage<CheckResultDto>(this.client, `/api/v1/monitors/${id}/results`, options)
+    return fetchCursorPage(this.client, `/api/v1/monitors/${id}/results`, CheckResultDtoSchema, options)
   }
 
   /** List monitor version history. */
@@ -73,9 +71,10 @@ export class Monitors {
     id: string | number,
     options: {page?: number; size?: number} = {},
   ): Promise<Page<MonitorVersionDto>> {
-    return fetchPage<MonitorVersionDto>(
+    return fetchPage(
       this.client,
       `/api/v1/monitors/${id}/versions`,
+      MonitorVersionDtoSchema,
       options.page ?? 0,
       options.size ?? 20,
     )

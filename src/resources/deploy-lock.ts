@@ -1,29 +1,33 @@
 import type {ApiClient} from '../http.js'
 import type {DeployLockDto, AcquireDeployLockRequest} from '../types.js'
-import {apiGet, apiPost, apiDelete, unwrapSingle} from '../http.js'
+import {DeployLockDtoSchema} from '../schemas.js'
+import {apiGet, fetchSingle} from '../http.js'
+import {parse} from '../validation.js'
+import {z} from 'zod'
 
 export class DeployLock {
   constructor(private readonly client: ApiClient) {}
 
   /** Acquire an exclusive deploy lock for the current workspace. Throws CONFLICT (409) if already held. */
   async acquire(body: AcquireDeployLockRequest): Promise<DeployLockDto> {
-    const resp = await apiPost<{data?: DeployLockDto}>(this.client, '/api/v1/deploy/lock', body)
-    return unwrapSingle(resp)
+    return fetchSingle(this.client, 'POST', '/api/v1/deploy/lock', DeployLockDtoSchema, body)
   }
 
   /** Get the current deploy lock status (returns null if no lock is held). */
   async current(): Promise<DeployLockDto | null> {
-    const resp = await apiGet<{data?: DeployLockDto | null}>(this.client, '/api/v1/deploy/lock')
-    return resp.data ?? null
+    const raw = await apiGet(this.client, '/api/v1/deploy/lock')
+    const envelope = z.object({data: DeployLockDtoSchema.nullable()}).passthrough()
+    const parsed = parse(envelope, raw, '/api/v1/deploy/lock')
+    return parsed.data
   }
 
   /** Release a deploy lock by its ID. */
   async release(lockId: string): Promise<void> {
-    await apiDelete(this.client, `/api/v1/deploy/lock/${lockId}`)
+    await fetchSingle(this.client, 'DELETE', `/api/v1/deploy/lock/${lockId}`, DeployLockDtoSchema)
   }
 
   /** Force-release any deploy lock on the current workspace. */
   async forceRelease(): Promise<void> {
-    await apiDelete(this.client, '/api/v1/deploy/lock/force')
+    await fetchSingle(this.client, 'DELETE', '/api/v1/deploy/lock/force', DeployLockDtoSchema)
   }
 }

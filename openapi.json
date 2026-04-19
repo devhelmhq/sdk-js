@@ -10467,11 +10467,16 @@
         "description": "Incident triggered by a monitor check failure or manual creation"
       },
       "IncidentFilterParams": {
+        "required": [
+          "monitorId",
+          "resourceGroupId",
+          "source",
+          "status"
+        ],
         "type": "object",
         "properties": {
           "status": {
             "type": "string",
-            "nullable": true,
             "enum": [
               "WATCHING",
               "TRIGGERED",
@@ -10490,7 +10495,6 @@
           },
           "source": {
             "type": "string",
-            "nullable": true,
             "enum": [
               "AUTOMATIC",
               "MANUAL",
@@ -10501,8 +10505,7 @@
           },
           "monitorId": {
             "type": "string",
-            "format": "uuid",
-            "nullable": true
+            "format": "uuid"
           },
           "serviceId": {
             "type": "string",
@@ -10511,8 +10514,7 @@
           },
           "resourceGroupId": {
             "type": "string",
-            "format": "uuid",
-            "nullable": true
+            "format": "uuid"
           },
           "tagId": {
             "type": "string",
@@ -10545,11 +10547,7 @@
             "type": "integer",
             "format": "int32"
           }
-        },
-        "required": [
-          "page",
-          "size"
-        ]
+        }
       },
       "IncidentPolicyDto": {
         "required": [
@@ -15100,8 +15098,7 @@
           },
           "hidePoweredBy": {
             "type": "boolean",
-            "description": "Whether to hide the 'Powered by DevHelm' footer badge (default: false)",
-            "default": false
+            "description": "Whether to hide the 'Powered by DevHelm' footer badge"
           },
           "customCss": {
             "maxLength": 50000,
@@ -15118,7 +15115,10 @@
             "nullable": true
           }
         },
-        "description": "Updated branding configuration; null preserves current"
+        "description": "Updated branding configuration; null preserves current",
+        "required": [
+          "hidePoweredBy"
+        ]
       },
       "StatusPageComponentDto": {
         "required": [
