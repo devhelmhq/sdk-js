@@ -7,8 +7,10 @@ import type {
 import {
   MonitorDtoSchema, MonitorVersionDtoSchema,
   CheckResultDtoSchema, AssertionTestResultDtoSchema,
+  CreateMonitorRequestSchema, UpdateMonitorRequestSchema,
 } from '../schemas.js'
 import {fetchAllPages, fetchPage, fetchCursorPage, fetchSingle} from '../http.js'
+import {validateRequest} from '../validation.js'
 
 export class Monitors {
   constructor(private readonly client: ApiClient) {}
@@ -30,11 +32,13 @@ export class Monitors {
 
   /** Create a new monitor. */
   async create(body: CreateMonitorRequest): Promise<MonitorDto> {
+    validateRequest(CreateMonitorRequestSchema, body, 'monitors.create')
     return fetchSingle(this.client, 'POST', '/api/v1/monitors', MonitorDtoSchema, body)
   }
 
   /** Update an existing monitor. */
   async update(id: string | number, body: UpdateMonitorRequest): Promise<MonitorDto> {
+    validateRequest(UpdateMonitorRequestSchema, body, 'monitors.update')
     return fetchSingle(this.client, 'PUT', `/api/v1/monitors/${id}`, MonitorDtoSchema, body)
   }
 

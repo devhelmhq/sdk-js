@@ -1,7 +1,8 @@
 import type {ApiClient} from '../http.js'
 import type {WebhookEndpointDto, CreateWebhookEndpointRequest, UpdateWebhookEndpointRequest, WebhookTestResult, Page} from '../types.js'
-import {WebhookEndpointDtoSchema, WebhookTestResultSchema} from '../schemas.js'
+import {WebhookEndpointDtoSchema, WebhookTestResultSchema, CreateWebhookEndpointRequestSchema, UpdateWebhookEndpointRequestSchema} from '../schemas.js'
 import {fetchAllPages, fetchPage, fetchSingle} from '../http.js'
+import {validateRequest} from '../validation.js'
 
 export class Webhooks {
   constructor(private readonly client: ApiClient) {}
@@ -23,11 +24,13 @@ export class Webhooks {
 
   /** Create a new webhook endpoint. */
   async create(body: CreateWebhookEndpointRequest): Promise<WebhookEndpointDto> {
+    validateRequest(CreateWebhookEndpointRequestSchema, body, 'webhooks.create')
     return fetchSingle(this.client, 'POST', '/api/v1/webhooks', WebhookEndpointDtoSchema, body)
   }
 
   /** Update an existing webhook endpoint. */
   async update(id: string | number, body: UpdateWebhookEndpointRequest): Promise<WebhookEndpointDto> {
+    validateRequest(UpdateWebhookEndpointRequestSchema, body, 'webhooks.update')
     return fetchSingle(this.client, 'PUT', `/api/v1/webhooks/${id}`, WebhookEndpointDtoSchema, body)
   }
 

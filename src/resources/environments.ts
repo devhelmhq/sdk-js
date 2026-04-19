@@ -1,7 +1,8 @@
 import type {ApiClient} from '../http.js'
 import type {EnvironmentDto, CreateEnvironmentRequest, UpdateEnvironmentRequest, Page} from '../types.js'
-import {EnvironmentDtoSchema} from '../schemas.js'
+import {EnvironmentDtoSchema, CreateEnvironmentRequestSchema, UpdateEnvironmentRequestSchema} from '../schemas.js'
 import {fetchAllPages, fetchPage, fetchSingle} from '../http.js'
+import {validateRequest} from '../validation.js'
 
 export class Environments {
   constructor(private readonly client: ApiClient) {}
@@ -23,11 +24,13 @@ export class Environments {
 
   /** Create a new environment. */
   async create(body: CreateEnvironmentRequest): Promise<EnvironmentDto> {
+    validateRequest(CreateEnvironmentRequestSchema, body, 'environments.create')
     return fetchSingle(this.client, 'POST', '/api/v1/environments', EnvironmentDtoSchema, body)
   }
 
   /** Update an existing environment. */
   async update(slug: string, body: UpdateEnvironmentRequest): Promise<EnvironmentDto> {
+    validateRequest(UpdateEnvironmentRequestSchema, body, 'environments.update')
     return fetchSingle(this.client, 'PUT', `/api/v1/environments/${slug}`, EnvironmentDtoSchema, body)
   }
 

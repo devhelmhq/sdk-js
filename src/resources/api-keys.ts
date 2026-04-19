@@ -1,7 +1,8 @@
 import type {ApiClient} from '../http.js'
 import type {ApiKeyDto, ApiKeyCreateResponse, CreateApiKeyRequest, Page} from '../types.js'
-import {ApiKeyDtoSchema, ApiKeyCreateResponseSchema} from '../schemas.js'
+import {ApiKeyDtoSchema, ApiKeyCreateResponseSchema, CreateApiKeyRequestSchema} from '../schemas.js'
 import {apiPost, fetchAllPages, fetchPage, fetchSingle} from '../http.js'
+import {validateRequest} from '../validation.js'
 
 export class ApiKeys {
   constructor(private readonly client: ApiClient) {}
@@ -18,6 +19,7 @@ export class ApiKeys {
 
   /** Create a new API key. Returns the full key value (only available at creation time). */
   async create(body: CreateApiKeyRequest): Promise<ApiKeyCreateResponse> {
+    validateRequest(CreateApiKeyRequestSchema, body, 'apiKeys.create')
     return fetchSingle(this.client, 'POST', '/api/v1/api-keys', ApiKeyCreateResponseSchema, body)
   }
 

@@ -1,8 +1,8 @@
 import type {ApiClient} from '../http.js'
 import type {DeployLockDto, AcquireDeployLockRequest} from '../types.js'
-import {DeployLockDtoSchema} from '../schemas.js'
+import {DeployLockDtoSchema, AcquireDeployLockRequestSchema} from '../schemas.js'
 import {apiGet, fetchSingle} from '../http.js'
-import {parse} from '../validation.js'
+import {parse, validateRequest} from '../validation.js'
 import {z} from 'zod'
 
 export class DeployLock {
@@ -10,6 +10,7 @@ export class DeployLock {
 
   /** Acquire an exclusive deploy lock for the current workspace. Throws CONFLICT (409) if already held. */
   async acquire(body: AcquireDeployLockRequest): Promise<DeployLockDto> {
+    validateRequest(AcquireDeployLockRequestSchema, body, 'deployLock.acquire')
     return fetchSingle(this.client, 'POST', '/api/v1/deploy/lock', DeployLockDtoSchema, body)
   }
 
