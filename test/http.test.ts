@@ -1,29 +1,109 @@
 import {describe, it, expect} from 'vitest'
-import {unwrapSingle} from '../src/http.js'
+import {z} from 'zod'
+import {parse, parseSingle, parsePage, parseCursorPage} from '../src/validation.js'
+import {DevhelmError} from '../src/errors.js'
 
-describe('unwrapSingle', () => {
+const ItemSchema = z.object({id: z.number(), name: z.string()})
+
+describe('parse', () => {
+  it('parses valid data', () => {
+    const result = parse(ItemSchema, {id: 1, name: 'Test'})
+    expect(result).toEqual({id: 1, name: 'Test'})
+  })
+
+  it('passes through extra fields (.passthrough behavior from z.object)', () => {
+    const schema = ItemSchema.passthrough()
+    const result = parse(schema, {id: 1, name: 'Test', extra: true})
+    expect(result).toEqual({id: 1, name: 'Test', extra: true})
+  })
+
+  it('throws DevhelmError on invalid data', () => {
+    expect(() => parse(ItemSchema, {id: 'not-a-number', name: 123})).toThrow(DevhelmError)
+  })
+
+  it('includes field path in error message', () => {
+    try {
+      parse(ItemSchema, {id: 'bad'})
+      expect.fail('should throw')
+    } catch (e) {
+      expect(e).toBeInstanceOf(DevhelmError)
+      expect((e as DevhelmError).code).toBe('VALIDATION')
+      expect((e as DevhelmError).message).toContain('id')
+    }
+  })
+
+  it('includes context in error message when provided', () => {
+    try {
+      parse(ItemSchema, {}, '/api/v1/monitors')
+      expect.fail('should throw')
+    } catch (e) {
+      expect((e as DevhelmError).message).toContain('/api/v1/monitors')
+    }
+  })
+})
+
+describe('parseSingle', () => {
   it('unwraps SingleValueResponse envelope', () => {
-    const resp = {data: {id: 1, name: 'Test'}}
-    const result = unwrapSingle(resp)
+    const result = parseSingle(ItemSchema, {data: {id: 1, name: 'Test'}})
     expect(result).toEqual({id: 1, name: 'Test'})
   })
 
-  it('returns bare object when no data wrapper', () => {
-    const resp = {id: 1, name: 'Test'}
-    const result = unwrapSingle(resp)
-    expect(result).toEqual({id: 1, name: 'Test'})
+  it('throws when envelope is missing data field', () => {
+    expect(() => parseSingle(ItemSchema, {result: {id: 1}})).toThrow(DevhelmError)
   })
 
-  it('handles null data field', () => {
-    const resp = {data: null}
-    const result = unwrapSingle(resp)
-    expect(result).toBeNull()
+  it('throws when inner data fails schema validation', () => {
+    expect(() => parseSingle(ItemSchema, {data: {id: 'bad'}})).toThrow(DevhelmError)
+  })
+})
+
+describe('parsePage', () => {
+  it('parses valid paginated response', () => {
+    const raw = {data: [{id: 1, name: 'A'}], hasNext: true, hasPrev: false, totalElements: 10, totalPages: 2}
+    const result = parsePage(ItemSchema, raw)
+    expect(result.data).toHaveLength(1)
+    expect(result.data[0]).toEqual({id: 1, name: 'A'})
+    expect(result.hasNext).toBe(true)
+    expect(result.hasPrev).toBe(false)
+    expect(result.totalElements).toBe(10)
+    expect(result.totalPages).toBe(2)
   })
 
-  it('handles nested objects with data property', () => {
-    const resp = {data: {data: 'nested'}}
-    const result = unwrapSingle(resp)
-    expect(result).toEqual({data: 'nested'})
+  it('accepts null totalElements/totalPages', () => {
+    const raw = {data: [], hasNext: false, hasPrev: false, totalElements: null, totalPages: null}
+    const result = parsePage(ItemSchema, raw)
+    expect(result.totalElements).toBeNull()
+  })
+
+  it('throws when data items fail validation', () => {
+    const raw = {data: [{id: 'bad'}], hasNext: false, hasPrev: false}
+    expect(() => parsePage(ItemSchema, raw)).toThrow(DevhelmError)
+  })
+
+  it('throws when hasNext is missing', () => {
+    const raw = {data: [], hasPrev: false}
+    expect(() => parsePage(ItemSchema, raw)).toThrow(DevhelmError)
+  })
+})
+
+describe('parseCursorPage', () => {
+  it('parses valid cursor-paginated response', () => {
+    const raw = {data: [{id: 1, name: 'A'}], nextCursor: 'abc123', hasMore: true}
+    const result = parseCursorPage(ItemSchema, raw)
+    expect(result.data).toHaveLength(1)
+    expect(result.nextCursor).toBe('abc123')
+    expect(result.hasMore).toBe(true)
+  })
+
+  it('accepts null nextCursor', () => {
+    const raw = {data: [], nextCursor: null, hasMore: false}
+    const result = parseCursorPage(ItemSchema, raw)
+    expect(result.nextCursor).toBeNull()
+  })
+
+  it('throws when data items fail validation', () => {
+    const raw = {data: [{wrong: 'shape'}], nextCursor: null, hasMore: false}
+    expect(() => parseCursorPage(ItemSchema, raw)).toThrow(DevhelmError)
   })
 })
 

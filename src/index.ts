@@ -26,6 +26,7 @@ export type {
   CreateMonitorRequest,
   UpdateMonitorRequest,
   CreateManualIncidentRequest,
+  ResolveIncidentRequest,
   CreateAlertChannelRequest,
   UpdateAlertChannelRequest,
   CreateNotificationPolicyRequest,
@@ -38,6 +39,7 @@ export type {
   UpdateTagRequest,
   CreateResourceGroupRequest,
   UpdateResourceGroupRequest,
+  AddResourceGroupMemberRequest,
   CreateWebhookEndpointRequest,
   UpdateWebhookEndpointRequest,
   CreateApiKeyRequest,
@@ -63,7 +65,15 @@ export type {
   AddCustomDomainRequest,
   AdminAddSubscriberRequest,
   PublishStatusPageIncidentRequest,
+  ReorderComponentsRequest,
+  ComponentPosition,
+  AffectedComponent,
+  TestChannelResult,
+  WebhookTestResult,
 } from './types.js'
+
+// Re-export Zod schemas for consumers who want runtime validation
+export * as schemas from './schemas.js'
 
 // Re-export resource classes for advanced usage (custom composition)
 export {Monitors} from './resources/monitors.js'

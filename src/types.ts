@@ -1,76 +1,88 @@
+import type {z} from 'zod'
 import type {components} from './generated/api.js'
+import type * as S from './schemas.js'
 
 export type Schemas = components['schemas']
 
 // ── Response DTOs ──────────────────────────────────────────────────────
 
-export type MonitorDto = Schemas['MonitorDto']
-export type IncidentDto = Schemas['IncidentDto']
-export type IncidentDetailDto = Schemas['IncidentDetailDto']
-export type AlertChannelDto = Schemas['AlertChannelDto']
-export type NotificationPolicyDto = Schemas['NotificationPolicyDto']
-export type EnvironmentDto = Schemas['EnvironmentDto']
-export type SecretDto = Schemas['SecretDto']
-export type TagDto = Schemas['TagDto']
-export type ResourceGroupDto = Schemas['ResourceGroupDto']
-export type WebhookEndpointDto = Schemas['WebhookEndpointDto']
-export type ApiKeyDto = Schemas['ApiKeyDto']
-export type ApiKeyCreateResponse = Schemas['ApiKeyCreateResponse']
-export type ServiceSubscriptionDto = Schemas['ServiceSubscriptionDto']
-export type MonitorVersionDto = Schemas['MonitorVersionDto']
-export type CheckResultDto = Schemas['CheckResultDto']
-export type DashboardOverviewDto = Schemas['DashboardOverviewDto']
-export type DeployLockDto = Schemas['DeployLockDto']
-export type AssertionTestResultDto = Schemas['AssertionTestResultDto']
+export type MonitorDto = z.infer<typeof S.MonitorDtoSchema>
+export type IncidentDto = z.infer<typeof S.IncidentDtoSchema>
+export type IncidentDetailDto = z.infer<typeof S.IncidentDetailDtoSchema>
+export type AlertChannelDto = z.infer<typeof S.AlertChannelDtoSchema>
+export type NotificationPolicyDto = z.infer<typeof S.NotificationPolicyDtoSchema>
+export type EnvironmentDto = z.infer<typeof S.EnvironmentDtoSchema>
+export type SecretDto = z.infer<typeof S.SecretDtoSchema>
+export type TagDto = z.infer<typeof S.TagDtoSchema>
+export type ResourceGroupDto = z.infer<typeof S.ResourceGroupDtoSchema>
+export type WebhookEndpointDto = z.infer<typeof S.WebhookEndpointDtoSchema>
+export type ApiKeyDto = z.infer<typeof S.ApiKeyDtoSchema>
+export type ApiKeyCreateResponse = z.infer<typeof S.ApiKeyCreateResponseSchema>
+export type ServiceSubscriptionDto = z.infer<typeof S.ServiceSubscriptionDtoSchema>
+export type MonitorVersionDto = z.infer<typeof S.MonitorVersionDtoSchema>
+export type CheckResultDto = z.infer<typeof S.CheckResultDtoSchema>
+export type DashboardOverviewDto = z.infer<typeof S.DashboardOverviewDtoSchema>
+export type DeployLockDto = z.infer<typeof S.DeployLockDtoSchema>
+export type AssertionTestResultDto = z.infer<typeof S.AssertionTestResultDtoSchema>
 
 // ── Status Page DTOs ──────────────────────────────────────────────────
 
-export type StatusPageDto = Schemas['StatusPageDto']
-export type StatusPageComponentDto = Schemas['StatusPageComponentDto']
-export type StatusPageComponentGroupDto = Schemas['StatusPageComponentGroupDto']
-export type StatusPageIncidentDto = Schemas['StatusPageIncidentDto']
-export type StatusPageIncidentUpdateDto = Schemas['StatusPageIncidentUpdateDto']
-export type StatusPageIncidentComponentDto = Schemas['StatusPageIncidentComponentDto']
-export type StatusPageSubscriberDto = Schemas['StatusPageSubscriberDto']
-export type StatusPageCustomDomainDto = Schemas['StatusPageCustomDomainDto']
-export type StatusPageBranding = Schemas['StatusPageBranding']
+export type StatusPageDto = z.infer<typeof S.StatusPageDtoSchema>
+export type StatusPageComponentDto = z.infer<typeof S.StatusPageComponentDtoSchema>
+export type StatusPageComponentGroupDto = z.infer<typeof S.StatusPageComponentGroupDtoSchema>
+export type StatusPageIncidentDto = z.infer<typeof S.StatusPageIncidentDtoSchema>
+export type StatusPageIncidentUpdateDto = z.infer<typeof S.StatusPageIncidentUpdateDtoSchema>
+export type StatusPageIncidentComponentDto = z.infer<typeof S.StatusPageIncidentComponentDtoSchema>
+export type StatusPageSubscriberDto = z.infer<typeof S.StatusPageSubscriberDtoSchema>
+export type StatusPageCustomDomainDto = z.infer<typeof S.StatusPageCustomDomainDtoSchema>
+export type StatusPageBranding = z.infer<typeof S.StatusPageBrandingSchema>
 
 // ── Request types ──────────────────────────────────────────────────────
 
-export type CreateMonitorRequest = Schemas['CreateMonitorRequest']
-export type UpdateMonitorRequest = Schemas['UpdateMonitorRequest']
-export type CreateManualIncidentRequest = Schemas['CreateManualIncidentRequest']
-export type CreateAlertChannelRequest = Schemas['CreateAlertChannelRequest']
-export type UpdateAlertChannelRequest = Schemas['UpdateAlertChannelRequest']
-export type CreateNotificationPolicyRequest = Schemas['CreateNotificationPolicyRequest']
-export type UpdateNotificationPolicyRequest = Schemas['UpdateNotificationPolicyRequest']
-export type CreateEnvironmentRequest = Schemas['CreateEnvironmentRequest']
-export type UpdateEnvironmentRequest = Schemas['UpdateEnvironmentRequest']
-export type CreateSecretRequest = Schemas['CreateSecretRequest']
-export type UpdateSecretRequest = Schemas['UpdateSecretRequest']
-export type CreateTagRequest = Schemas['CreateTagRequest']
-export type UpdateTagRequest = Schemas['UpdateTagRequest']
-export type CreateResourceGroupRequest = Schemas['CreateResourceGroupRequest']
-export type UpdateResourceGroupRequest = Schemas['UpdateResourceGroupRequest']
-export type CreateWebhookEndpointRequest = Schemas['CreateWebhookEndpointRequest']
-export type UpdateWebhookEndpointRequest = Schemas['UpdateWebhookEndpointRequest']
-export type CreateApiKeyRequest = Schemas['CreateApiKeyRequest']
-export type AcquireDeployLockRequest = Schemas['AcquireDeployLockRequest']
+export type CreateMonitorRequest = z.infer<typeof S.CreateMonitorRequestSchema>
+export type UpdateMonitorRequest = z.infer<typeof S.UpdateMonitorRequestSchema>
+export type CreateManualIncidentRequest = z.infer<typeof S.CreateManualIncidentRequestSchema>
+export type ResolveIncidentRequest = z.infer<typeof S.ResolveIncidentRequestSchema>
+export type CreateAlertChannelRequest = z.infer<typeof S.CreateAlertChannelRequestSchema>
+export type UpdateAlertChannelRequest = z.infer<typeof S.UpdateAlertChannelRequestSchema>
+export type CreateNotificationPolicyRequest = z.infer<typeof S.CreateNotificationPolicyRequestSchema>
+export type UpdateNotificationPolicyRequest = z.infer<typeof S.UpdateNotificationPolicyRequestSchema>
+export type CreateEnvironmentRequest = z.infer<typeof S.CreateEnvironmentRequestSchema>
+export type UpdateEnvironmentRequest = z.infer<typeof S.UpdateEnvironmentRequestSchema>
+export type CreateSecretRequest = z.infer<typeof S.CreateSecretRequestSchema>
+export type UpdateSecretRequest = z.infer<typeof S.UpdateSecretRequestSchema>
+export type CreateTagRequest = z.infer<typeof S.CreateTagRequestSchema>
+export type UpdateTagRequest = z.infer<typeof S.UpdateTagRequestSchema>
+export type CreateResourceGroupRequest = z.infer<typeof S.CreateResourceGroupRequestSchema>
+export type UpdateResourceGroupRequest = z.infer<typeof S.UpdateResourceGroupRequestSchema>
+export type AddResourceGroupMemberRequest = z.infer<typeof S.AddResourceGroupMemberRequestSchema>
+export type CreateWebhookEndpointRequest = z.infer<typeof S.CreateWebhookEndpointRequestSchema>
+export type UpdateWebhookEndpointRequest = z.infer<typeof S.UpdateWebhookEndpointRequestSchema>
+export type CreateApiKeyRequest = z.infer<typeof S.CreateApiKeyRequestSchema>
+export type AcquireDeployLockRequest = z.infer<typeof S.AcquireDeployLockRequestSchema>
 
 // ── Status Page Request types ─────────────────────────────────────────
 
-export type CreateStatusPageRequest = Schemas['CreateStatusPageRequest']
-export type UpdateStatusPageRequest = Schemas['UpdateStatusPageRequest']
-export type CreateStatusPageComponentRequest = Schemas['CreateStatusPageComponentRequest']
-export type UpdateStatusPageComponentRequest = Schemas['UpdateStatusPageComponentRequest']
-export type CreateStatusPageComponentGroupRequest = Schemas['CreateStatusPageComponentGroupRequest']
-export type UpdateStatusPageComponentGroupRequest = Schemas['UpdateStatusPageComponentGroupRequest']
-export type CreateStatusPageIncidentRequest = Schemas['CreateStatusPageIncidentRequest']
-export type UpdateStatusPageIncidentRequest = Schemas['UpdateStatusPageIncidentRequest']
-export type CreateStatusPageIncidentUpdateRequest = Schemas['CreateStatusPageIncidentUpdateRequest']
-export type AddCustomDomainRequest = Schemas['AddCustomDomainRequest']
-export type AdminAddSubscriberRequest = Schemas['AdminAddSubscriberRequest']
-export type PublishStatusPageIncidentRequest = Schemas['PublishStatusPageIncidentRequest']
+export type CreateStatusPageRequest = z.infer<typeof S.CreateStatusPageRequestSchema>
+export type UpdateStatusPageRequest = z.infer<typeof S.UpdateStatusPageRequestSchema>
+export type CreateStatusPageComponentRequest = z.infer<typeof S.CreateStatusPageComponentRequestSchema>
+export type UpdateStatusPageComponentRequest = z.infer<typeof S.UpdateStatusPageComponentRequestSchema>
+export type CreateStatusPageComponentGroupRequest = z.infer<typeof S.CreateStatusPageComponentGroupRequestSchema>
+export type UpdateStatusPageComponentGroupRequest = z.infer<typeof S.UpdateStatusPageComponentGroupRequestSchema>
+export type CreateStatusPageIncidentRequest = z.infer<typeof S.CreateStatusPageIncidentRequestSchema>
+export type UpdateStatusPageIncidentRequest = z.infer<typeof S.UpdateStatusPageIncidentRequestSchema>
+export type CreateStatusPageIncidentUpdateRequest = z.infer<typeof S.CreateStatusPageIncidentUpdateRequestSchema>
+export type AddCustomDomainRequest = z.infer<typeof S.AddCustomDomainRequestSchema>
+export type AdminAddSubscriberRequest = z.infer<typeof S.AdminAddSubscriberRequestSchema>
+export type PublishStatusPageIncidentRequest = z.infer<typeof S.PublishStatusPageIncidentRequestSchema>
+export type ReorderComponentsRequest = z.infer<typeof S.ReorderComponentsRequestSchema>
+export type ComponentPosition = z.infer<typeof S.ComponentPositionSchema>
+export type AffectedComponent = z.infer<typeof S.AffectedComponentSchema>
+
+// ── Misc response types ──────────────────────────────────────────────
+
+export type TestChannelResult = z.infer<typeof S.TestChannelResultSchema>
+export type WebhookTestResult = z.infer<typeof S.WebhookTestResultSchema>
 
 // ── Pagination ─────────────────────────────────────────────────────────
 
@@ -78,6 +90,8 @@ export interface Page<T> {
   data: T[]
   hasNext: boolean
   hasPrev: boolean
+  totalElements: number | null
+  totalPages: number | null
 }
 
 export interface CursorPage<T> {

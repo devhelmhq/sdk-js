@@ -46,7 +46,7 @@ async function run() {
     case 'incidents.list': return client.incidents.list()
     case 'incidents.get': return client.incidents.get(rest[0])
     case 'incidents.create': return client.incidents.create(JSON.parse(rest[0]))
-    case 'incidents.resolve': return client.incidents.resolve(rest[0], rest[1])
+    case 'incidents.resolve': return client.incidents.resolve(rest[0], rest[1] ? {body: rest[1]} : undefined)
     case 'incidents.delete': return void await client.incidents.delete(rest[0])
 
     // ── Alert Channels ──
@@ -91,7 +91,7 @@ async function run() {
     case 'resource-groups.create': return client.resourceGroups.create(JSON.parse(rest[0]))
     case 'resource-groups.update': return client.resourceGroups.update(rest[0], JSON.parse(rest[1]))
     case 'resource-groups.delete': return void await client.resourceGroups.delete(rest[0])
-    case 'resource-groups.add-member': return void await client.resourceGroups.addMember(rest[0], rest[1], rest[2])
+    case 'resource-groups.add-member': return void await client.resourceGroups.addMember(rest[0], {memberId: rest[1], memberType: rest[2]})
     case 'resource-groups.remove-member': return void await client.resourceGroups.removeMember(rest[0], rest[1])
 
     // ── Webhooks ──
@@ -144,7 +144,10 @@ async function run() {
     case 'status-pages.groups.delete': return void await client.statusPages.groups.delete(rest[0], rest[1])
 
     // ── Status Page Incidents ──
-    case 'status-pages.incidents.list': return client.statusPages.incidents.list(rest[0])
+    case 'status-pages.incidents.list': {
+      const opts = rest[1] ? JSON.parse(rest[1]) : undefined
+      return client.statusPages.incidents.list(rest[0], opts)
+    }
     case 'status-pages.incidents.get': return client.statusPages.incidents.get(rest[0], rest[1])
     case 'status-pages.incidents.create': return client.statusPages.incidents.create(rest[0], JSON.parse(rest[1]))
     case 'status-pages.incidents.update': return client.statusPages.incidents.update(rest[0], rest[1], JSON.parse(rest[2]))
@@ -154,7 +157,10 @@ async function run() {
     case 'status-pages.incidents.delete': return void await client.statusPages.incidents.delete(rest[0], rest[1])
 
     // ── Status Page Subscribers ──
-    case 'status-pages.subscribers.list': return client.statusPages.subscribers.list(rest[0])
+    case 'status-pages.subscribers.list': {
+      const opts = rest[1] ? JSON.parse(rest[1]) : undefined
+      return client.statusPages.subscribers.list(rest[0], opts)
+    }
     case 'status-pages.subscribers.add': return client.statusPages.subscribers.add(rest[0], JSON.parse(rest[1]))
     case 'status-pages.subscribers.remove': return void await client.statusPages.subscribers.remove(rest[0], rest[1])
 

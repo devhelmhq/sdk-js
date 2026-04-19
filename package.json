@@ -24,7 +24,8 @@
   ],
   "scripts": {
     "typegen": "openapi-typescript docs/openapi/monitoring-api.json -o src/generated/api.ts",
-    "build": "npm run typegen && tsc -b",
+    "schemagen": "node scripts/generate-schemas.js",
+    "build": "npm run typegen && npm run schemagen && tsc -b",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
     "test": "vitest run",
@@ -44,14 +45,17 @@
     "api-client"
   ],
   "dependencies": {
-    "openapi-fetch": "^0.17.0"
+    "openapi-fetch": "^0.17.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
     "@typescript-eslint/eslint-plugin": "^8.58.1",
     "@typescript-eslint/parser": "^8.58.1",
+    "ajv": "^8.18.0",
     "eslint": "^10.2.0",
     "openapi-typescript": "^7.13.0",
+    "openapi-zod-client": "^1.18.3",
     "typescript": "^6.0.2",
     "vitest": "^4.1.4"
   }

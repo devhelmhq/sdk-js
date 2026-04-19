@@ -1,46 +1,43 @@
 import type {ApiClient} from '../http.js'
-import type {WebhookEndpointDto, CreateWebhookEndpointRequest, UpdateWebhookEndpointRequest, Page} from '../types.js'
-import {apiGet, apiPost, apiPut, apiDelete, fetchAllPages, fetchPage, unwrapSingle} from '../http.js'
+import type {WebhookEndpointDto, CreateWebhookEndpointRequest, UpdateWebhookEndpointRequest, WebhookTestResult, Page} from '../types.js'
+import {WebhookEndpointDtoSchema, WebhookTestResultSchema} from '../schemas.js'
+import {fetchAllPages, fetchPage, fetchSingle} from '../http.js'
 
 export class Webhooks {
   constructor(private readonly client: ApiClient) {}
 
   /** List all webhook endpoints (auto-paginates). */
   async list(): Promise<WebhookEndpointDto[]> {
-    return fetchAllPages<WebhookEndpointDto>(this.client, '/api/v1/webhooks')
+    return fetchAllPages(this.client, '/api/v1/webhooks', WebhookEndpointDtoSchema)
   }
 
   /** List webhook endpoints with manual page control. */
   async listPage(page: number, size: number): Promise<Page<WebhookEndpointDto>> {
-    return fetchPage<WebhookEndpointDto>(this.client, '/api/v1/webhooks', page, size)
+    return fetchPage(this.client, '/api/v1/webhooks', WebhookEndpointDtoSchema, page, size)
   }
 
   /** Get a single webhook endpoint by ID. */
   async get(id: string | number): Promise<WebhookEndpointDto> {
-    const resp = await apiGet<{data?: WebhookEndpointDto}>(this.client, `/api/v1/webhooks/${id}`)
-    return unwrapSingle(resp)
+    return fetchSingle(this.client, 'GET', `/api/v1/webhooks/${id}`, WebhookEndpointDtoSchema)
   }
 
   /** Create a new webhook endpoint. */
   async create(body: CreateWebhookEndpointRequest): Promise<WebhookEndpointDto> {
-    const resp = await apiPost<{data?: WebhookEndpointDto}>(this.client, '/api/v1/webhooks', body)
-    return unwrapSingle(resp)
+    return fetchSingle(this.client, 'POST', '/api/v1/webhooks', WebhookEndpointDtoSchema, body)
   }
 
   /** Update an existing webhook endpoint. */
   async update(id: string | number, body: UpdateWebhookEndpointRequest): Promise<WebhookEndpointDto> {
-    const resp = await apiPut<{data?: WebhookEndpointDto}>(this.client, `/api/v1/webhooks/${id}`, body)
-    return unwrapSingle(resp)
+    return fetchSingle(this.client, 'PUT', `/api/v1/webhooks/${id}`, WebhookEndpointDtoSchema, body)
   }
 
   /** Delete a webhook endpoint. */
   async delete(id: string | number): Promise<void> {
-    await apiDelete(this.client, `/api/v1/webhooks/${id}`)
+    await fetchSingle(this.client, 'DELETE', `/api/v1/webhooks/${id}`, WebhookEndpointDtoSchema)
   }
 
   /** Send a test event to this webhook. */
-  async test(id: string | number): Promise<{success: boolean}> {
-    const resp = await apiPost<{data?: {success: boolean}}>(this.client, `/api/v1/webhooks/${id}/test`)
-    return unwrapSingle(resp)
+  async test(id: string | number): Promise<WebhookTestResult> {
+    return fetchSingle(this.client, 'POST', `/api/v1/webhooks/${id}/test`, WebhookTestResultSchema)
   }
 }
