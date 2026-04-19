@@ -23,6 +23,7 @@ export type {
   DashboardOverviewDto,
   DeployLockDto,
   AssertionTestResultDto,
+  MonitorTestResultDto,
   CreateMonitorRequest,
   UpdateMonitorRequest,
   CreateManualIncidentRequest,

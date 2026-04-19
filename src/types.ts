@@ -24,6 +24,7 @@ export type CheckResultDto = z.infer<typeof S.CheckResultDtoSchema>
 export type DashboardOverviewDto = z.infer<typeof S.DashboardOverviewDtoSchema>
 export type DeployLockDto = z.infer<typeof S.DeployLockDtoSchema>
 export type AssertionTestResultDto = z.infer<typeof S.AssertionTestResultDtoSchema>
+export type MonitorTestResultDto = z.infer<typeof S.MonitorTestResultDtoSchema>
 
 // ── Status Page DTOs ──────────────────────────────────────────────────
 

@@ -1,12 +1,12 @@
 import type {ApiClient} from '../http.js'
 import type {
   MonitorDto, CreateMonitorRequest, UpdateMonitorRequest,
-  MonitorVersionDto, CheckResultDto, AssertionTestResultDto,
+  MonitorVersionDto, CheckResultDto, MonitorTestResultDto,
   Page, CursorPage,
 } from '../types.js'
 import {
   MonitorDtoSchema, MonitorVersionDtoSchema,
-  CheckResultDtoSchema, AssertionTestResultDtoSchema,
+  CheckResultDtoSchema, MonitorTestResultDtoSchema,
   CreateMonitorRequestSchema, UpdateMonitorRequestSchema,
 } from '../schemas.js'
 import {fetchAllPages, fetchPage, fetchCursorPage, fetchSingle} from '../http.js'
@@ -58,8 +58,8 @@ export class Monitors {
   }
 
   /** Trigger an ad-hoc test run for a monitor. */
-  async test(id: string | number): Promise<AssertionTestResultDto> {
-    return fetchSingle(this.client, 'POST', `/api/v1/monitors/${id}/test`, AssertionTestResultDtoSchema)
+  async test(id: string | number): Promise<MonitorTestResultDto> {
+    return fetchSingle(this.client, 'POST', `/api/v1/monitors/${id}/test`, MonitorTestResultDtoSchema)
   }
 
   /** List check results (cursor-paginated). */
