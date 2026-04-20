@@ -37,8 +37,75 @@ function extractSchemas(raw) {
     kept.push(line)
   }
 
-  return '// @ts-nocheck\n// Auto-generated Zod schemas from OpenAPI spec. DO NOT EDIT.\n' +
+  return '// Auto-generated Zod schemas from OpenAPI spec. DO NOT EDIT.\n' +
     kept.join('\n') + '\n'
+}
+
+/**
+ * openapi-zod-client emits Zod 3 syntax (`z.record(valueSchema)`), but the
+ * SDK depends on Zod 4 which requires `z.record(keySchema, valueSchema)`.
+ * Rewrite each call so the generated file passes `tsc` without
+ * `@ts-nocheck` (P5: zero casts/escapes outside generated files — and
+ * `@ts-nocheck` is the strongest possible escape).
+ *
+ * Pattern: capture `z.record(<balanced expression>)` and inject the
+ * `z.string()` key. We accept the heuristic limitation that the value
+ * expression cannot itself contain unbalanced parens; that's true for
+ * every emission shape openapi-zod-client produces.
+ */
+function fixZod4RecordCalls(source) {
+  // Match both `z.record(` and the prettier-split form
+  // `z\n  .record(`. Skip ranges that already have the Zod 4
+  // `(z.string(), …)` signature so repeated passes are a no-op.
+  const RECORD_RE = /(\bz)(\s*)\.record\(/g
+  const ALREADY_FIXED = 'z.string(), '
+
+  function pass(input) {
+    let out = ''
+    let changed = false
+    let cursor = 0
+    let m
+    RECORD_RE.lastIndex = 0
+    while ((m = RECORD_RE.exec(input))) {
+      const matchStart = m.index
+      const openIdx = matchStart + m[0].length // index AFTER '('
+      out += input.slice(cursor, openIdx)
+      // Look at the next non-whitespace token to detect "already fixed".
+      let peek = openIdx
+      while (peek < input.length && /\s/.test(input[peek])) peek++
+      if (input.startsWith(ALREADY_FIXED, peek)) {
+        cursor = openIdx
+        continue
+      }
+      out += 'z.string(), '
+      changed = true
+      let depth = 1
+      let j = openIdx
+      while (j < input.length && depth > 0) {
+        const ch = input[j]
+        if (ch === '(') depth++
+        else if (ch === ')') depth--
+        if (depth > 0) out += ch
+        j++
+      }
+      out += ')'
+      cursor = j
+      RECORD_RE.lastIndex = cursor
+    }
+    out += input.slice(cursor)
+    return {out, changed}
+  }
+
+  // openapi-zod-client occasionally nests `z.record` inside another
+  // `z.record` value; one pass only rewrites the outermost call. Iterate
+  // to a fixed point.
+  let current = source
+  for (let safety = 0; safety < 16; safety++) {
+    const {out, changed} = pass(current)
+    current = out
+    if (!changed) return current
+  }
+  throw new Error('fixZod4RecordCalls did not converge after 16 passes')
 }
 
 async function main() {
@@ -88,6 +155,7 @@ async function main() {
   const raw = readFileSync(tempGenerated, 'utf8')
   let clean = extractSchemas(raw)
   clean = rewriteUnionsAsDiscriminated(clean, inlinedDiscriminators)
+  clean = fixZod4RecordCalls(clean)
 
   mkdirSync(dirname(OUTPUT_PATH), { recursive: true })
   writeFileSync(OUTPUT_PATH, clean, 'utf8')

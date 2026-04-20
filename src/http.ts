@@ -56,38 +56,60 @@ export async function checkedFetch(
 }
 
 // ── Typed dynamic-path helpers ─────────────────────────────────────────
+//
+// `openapi-fetch` types `client.GET/POST/PUT/DELETE/PATCH` against the literal
+// path strings declared in the OpenAPI spec, so a call like
+// `client.GET("/v1/monitors/{id}", …)` only typechecks if the path literal is
+// known at compile time. The handwritten resource layer composes paths at
+// runtime (`/v1/${resource}/${id}`), so that compile-time binding can never
+// be satisfied. We capture the structural shape of the openapi-fetch methods
+// in a typed `DynamicClient` interface and convert the strongly-typed
+// `ApiClient` into it at a single boundary, instead of scattering `as any`
+// across every helper.
+type FetchEnvelope = {data?: unknown; error?: unknown; response: Response}
+type FetchInit = {body?: unknown; params?: {path?: Record<string, unknown>; query?: Record<string, unknown>}}
+
+interface DynamicClient {
+  GET(path: string, init?: FetchInit): Promise<FetchEnvelope>
+  POST(path: string, init?: FetchInit): Promise<FetchEnvelope>
+  PUT(path: string, init?: FetchInit): Promise<FetchEnvelope>
+  DELETE(path: string, init?: FetchInit): Promise<FetchEnvelope>
+  PATCH(path: string, init?: FetchInit): Promise<FetchEnvelope>
+}
+
+function asDynamic(client: ApiClient): DynamicClient {
+  // openapi-fetch's runtime methods accept any string; the literal-path
+  // typing exists purely for callers that know the path at compile time.
+  // This is the single P5-tracked boundary in the SDK runtime.
+  return client as unknown as DynamicClient
+}
 
 export async function apiGet(client: ApiClient, path: string, query?: Record<string, unknown>): Promise<unknown> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return checkedFetch((client as any).GET(path, query ? {params: {query}} : undefined))
+  return checkedFetch(asDynamic(client).GET(path, query ? {params: {query}} : undefined))
 }
 
 export async function apiPost(client: ApiClient, path: string, body?: unknown, pathParams?: Record<string, unknown>): Promise<unknown> {
-  const params: Record<string, unknown> = {}
-  if (pathParams) params['path'] = pathParams
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return checkedFetch((client as any).POST(path, {body, params}))
+  const init: FetchInit = {body}
+  if (pathParams) init.params = {path: pathParams}
+  return checkedFetch(asDynamic(client).POST(path, init))
 }
 
 export async function apiPut(client: ApiClient, path: string, body: unknown, pathParams?: Record<string, unknown>): Promise<unknown> {
-  const params: Record<string, unknown> = {}
-  if (pathParams) params['path'] = pathParams
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return checkedFetch((client as any).PUT(path, {body, params}))
+  const init: FetchInit = {body}
+  if (pathParams) init.params = {path: pathParams}
+  return checkedFetch(asDynamic(client).PUT(path, init))
 }
 
 export async function apiDelete(client: ApiClient, path: string, pathParams?: Record<string, unknown>): Promise<void> {
-  const params: Record<string, unknown> = {}
-  if (pathParams) params['path'] = pathParams
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await checkedFetch((client as any).DELETE(path, {params}))
+  const init: FetchInit = {}
+  if (pathParams) init.params = {path: pathParams}
+  await checkedFetch(asDynamic(client).DELETE(path, init))
 }
 
 export async function apiPatch(client: ApiClient, path: string, body: unknown, pathParams?: Record<string, unknown>): Promise<unknown> {
-  const params: Record<string, unknown> = {}
-  if (pathParams) params['path'] = pathParams
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return checkedFetch((client as any).PATCH(path, {body, params}))
+  const init: FetchInit = {body}
+  if (pathParams) init.params = {path: pathParams}
+  return checkedFetch(asDynamic(client).PATCH(path, init))
 }
 
 // ── Validated response helpers ──────────────────────────────────────
