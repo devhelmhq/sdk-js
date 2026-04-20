@@ -486,13 +486,18 @@ describe('enum validation rejects unknown values', () => {
   })
 })
 
-// ── Passthrough behavior (API adds new fields) ─────────────────────
+// ── Strict objects (no passthrough on generated DTOs) ──────────────
+// We deliberately turn off `.passthrough()` in the codegen so consumers
+// get exact-shape narrowing. Zod `z.object` strips unknown keys by
+// default — unknown future fields are silently dropped instead of
+// silently widening the inferred type.
 
-describe('passthrough preserves unknown fields', () => {
-  it('StatusPageDto passes through future API fields', () => {
+describe('strict object schemas strip unknown fields', () => {
+  it('StatusPageDto strips unknown fields on parse', () => {
     const raw = {...validStatusPageDto, futureField: 'new-api-version-data'}
     const result = schemas.StatusPageDto.parse(raw)
-    expect((result as Record<string, unknown>).futureField).toBe('new-api-version-data')
+    expect((result as Record<string, unknown>).futureField).toBeUndefined()
+    expect(result.id).toBe(validStatusPageDto.id)
   })
 })
 

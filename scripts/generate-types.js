@@ -29,9 +29,16 @@ console.log('Reading OpenAPI spec...')
 const spec = JSON.parse(readFileSync(SPEC_PATH, 'utf8'))
 
 console.log('Preprocessing (via @devhelm/openapi-tools)...')
-const { flattened } = preprocessSpec(spec)
+const { flattened, inlinedDiscriminators } = preprocessSpec(spec)
 if (flattened.length > 0) {
   console.log(`  Flattened circular oneOf: ${flattened.join(', ')}`)
+}
+if (inlinedDiscriminators.length > 0) {
+  console.log(
+    `  Inlined discriminator subtypes: ${inlinedDiscriminators
+      .map((u) => `${u.parent}(${u.discriminator})`)
+      .join(', ')}`,
+  )
 }
 
 writeFileSync(PREPROCESSED_PATH, JSON.stringify(spec, null, 2), 'utf8')

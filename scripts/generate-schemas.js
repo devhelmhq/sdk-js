@@ -13,7 +13,7 @@
 import { readFileSync, writeFileSync, mkdirSync, unlinkSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { preprocessSpec } from './lib/preprocess.mjs'
+import { preprocessSpec, rewriteUnionsAsDiscriminated } from './lib/preprocess.mjs'
 import { generateZodClientFromOpenAPI } from 'openapi-zod-client'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -46,9 +46,16 @@ async function main() {
   const spec = JSON.parse(readFileSync(SPEC_PATH, 'utf8'))
 
   console.log('Preprocessing (via @devhelm/openapi-tools)...')
-  const { flattened } = preprocessSpec(spec)
+  const { flattened, inlinedDiscriminators } = preprocessSpec(spec)
   if (flattened.length > 0) {
     console.log(`  Flattened circular oneOf: ${flattened.join(', ')}`)
+  }
+  if (inlinedDiscriminators.length > 0) {
+    console.log(
+      `  Inlined discriminator subtypes: ${inlinedDiscriminators
+        .map((u) => `${u.parent}(${u.discriminator})`)
+        .join(', ')}`,
+    )
   }
 
   const tempSpec = join(ROOT, '.openapi-preprocessed.json')
@@ -62,12 +69,16 @@ async function main() {
     distPath: tempGenerated,
     options: {
       shouldExportAllSchemas: true,
+      // Strict objects — generated `.passthrough()` masks unknown fields
+      // and breaks `z.infer` narrowing for SDK consumers.
+      additionalPropertiesDefaultValue: false,
     },
   })
 
   console.log('Post-processing: extracting Zod schemas...')
   const raw = readFileSync(tempGenerated, 'utf8')
-  const clean = extractSchemas(raw)
+  let clean = extractSchemas(raw)
+  clean = rewriteUnionsAsDiscriminated(clean, inlinedDiscriminators)
 
   mkdirSync(dirname(OUTPUT_PATH), { recursive: true })
   writeFileSync(OUTPUT_PATH, clean, 'utf8')
