@@ -2,7 +2,7 @@ import createClient from 'openapi-fetch'
 import type {ZodType} from 'zod'
 import type {paths} from './generated/api.js'
 import type {DevhelmConfig, Page, CursorPage} from './types.js'
-import {errorFromResponse} from './errors.js'
+import {DevhelmTransportError, errorFromResponse} from './errors.js'
 import {parseSingle, parsePage, parseCursorPage} from './validation.js'
 
 const DEFAULT_BASE_URL = 'https://api.devhelm.io'
@@ -27,13 +27,27 @@ export function buildClient(config: DevhelmConfig): ApiClient {
 }
 
 /**
- * Unwraps an openapi-fetch response, throwing a typed DevhelmError on failure.
+ * Unwraps an openapi-fetch response, throwing a typed error on failure:
+ *   - DevhelmApiError (or subclass) when the server returns a non-2xx
+ *   - DevhelmTransportError when the request never reached the server
+ *
  * Returns the raw JSON body — callers must validate it through a schema.
  */
 export async function checkedFetch(
   promise: Promise<{data?: unknown; error?: unknown; response: Response}>,
 ): Promise<unknown> {
-  const {data, error, response} = await promise
+  let resolved: {data?: unknown; error?: unknown; response: Response}
+  try {
+    resolved = await promise
+  } catch (e) {
+    // openapi-fetch rejects with the underlying fetch error when no Response
+    // was received (DNS failure, connection refused, abort, TLS, etc.).
+    // Surface those as DevhelmTransportError so callers can distinguish them
+    // from API-level failures.
+    const message = e instanceof Error ? `${e.name}: ${e.message}` : String(e)
+    throw new DevhelmTransportError(message, {cause: e})
+  }
+  const {data, error, response} = resolved
   if (error || !response.ok) {
     const body = typeof error === 'string' ? error : await response.text().catch(() => '')
     throw errorFromResponse(response.status, body)

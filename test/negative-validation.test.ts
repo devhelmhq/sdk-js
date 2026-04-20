@@ -1,7 +1,7 @@
 import {describe, it, expect} from 'vitest'
 import {z} from 'zod'
 import {schemas} from '../src/schemas.js'
-import {DevhelmError} from '../src/errors.js'
+import {DevhelmError, DevhelmValidationError} from '../src/errors.js'
 import {parse, parseSingle, parsePage, parseCursorPage} from '../src/validation.js'
 
 // ── Helpers ─────────────────────────────────────────────────────────
@@ -2226,13 +2226,13 @@ describe('ApiKeyCreateResponse negative validation', () => {
 // =====================================================================
 
 describe('parse() validation layer', () => {
-  it('throws DevhelmError with code VALIDATION on invalid data', () => {
-    expect(() => parse(schemas.MonitorDto, {id: 123})).toThrow(DevhelmError)
+  it('throws DevhelmValidationError on invalid data', () => {
+    expect(() => parse(schemas.MonitorDto, {id: 123})).toThrow(DevhelmValidationError)
     try {
       parse(schemas.MonitorDto, {id: 123})
     } catch (e) {
+      expect(e).toBeInstanceOf(DevhelmValidationError)
       expect(e).toBeInstanceOf(DevhelmError)
-      expect((e as DevhelmError).code).toBe('VALIDATION')
     }
   })
 
@@ -2270,24 +2270,17 @@ describe('parse() validation layer', () => {
     }
   })
 
-  it('error detail contains JSON issue list', () => {
+  it('error exposes a structured issues list', () => {
     try {
       parse(schemas.MonitorDto, {}, 'test')
       expect.fail('should throw')
     } catch (e) {
-      expect((e as DevhelmError).detail).toBeDefined()
-      const issues = JSON.parse((e as DevhelmError).detail!)
+      expect(e).toBeInstanceOf(DevhelmValidationError)
+      const issues = (e as DevhelmValidationError).issues
       expect(Array.isArray(issues)).toBe(true)
       expect(issues.length).toBeGreaterThan(0)
-    }
-  })
-
-  it('error has status 0', () => {
-    try {
-      parse(schemas.MonitorDto, {})
-      expect.fail('should throw')
-    } catch (e) {
-      expect((e as DevhelmError).status).toBe(0)
+      expect(issues[0]?.path).toBeDefined()
+      expect(typeof issues[0]?.message).toBe('string')
     }
   })
 })
@@ -2335,12 +2328,12 @@ describe('parseSingle() validation layer', () => {
     }
   })
 
-  it('error code is VALIDATION', () => {
+  it('throws DevhelmValidationError', () => {
     try {
       parseSingle(schemas.MonitorDto, {data: {}})
       expect.fail('should throw')
     } catch (e) {
-      expect((e as DevhelmError).code).toBe('VALIDATION')
+      expect(e).toBeInstanceOf(DevhelmValidationError)
     }
   })
 })
@@ -2467,12 +2460,12 @@ describe('parseCursorPage() validation layer', () => {
     expect(result.nextCursor).toBeNull()
   })
 
-  it('error code is VALIDATION', () => {
+  it('throws DevhelmValidationError', () => {
     try {
       parseCursorPage(schemas.CheckResultDto, {})
       expect.fail('should throw')
     } catch (e) {
-      expect((e as DevhelmError).code).toBe('VALIDATION')
+      expect(e).toBeInstanceOf(DevhelmValidationError)
     }
   })
 })

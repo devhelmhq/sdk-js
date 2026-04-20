@@ -1,7 +1,18 @@
 export {Devhelm} from './client.js'
 export type {DevhelmConfig, Page, CursorPage} from './types.js'
-export {DevhelmError, AuthError} from './errors.js'
-export type {DevhelmErrorCode} from './errors.js'
+export {
+  AuthError,
+  DevhelmApiError,
+  DevhelmAuthError,
+  DevhelmConflictError,
+  DevhelmError,
+  DevhelmNotFoundError,
+  DevhelmRateLimitError,
+  DevhelmServerError,
+  DevhelmTransportError,
+  DevhelmValidationError,
+} from './errors.js'
+export type {DevhelmErrorCode, ValidationIssue} from './errors.js'
 
 // Re-export all DTO and request types for consumers
 export type {
