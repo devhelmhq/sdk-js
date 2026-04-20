@@ -67,6 +67,7 @@ export type {
   AdminAddSubscriberRequest,
   PublishStatusPageIncidentRequest,
   ReorderComponentsRequest,
+  ReorderPageLayoutRequest,
   ComponentPosition,
   AffectedComponent,
   TestChannelResult,

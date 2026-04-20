@@ -77,6 +77,7 @@ export type AddCustomDomainRequest = z.infer<typeof S.AddCustomDomainRequestSche
 export type AdminAddSubscriberRequest = z.infer<typeof S.AdminAddSubscriberRequestSchema>
 export type PublishStatusPageIncidentRequest = z.infer<typeof S.PublishStatusPageIncidentRequestSchema>
 export type ReorderComponentsRequest = z.infer<typeof S.ReorderComponentsRequestSchema>
+export type ReorderPageLayoutRequest = z.infer<typeof S.ReorderPageLayoutRequestSchema>
 export type ComponentPosition = z.infer<typeof S.ComponentPositionSchema>
 export type AffectedComponent = z.infer<typeof S.AffectedComponentSchema>
 

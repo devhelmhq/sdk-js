@@ -1,4 +1,23 @@
+import {z} from 'zod'
+
 export type DevhelmErrorCode = 'AUTH' | 'NOT_FOUND' | 'CONFLICT' | 'VALIDATION' | 'API'
+
+/**
+ * Shape the API uses for error response bodies. We accept any of `message`,
+ * `error`, or `detail` and pass through unknown fields so a backwards-compat
+ * change to the error envelope (e.g. adding `traceId`) doesn't break parsing.
+ *
+ * Validation here is intentionally permissive — `safeParse` is used so that
+ * non-conforming bodies fall back to the raw response text rather than
+ * masking the underlying problem with a Zod failure.
+ */
+const ErrorBodySchema = z
+  .object({
+    message: z.string().optional(),
+    error: z.string().optional(),
+    detail: z.string().optional(),
+  })
+  .passthrough()
 
 export class DevhelmError extends Error {
   readonly code: DevhelmErrorCode
@@ -26,9 +45,14 @@ export function errorFromResponse(status: number, body: string): DevhelmError {
   let detail: string | undefined
 
   try {
-    const parsed = JSON.parse(body) as Record<string, unknown>
-    message = String(parsed['message'] ?? parsed['error'] ?? message)
-    detail = parsed['detail'] ? String(parsed['detail']) : undefined
+    const json: unknown = JSON.parse(body)
+    const result = ErrorBodySchema.safeParse(json)
+    if (result.success) {
+      message = result.data.message ?? result.data.error ?? message
+      detail = result.data.detail
+    } else if (body) {
+      message = body
+    }
   } catch {
     if (body) message = body
   }

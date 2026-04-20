@@ -21,7 +21,7 @@ import {
   AdminAddSubscriberRequestSchema, AddCustomDomainRequestSchema,
   ReorderComponentsRequestSchema,
 } from '../schemas.js'
-import {apiPut, apiDelete, fetchAllPages, fetchPage, fetchSingle} from '../http.js'
+import {apiPut, fetchAllPages, fetchPage, fetchSingle, fetchVoid} from '../http.js'
 import {validateRequest} from '../validation.js'
 
 const BASE = '/api/v1/status-pages'
@@ -48,7 +48,7 @@ class Components {
 
   /** Remove a component from a status page. */
   async delete(pageId: string | number, componentId: string | number): Promise<void> {
-    await apiDelete(this.client, `${BASE}/${pageId}/components/${componentId}`)
+    return fetchVoid(this.client, `${BASE}/${pageId}/components/${componentId}`)
   }
 
   /** Batch reorder components. */
@@ -80,7 +80,7 @@ class Groups {
 
   /** Delete a component group. */
   async delete(pageId: string | number, groupId: string | number): Promise<void> {
-    await apiDelete(this.client, `${BASE}/${pageId}/groups/${groupId}`)
+    return fetchVoid(this.client, `${BASE}/${pageId}/groups/${groupId}`)
   }
 }
 
@@ -128,7 +128,7 @@ class Incidents {
 
   /** Delete an incident. */
   async delete(pageId: string | number, incidentId: string | number): Promise<void> {
-    await apiDelete(this.client, `${BASE}/${pageId}/incidents/${incidentId}`)
+    return fetchVoid(this.client, `${BASE}/${pageId}/incidents/${incidentId}`)
   }
 }
 
@@ -148,7 +148,7 @@ class Subscribers {
 
   /** Remove a subscriber. */
   async remove(pageId: string | number, subscriberId: string | number): Promise<void> {
-    await apiDelete(this.client, `${BASE}/${pageId}/subscribers/${subscriberId}`)
+    return fetchVoid(this.client, `${BASE}/${pageId}/subscribers/${subscriberId}`)
   }
 }
 
@@ -173,7 +173,7 @@ class Domains {
 
   /** Remove a custom domain. */
   async remove(pageId: string | number, domainId: string | number): Promise<void> {
-    await apiDelete(this.client, `${BASE}/${pageId}/domains/${domainId}`)
+    return fetchVoid(this.client, `${BASE}/${pageId}/domains/${domainId}`)
   }
 }
 
@@ -216,6 +216,6 @@ export class StatusPages {
 
   /** Delete a status page. */
   async delete(id: string | number): Promise<void> {
-    await apiDelete(this.client, `${BASE}/${id}`)
+    return fetchVoid(this.client, `${BASE}/${id}`)
   }
 }

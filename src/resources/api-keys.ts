@@ -1,7 +1,7 @@
 import type {ApiClient} from '../http.js'
 import type {ApiKeyDto, ApiKeyCreateResponse, CreateApiKeyRequest, Page} from '../types.js'
 import {ApiKeyDtoSchema, ApiKeyCreateResponseSchema, CreateApiKeyRequestSchema} from '../schemas.js'
-import {apiPost, fetchAllPages, fetchPage, fetchSingle} from '../http.js'
+import {apiPost, fetchAllPages, fetchPage, fetchSingle, fetchVoid} from '../http.js'
 import {validateRequest} from '../validation.js'
 
 export class ApiKeys {
@@ -30,6 +30,6 @@ export class ApiKeys {
 
   /** Delete an API key permanently. */
   async delete(id: string | number): Promise<void> {
-    await fetchSingle(this.client, 'DELETE', `/api/v1/api-keys/${id}`, ApiKeyDtoSchema)
+    return fetchVoid(this.client, `/api/v1/api-keys/${id}`)
   }
 }

@@ -1,7 +1,7 @@
 import type {ApiClient} from '../http.js'
 import type {AlertChannelDto, CreateAlertChannelRequest, UpdateAlertChannelRequest, TestChannelResult, Page} from '../types.js'
 import {AlertChannelDtoSchema, TestChannelResultSchema, CreateAlertChannelRequestSchema, UpdateAlertChannelRequestSchema} from '../schemas.js'
-import {fetchAllPages, fetchPage, fetchSingle} from '../http.js'
+import {fetchAllPages, fetchPage, fetchSingle, fetchVoid} from '../http.js'
 import {validateRequest} from '../validation.js'
 
 export class AlertChannels {
@@ -36,7 +36,7 @@ export class AlertChannels {
 
   /** Delete an alert channel. */
   async delete(id: string | number): Promise<void> {
-    await fetchSingle(this.client, 'DELETE', `/api/v1/alert-channels/${id}`, AlertChannelDtoSchema)
+    return fetchVoid(this.client, `/api/v1/alert-channels/${id}`)
   }
 
   /** Send a test notification to this channel. */

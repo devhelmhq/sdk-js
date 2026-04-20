@@ -1,7 +1,7 @@
 import type {ApiClient} from '../http.js'
 import type {NotificationPolicyDto, CreateNotificationPolicyRequest, UpdateNotificationPolicyRequest, Page} from '../types.js'
 import {NotificationPolicyDtoSchema, CreateNotificationPolicyRequestSchema, UpdateNotificationPolicyRequestSchema} from '../schemas.js'
-import {apiPost, fetchAllPages, fetchPage, fetchSingle} from '../http.js'
+import {apiPost, fetchAllPages, fetchPage, fetchSingle, fetchVoid} from '../http.js'
 import {validateRequest} from '../validation.js'
 
 export class NotificationPolicies {
@@ -36,7 +36,7 @@ export class NotificationPolicies {
 
   /** Delete a notification policy. */
   async delete(id: string | number): Promise<void> {
-    await fetchSingle(this.client, 'DELETE', `/api/v1/notification-policies/${id}`, NotificationPolicyDtoSchema)
+    return fetchVoid(this.client, `/api/v1/notification-policies/${id}`)
   }
 
   /** Send a test dispatch to verify policy routing. */

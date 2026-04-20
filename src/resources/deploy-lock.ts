@@ -1,7 +1,7 @@
 import type {ApiClient} from '../http.js'
 import type {DeployLockDto, AcquireDeployLockRequest} from '../types.js'
 import {DeployLockDtoSchema, AcquireDeployLockRequestSchema} from '../schemas.js'
-import {apiGet, fetchSingle} from '../http.js'
+import {apiGet, fetchSingle, fetchVoid} from '../http.js'
 import {parse, validateRequest} from '../validation.js'
 import {z} from 'zod'
 
@@ -24,11 +24,11 @@ export class DeployLock {
 
   /** Release a deploy lock by its ID. */
   async release(lockId: string): Promise<void> {
-    await fetchSingle(this.client, 'DELETE', `/api/v1/deploy/lock/${lockId}`, DeployLockDtoSchema)
+    return fetchVoid(this.client, `/api/v1/deploy/lock/${lockId}`)
   }
 
   /** Force-release any deploy lock on the current workspace. */
   async forceRelease(): Promise<void> {
-    await fetchSingle(this.client, 'DELETE', '/api/v1/deploy/lock/force', DeployLockDtoSchema)
+    return fetchVoid(this.client, '/api/v1/deploy/lock/force')
   }
 }

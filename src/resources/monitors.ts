@@ -9,7 +9,7 @@ import {
   CheckResultDtoSchema, MonitorTestResultDtoSchema,
   CreateMonitorRequestSchema, UpdateMonitorRequestSchema,
 } from '../schemas.js'
-import {fetchAllPages, fetchPage, fetchCursorPage, fetchSingle} from '../http.js'
+import {fetchAllPages, fetchPage, fetchCursorPage, fetchSingle, fetchVoid} from '../http.js'
 import {validateRequest} from '../validation.js'
 
 export class Monitors {
@@ -44,7 +44,7 @@ export class Monitors {
 
   /** Delete a monitor. */
   async delete(id: string | number): Promise<void> {
-    await fetchSingle(this.client, 'DELETE', `/api/v1/monitors/${id}`, MonitorDtoSchema)
+    return fetchVoid(this.client, `/api/v1/monitors/${id}`)
   }
 
   /** Pause a monitor. */

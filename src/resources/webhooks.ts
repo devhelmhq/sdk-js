@@ -1,7 +1,7 @@
 import type {ApiClient} from '../http.js'
 import type {WebhookEndpointDto, CreateWebhookEndpointRequest, UpdateWebhookEndpointRequest, WebhookTestResult, Page} from '../types.js'
 import {WebhookEndpointDtoSchema, WebhookTestResultSchema, CreateWebhookEndpointRequestSchema, UpdateWebhookEndpointRequestSchema} from '../schemas.js'
-import {fetchAllPages, fetchPage, fetchSingle} from '../http.js'
+import {fetchAllPages, fetchPage, fetchSingle, fetchVoid} from '../http.js'
 import {validateRequest} from '../validation.js'
 
 export class Webhooks {
@@ -36,7 +36,7 @@ export class Webhooks {
 
   /** Delete a webhook endpoint. */
   async delete(id: string | number): Promise<void> {
-    await fetchSingle(this.client, 'DELETE', `/api/v1/webhooks/${id}`, WebhookEndpointDtoSchema)
+    return fetchVoid(this.client, `/api/v1/webhooks/${id}`)
   }
 
   /** Send a test event to this webhook. */

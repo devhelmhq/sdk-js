@@ -1,7 +1,7 @@
 import type {ApiClient} from '../http.js'
 import type {SecretDto, CreateSecretRequest, UpdateSecretRequest, Page} from '../types.js'
 import {SecretDtoSchema, CreateSecretRequestSchema, UpdateSecretRequestSchema} from '../schemas.js'
-import {fetchAllPages, fetchPage, fetchSingle} from '../http.js'
+import {fetchAllPages, fetchPage, fetchSingle, fetchVoid} from '../http.js'
 import {validateRequest} from '../validation.js'
 
 export class Secrets {
@@ -31,6 +31,6 @@ export class Secrets {
 
   /** Delete a secret by key. */
   async delete(key: string): Promise<void> {
-    await fetchSingle(this.client, 'DELETE', `/api/v1/secrets/${key}`, SecretDtoSchema)
+    return fetchVoid(this.client, `/api/v1/secrets/${key}`)
   }
 }

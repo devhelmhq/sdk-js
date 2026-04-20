@@ -1,7 +1,7 @@
 import type {ApiClient} from '../http.js'
 import type {TagDto, CreateTagRequest, UpdateTagRequest, Page} from '../types.js'
 import {TagDtoSchema, CreateTagRequestSchema, UpdateTagRequestSchema} from '../schemas.js'
-import {fetchAllPages, fetchPage, fetchSingle} from '../http.js'
+import {fetchAllPages, fetchPage, fetchSingle, fetchVoid} from '../http.js'
 import {validateRequest} from '../validation.js'
 
 export class Tags {
@@ -36,6 +36,6 @@ export class Tags {
 
   /** Delete a tag. */
   async delete(id: string | number): Promise<void> {
-    await fetchSingle(this.client, 'DELETE', `/api/v1/tags/${id}`, TagDtoSchema)
+    return fetchVoid(this.client, `/api/v1/tags/${id}`)
   }
 }

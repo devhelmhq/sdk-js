@@ -1,7 +1,7 @@
 import type {ApiClient} from '../http.js'
 import type {ServiceSubscriptionDto, Page} from '../types.js'
 import {ServiceSubscriptionDtoSchema} from '../schemas.js'
-import {fetchAllPages, fetchPage, fetchSingle} from '../http.js'
+import {fetchAllPages, fetchPage, fetchSingle, fetchVoid} from '../http.js'
 
 export class Dependencies {
   constructor(private readonly client: ApiClient) {}
@@ -28,6 +28,6 @@ export class Dependencies {
 
   /** Untrack (unsubscribe from) a service subscription. */
   async delete(subscriptionId: string | number): Promise<void> {
-    await fetchSingle(this.client, 'DELETE', `/api/v1/service-subscriptions/${subscriptionId}`, ServiceSubscriptionDtoSchema)
+    return fetchVoid(this.client, `/api/v1/service-subscriptions/${subscriptionId}`)
   }
 }

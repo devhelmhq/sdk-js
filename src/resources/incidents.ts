@@ -33,9 +33,4 @@ export class Incidents {
     if (body) validateRequest(ResolveIncidentRequestSchema, body, 'incidents.resolve')
     return fetchSingle(this.client, 'POST', `/api/v1/incidents/${id}/resolve`, IncidentDetailDtoSchema, body ?? {})
   }
-
-  /** Delete an incident. */
-  async delete(id: string | number): Promise<void> {
-    await fetchSingle(this.client, 'DELETE', `/api/v1/incidents/${id}`, IncidentDetailDtoSchema)
-  }
 }

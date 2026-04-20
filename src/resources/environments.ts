@@ -1,7 +1,7 @@
 import type {ApiClient} from '../http.js'
 import type {EnvironmentDto, CreateEnvironmentRequest, UpdateEnvironmentRequest, Page} from '../types.js'
 import {EnvironmentDtoSchema, CreateEnvironmentRequestSchema, UpdateEnvironmentRequestSchema} from '../schemas.js'
-import {fetchAllPages, fetchPage, fetchSingle} from '../http.js'
+import {fetchAllPages, fetchPage, fetchSingle, fetchVoid} from '../http.js'
 import {validateRequest} from '../validation.js'
 
 export class Environments {
@@ -36,6 +36,6 @@ export class Environments {
 
   /** Delete an environment. */
   async delete(slug: string): Promise<void> {
-    await fetchSingle(this.client, 'DELETE', `/api/v1/environments/${slug}`, EnvironmentDtoSchema)
+    return fetchVoid(this.client, `/api/v1/environments/${slug}`)
   }
 }
