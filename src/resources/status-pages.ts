@@ -13,8 +13,16 @@ import type {
 import {
   StatusPageDtoSchema, StatusPageComponentDtoSchema, StatusPageComponentGroupDtoSchema,
   StatusPageIncidentDtoSchema, StatusPageSubscriberDtoSchema, StatusPageCustomDomainDtoSchema,
+  CreateStatusPageRequestSchema, UpdateStatusPageRequestSchema,
+  CreateStatusPageComponentRequestSchema, UpdateStatusPageComponentRequestSchema,
+  CreateStatusPageComponentGroupRequestSchema, UpdateStatusPageComponentGroupRequestSchema,
+  CreateStatusPageIncidentRequestSchema, UpdateStatusPageIncidentRequestSchema,
+  CreateStatusPageIncidentUpdateRequestSchema, PublishStatusPageIncidentRequestSchema,
+  AdminAddSubscriberRequestSchema, AddCustomDomainRequestSchema,
+  ReorderComponentsRequestSchema,
 } from '../schemas.js'
-import {apiPut, apiDelete, fetchAllPages, fetchPage, fetchSingle} from '../http.js'
+import {apiPut, fetchAllPages, fetchPage, fetchSingle, fetchVoid} from '../http.js'
+import {validateRequest} from '../validation.js'
 
 const BASE = '/api/v1/status-pages'
 
@@ -28,21 +36,24 @@ class Components {
 
   /** Add a component to a status page. */
   async create(pageId: string | number, body: CreateStatusPageComponentRequest): Promise<StatusPageComponentDto> {
+    validateRequest(CreateStatusPageComponentRequestSchema, body, 'statusPages.components.create')
     return fetchSingle(this.client, 'POST', `${BASE}/${pageId}/components`, StatusPageComponentDtoSchema, body)
   }
 
   /** Update a component. */
   async update(pageId: string | number, componentId: string | number, body: UpdateStatusPageComponentRequest): Promise<StatusPageComponentDto> {
+    validateRequest(UpdateStatusPageComponentRequestSchema, body, 'statusPages.components.update')
     return fetchSingle(this.client, 'PUT', `${BASE}/${pageId}/components/${componentId}`, StatusPageComponentDtoSchema, body)
   }
 
   /** Remove a component from a status page. */
   async delete(pageId: string | number, componentId: string | number): Promise<void> {
-    await apiDelete(this.client, `${BASE}/${pageId}/components/${componentId}`)
+    return fetchVoid(this.client, `${BASE}/${pageId}/components/${componentId}`)
   }
 
   /** Batch reorder components. */
   async reorder(pageId: string | number, body: ReorderComponentsRequest): Promise<void> {
+    validateRequest(ReorderComponentsRequestSchema, body, 'statusPages.components.reorder')
     await apiPut(this.client, `${BASE}/${pageId}/components/reorder`, body)
   }
 }
@@ -57,17 +68,19 @@ class Groups {
 
   /** Create a component group. */
   async create(pageId: string | number, body: CreateStatusPageComponentGroupRequest): Promise<StatusPageComponentGroupDto> {
+    validateRequest(CreateStatusPageComponentGroupRequestSchema, body, 'statusPages.groups.create')
     return fetchSingle(this.client, 'POST', `${BASE}/${pageId}/groups`, StatusPageComponentGroupDtoSchema, body)
   }
 
   /** Update a component group. */
   async update(pageId: string | number, groupId: string | number, body: UpdateStatusPageComponentGroupRequest): Promise<StatusPageComponentGroupDto> {
+    validateRequest(UpdateStatusPageComponentGroupRequestSchema, body, 'statusPages.groups.update')
     return fetchSingle(this.client, 'PUT', `${BASE}/${pageId}/groups/${groupId}`, StatusPageComponentGroupDtoSchema, body)
   }
 
   /** Delete a component group. */
   async delete(pageId: string | number, groupId: string | number): Promise<void> {
-    await apiDelete(this.client, `${BASE}/${pageId}/groups/${groupId}`)
+    return fetchVoid(this.client, `${BASE}/${pageId}/groups/${groupId}`)
   }
 }
 
@@ -86,21 +99,25 @@ class Incidents {
 
   /** Create a status page incident. */
   async create(pageId: string | number, body: CreateStatusPageIncidentRequest): Promise<StatusPageIncidentDto> {
+    validateRequest(CreateStatusPageIncidentRequestSchema, body, 'statusPages.incidents.create')
     return fetchSingle(this.client, 'POST', `${BASE}/${pageId}/incidents`, StatusPageIncidentDtoSchema, body)
   }
 
   /** Update an incident. */
   async update(pageId: string | number, incidentId: string | number, body: UpdateStatusPageIncidentRequest): Promise<StatusPageIncidentDto> {
+    validateRequest(UpdateStatusPageIncidentRequestSchema, body, 'statusPages.incidents.update')
     return fetchSingle(this.client, 'PUT', `${BASE}/${pageId}/incidents/${incidentId}`, StatusPageIncidentDtoSchema, body)
   }
 
   /** Post a timeline update on an incident. */
   async postUpdate(pageId: string | number, incidentId: string | number, body: CreateStatusPageIncidentUpdateRequest): Promise<StatusPageIncidentDto> {
+    validateRequest(CreateStatusPageIncidentUpdateRequestSchema, body, 'statusPages.incidents.postUpdate')
     return fetchSingle(this.client, 'POST', `${BASE}/${pageId}/incidents/${incidentId}/updates`, StatusPageIncidentDtoSchema, body)
   }
 
   /** Publish a draft incident. */
   async publish(pageId: string | number, incidentId: string | number, body?: PublishStatusPageIncidentRequest): Promise<StatusPageIncidentDto> {
+    if (body) validateRequest(PublishStatusPageIncidentRequestSchema, body, 'statusPages.incidents.publish')
     return fetchSingle(this.client, 'POST', `${BASE}/${pageId}/incidents/${incidentId}/publish`, StatusPageIncidentDtoSchema, body)
   }
 
@@ -111,7 +128,7 @@ class Incidents {
 
   /** Delete an incident. */
   async delete(pageId: string | number, incidentId: string | number): Promise<void> {
-    await apiDelete(this.client, `${BASE}/${pageId}/incidents/${incidentId}`)
+    return fetchVoid(this.client, `${BASE}/${pageId}/incidents/${incidentId}`)
   }
 }
 
@@ -125,12 +142,13 @@ class Subscribers {
 
   /** Add a subscriber (admin). */
   async add(pageId: string | number, body: AdminAddSubscriberRequest): Promise<StatusPageSubscriberDto> {
+    validateRequest(AdminAddSubscriberRequestSchema, body, 'statusPages.subscribers.add')
     return fetchSingle(this.client, 'POST', `${BASE}/${pageId}/subscribers`, StatusPageSubscriberDtoSchema, body)
   }
 
   /** Remove a subscriber. */
   async remove(pageId: string | number, subscriberId: string | number): Promise<void> {
-    await apiDelete(this.client, `${BASE}/${pageId}/subscribers/${subscriberId}`)
+    return fetchVoid(this.client, `${BASE}/${pageId}/subscribers/${subscriberId}`)
   }
 }
 
@@ -144,6 +162,7 @@ class Domains {
 
   /** Add a custom domain. */
   async add(pageId: string | number, body: AddCustomDomainRequest): Promise<StatusPageCustomDomainDto> {
+    validateRequest(AddCustomDomainRequestSchema, body, 'statusPages.domains.add')
     return fetchSingle(this.client, 'POST', `${BASE}/${pageId}/domains`, StatusPageCustomDomainDtoSchema, body)
   }
 
@@ -154,7 +173,7 @@ class Domains {
 
   /** Remove a custom domain. */
   async remove(pageId: string | number, domainId: string | number): Promise<void> {
-    await apiDelete(this.client, `${BASE}/${pageId}/domains/${domainId}`)
+    return fetchVoid(this.client, `${BASE}/${pageId}/domains/${domainId}`)
   }
 }
 
@@ -185,16 +204,18 @@ export class StatusPages {
 
   /** Create a status page. */
   async create(body: CreateStatusPageRequest): Promise<StatusPageDto> {
+    validateRequest(CreateStatusPageRequestSchema, body, 'statusPages.create')
     return fetchSingle(this.client, 'POST', BASE, StatusPageDtoSchema, body)
   }
 
   /** Update a status page. */
   async update(id: string | number, body: UpdateStatusPageRequest): Promise<StatusPageDto> {
+    validateRequest(UpdateStatusPageRequestSchema, body, 'statusPages.update')
     return fetchSingle(this.client, 'PUT', `${BASE}/${id}`, StatusPageDtoSchema, body)
   }
 
   /** Delete a status page. */
   async delete(id: string | number): Promise<void> {
-    await apiDelete(this.client, `${BASE}/${id}`)
+    return fetchVoid(this.client, `${BASE}/${id}`)
   }
 }

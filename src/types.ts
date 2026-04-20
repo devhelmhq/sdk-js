@@ -24,6 +24,7 @@ export type CheckResultDto = z.infer<typeof S.CheckResultDtoSchema>
 export type DashboardOverviewDto = z.infer<typeof S.DashboardOverviewDtoSchema>
 export type DeployLockDto = z.infer<typeof S.DeployLockDtoSchema>
 export type AssertionTestResultDto = z.infer<typeof S.AssertionTestResultDtoSchema>
+export type MonitorTestResultDto = z.infer<typeof S.MonitorTestResultDtoSchema>
 
 // ── Status Page DTOs ──────────────────────────────────────────────────
 
@@ -76,6 +77,7 @@ export type AddCustomDomainRequest = z.infer<typeof S.AddCustomDomainRequestSche
 export type AdminAddSubscriberRequest = z.infer<typeof S.AdminAddSubscriberRequestSchema>
 export type PublishStatusPageIncidentRequest = z.infer<typeof S.PublishStatusPageIncidentRequestSchema>
 export type ReorderComponentsRequest = z.infer<typeof S.ReorderComponentsRequestSchema>
+export type ReorderPageLayoutRequest = z.infer<typeof S.ReorderPageLayoutRequestSchema>
 export type ComponentPosition = z.infer<typeof S.ComponentPositionSchema>
 export type AffectedComponent = z.infer<typeof S.AffectedComponentSchema>
 

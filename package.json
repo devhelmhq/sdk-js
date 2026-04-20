@@ -23,7 +23,7 @@
     "dist"
   ],
   "scripts": {
-    "typegen": "openapi-typescript docs/openapi/monitoring-api.json -o src/generated/api.ts",
+    "typegen": "node scripts/generate-types.js",
     "schemagen": "node scripts/generate-schemas.js",
     "build": "npm run typegen && npm run schemagen && tsc -b",
     "lint": "eslint src/",

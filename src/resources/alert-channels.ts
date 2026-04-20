@@ -1,7 +1,8 @@
 import type {ApiClient} from '../http.js'
 import type {AlertChannelDto, CreateAlertChannelRequest, UpdateAlertChannelRequest, TestChannelResult, Page} from '../types.js'
-import {AlertChannelDtoSchema, TestChannelResultSchema} from '../schemas.js'
-import {fetchAllPages, fetchPage, fetchSingle} from '../http.js'
+import {AlertChannelDtoSchema, TestChannelResultSchema, CreateAlertChannelRequestSchema, UpdateAlertChannelRequestSchema} from '../schemas.js'
+import {fetchAllPages, fetchPage, fetchSingle, fetchVoid} from '../http.js'
+import {validateRequest} from '../validation.js'
 
 export class AlertChannels {
   constructor(private readonly client: ApiClient) {}
@@ -23,17 +24,19 @@ export class AlertChannels {
 
   /** Create a new alert channel. */
   async create(body: CreateAlertChannelRequest): Promise<AlertChannelDto> {
+    validateRequest(CreateAlertChannelRequestSchema, body, 'alertChannels.create')
     return fetchSingle(this.client, 'POST', '/api/v1/alert-channels', AlertChannelDtoSchema, body)
   }
 
   /** Update an existing alert channel. */
   async update(id: string | number, body: UpdateAlertChannelRequest): Promise<AlertChannelDto> {
+    validateRequest(UpdateAlertChannelRequestSchema, body, 'alertChannels.update')
     return fetchSingle(this.client, 'PUT', `/api/v1/alert-channels/${id}`, AlertChannelDtoSchema, body)
   }
 
   /** Delete an alert channel. */
   async delete(id: string | number): Promise<void> {
-    await fetchSingle(this.client, 'DELETE', `/api/v1/alert-channels/${id}`, AlertChannelDtoSchema)
+    return fetchVoid(this.client, `/api/v1/alert-channels/${id}`)
   }
 
   /** Send a test notification to this channel. */

@@ -1,14 +1,16 @@
 import type {ApiClient} from '../http.js'
 import type {
   MonitorDto, CreateMonitorRequest, UpdateMonitorRequest,
-  MonitorVersionDto, CheckResultDto, AssertionTestResultDto,
+  MonitorVersionDto, CheckResultDto, MonitorTestResultDto,
   Page, CursorPage,
 } from '../types.js'
 import {
   MonitorDtoSchema, MonitorVersionDtoSchema,
-  CheckResultDtoSchema, AssertionTestResultDtoSchema,
+  CheckResultDtoSchema, MonitorTestResultDtoSchema,
+  CreateMonitorRequestSchema, UpdateMonitorRequestSchema,
 } from '../schemas.js'
-import {fetchAllPages, fetchPage, fetchCursorPage, fetchSingle} from '../http.js'
+import {fetchAllPages, fetchPage, fetchCursorPage, fetchSingle, fetchVoid} from '../http.js'
+import {validateRequest} from '../validation.js'
 
 export class Monitors {
   constructor(private readonly client: ApiClient) {}
@@ -30,17 +32,19 @@ export class Monitors {
 
   /** Create a new monitor. */
   async create(body: CreateMonitorRequest): Promise<MonitorDto> {
+    validateRequest(CreateMonitorRequestSchema, body, 'monitors.create')
     return fetchSingle(this.client, 'POST', '/api/v1/monitors', MonitorDtoSchema, body)
   }
 
   /** Update an existing monitor. */
   async update(id: string | number, body: UpdateMonitorRequest): Promise<MonitorDto> {
+    validateRequest(UpdateMonitorRequestSchema, body, 'monitors.update')
     return fetchSingle(this.client, 'PUT', `/api/v1/monitors/${id}`, MonitorDtoSchema, body)
   }
 
   /** Delete a monitor. */
   async delete(id: string | number): Promise<void> {
-    await fetchSingle(this.client, 'DELETE', `/api/v1/monitors/${id}`, MonitorDtoSchema)
+    return fetchVoid(this.client, `/api/v1/monitors/${id}`)
   }
 
   /** Pause a monitor. */
@@ -54,8 +58,8 @@ export class Monitors {
   }
 
   /** Trigger an ad-hoc test run for a monitor. */
-  async test(id: string | number): Promise<AssertionTestResultDto> {
-    return fetchSingle(this.client, 'POST', `/api/v1/monitors/${id}/test`, AssertionTestResultDtoSchema)
+  async test(id: string | number): Promise<MonitorTestResultDto> {
+    return fetchSingle(this.client, 'POST', `/api/v1/monitors/${id}/test`, MonitorTestResultDtoSchema)
   }
 
   /** List check results (cursor-paginated). */

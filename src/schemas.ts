@@ -32,6 +32,7 @@ export const CheckResultDtoSchema = schemas.CheckResultDto
 export const DashboardOverviewDtoSchema = schemas.DashboardOverviewDto
 export const DeployLockDtoSchema = schemas.DeployLockDto
 export const AssertionTestResultDtoSchema = schemas.AssertionTestResultDto
+export const MonitorTestResultDtoSchema = schemas.MonitorTestResultDto
 
 // ── Status Page DTO schemas ─────────────────────────────────────────
 
@@ -108,7 +109,7 @@ export const SingleValueResponseApiKeyCreateResponseSchema = schemas.SingleValue
 export const SingleValueResponseServiceSubscriptionDtoSchema = schemas.SingleValueResponseServiceSubscriptionDto
 export const SingleValueResponseDashboardOverviewDtoSchema = schemas.SingleValueResponseDashboardOverviewDto
 export const SingleValueResponseDeployLockDtoSchema = schemas.SingleValueResponseDeployLockDto
-export const SingleValueResponseAssertionTestResultDtoSchema = schemas.SingleValueResponseMonitorTestResultDto
+export const SingleValueResponseMonitorTestResultDtoSchema = schemas.SingleValueResponseMonitorTestResultDto
 export const SingleValueResponseStatusPageDtoSchema = schemas.SingleValueResponseStatusPageDto
 export const SingleValueResponseStatusPageComponentDtoSchema = schemas.SingleValueResponseStatusPageComponentDto
 export const SingleValueResponseStatusPageComponentGroupDtoSchema = schemas.SingleValueResponseStatusPageComponentGroupDto

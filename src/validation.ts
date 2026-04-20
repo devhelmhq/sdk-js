@@ -2,6 +2,29 @@ import {z, type ZodType} from 'zod'
 import {DevhelmError} from './errors.js'
 
 /**
+ * Validate a request body against its Zod schema before sending to the API.
+ *
+ * Catches invalid inputs (missing required fields, bad enums, constraint
+ * violations) client-side with a clear error instead of letting the API
+ * return a generic 400/422.
+ */
+export function validateRequest<T>(schema: ZodType<T>, data: unknown, context?: string): T {
+  const result = schema.safeParse(data)
+  if (result.success) return result.data
+
+  const issues = result.error.issues
+    .map((i) => `${i.path.join('.')}: ${i.message}`)
+    .join('; ')
+  const ctx = context ? ` (${context})` : ''
+  throw new DevhelmError(
+    'VALIDATION',
+    `Request validation failed${ctx}: ${issues}`,
+    0,
+    JSON.stringify(result.error.issues),
+  )
+}
+
+/**
  * Parse a value through a Zod schema, throwing DevhelmError on failure.
  *
  * Used for runtime validation of API responses — catches shape mismatches

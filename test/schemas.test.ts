@@ -23,7 +23,6 @@ const validStatusPageDto = {
   incidentMode: 'MANUAL',
   componentCount: 0, subscriberCount: 0,
   overallStatus: 'OPERATIONAL',
-  publicUrl: 'https://status.example.com',
   createdAt: '2024-01-01T00:00:00Z', updatedAt: '2024-01-01T00:00:00Z',
 }
 
@@ -31,7 +30,7 @@ const validIncidentDto = {
   id: '550e8400-e29b-41d4-a716-446655440000',
   statusPageId: '550e8400-e29b-41d4-a716-446655440001',
   title: 'Outage', status: 'INVESTIGATING', impact: 'MAJOR',
-  body: 'text', scheduled: false,
+  scheduled: false,
   scheduledFor: null, scheduledUntil: null,
   autoResolve: false, incidentId: null,
   startedAt: '2024-01-01T00:00:00Z',
@@ -39,7 +38,6 @@ const validIncidentDto = {
   resolvedAt: null,
   createdByUserId: null,
   postmortemBody: null, postmortemUrl: null,
-  notifySubscribers: true,
   updates: [], affectedComponents: [],
   createdAt: '2024-01-01T00:00:00Z', updatedAt: '2024-01-01T00:00:00Z',
 }
@@ -486,13 +484,20 @@ describe('enum validation rejects unknown values', () => {
   })
 })
 
-// ── Passthrough behavior (API adds new fields) ─────────────────────
+// ── Strict objects (no passthrough on generated DTOs) ──────────────
+// Generated schemas emit `.strict()` so unknown fields are REJECTED
+// (not silently stripped). This catches API schema drift at the parse
+// boundary instead of allowing new server-side fields to vanish into
+// consumer code that hasn't been updated yet.
 
-describe('passthrough preserves unknown fields', () => {
-  it('StatusPageDto passes through future API fields', () => {
+describe('strict object schemas reject unknown fields', () => {
+  it('StatusPageDto rejects unknown fields on parse', () => {
     const raw = {...validStatusPageDto, futureField: 'new-api-version-data'}
-    const result = schemas.StatusPageDto.parse(raw)
-    expect((result as Record<string, unknown>).futureField).toBe('new-api-version-data')
+    const result = schemas.StatusPageDto.safeParse(raw)
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(result.error.issues[0].code).toBe('unrecognized_keys')
+    }
   })
 })
 

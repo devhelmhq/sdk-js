@@ -14,7 +14,7 @@ const pass = (s: z.ZodTypeAny, v: unknown) => expect(s.safeParse(v).success).toB
 
 // ── Valid fixtures ──────────────────────────────────────────────────
 
-const validHttpConfig = {monitorType: 'HTTP', url: 'https://example.com', method: 'GET'}
+const validHttpConfig = {url: 'https://example.com', method: 'GET'}
 const validSlackConfig = {channelType: 'slack', webhookUrl: 'https://hooks.slack.com/xxx', mentionText: null}
 const validBranding = {
   logoUrl: null, faviconUrl: null, brandColor: null, pageBackground: null,
@@ -121,7 +121,7 @@ const validStatusPageComponentGroupDto = {
 
 const validStatusPageIncidentDto = {
   id: UUID, statusPageId: UUID2, title: 'Outage',
-  status: 'INVESTIGATING', impact: 'MAJOR', body: 'text',
+  status: 'INVESTIGATING', impact: 'MAJOR',
   scheduled: false, autoResolve: false,
   startedAt: ISO, createdAt: ISO, updatedAt: ISO,
 }
@@ -672,9 +672,9 @@ describe('CreateNotificationPolicyRequest negative validation', () => {
   it('rejects wrong type for name (number)', () => fail(s, {...valid, name: 42}))
   it('rejects name longer than 255 chars', () => fail(s, {...valid, name: 'x'.repeat(256)}))
 
-  it('rejects missing matchRules', () => {
+  it('accepts missing matchRules (catch-all policy)', () => {
     const {matchRules: _, ...rest} = valid
-    fail(s, rest)
+    pass(s, rest)
   })
 
   it('rejects wrong type for matchRules (string)', () => fail(s, {...valid, matchRules: 'all'}))

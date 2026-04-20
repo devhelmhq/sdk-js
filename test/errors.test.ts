@@ -68,4 +68,23 @@ describe('errorFromResponse', () => {
     const err = errorFromResponse(400, '{"error":"Validation failed"}')
     expect(err.message).toBe('Validation failed')
   })
+
+  it('falls back to raw body when JSON parses to a non-object shape', () => {
+    const err = errorFromResponse(500, '"plain string body"')
+    expect(err.code).toBe('API')
+    expect(err.message).toBe('"plain string body"')
+  })
+
+  it('preserves unknown extra fields without crashing', () => {
+    const err = errorFromResponse(
+      400,
+      '{"message":"Bad","traceId":"abc-123","timestamp":1700000000}',
+    )
+    expect(err.message).toBe('Bad')
+  })
+
+  it('ignores fields with wrong types (rejects non-string message)', () => {
+    const err = errorFromResponse(500, '{"message":42,"detail":"info"}')
+    expect(err.message).toBe('{"message":42,"detail":"info"}')
+  })
 })

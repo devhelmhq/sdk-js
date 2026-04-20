@@ -79,11 +79,15 @@ export async function apiPatch(client: ApiClient, path: string, body: unknown, p
 // ── Validated response helpers ──────────────────────────────────────
 
 /**
- * Fetch + validate + unwrap a SingleValueResponse: { data: T } → T
+ * Fetch + validate + unwrap a SingleValueResponse: { data: T } → T.
+ *
+ * DELETE is intentionally excluded — it returns no body, so the schema
+ * argument would be unused and the caller would receive `undefined` as `T`.
+ * Use `fetchVoid` for DELETE operations instead.
  */
 export async function fetchSingle<T>(
   client: ApiClient,
-  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
+  method: 'GET' | 'POST' | 'PUT' | 'PATCH',
   path: string,
   schema: ZodType<T>,
   body?: unknown,
@@ -103,11 +107,18 @@ export async function fetchSingle<T>(
     case 'PATCH':
       raw = await apiPatch(client, path, body)
       break
-    case 'DELETE':
-      await apiDelete(client, path)
-      return undefined as unknown as T
   }
   return parseSingle(schema, raw, path)
+}
+
+/**
+ * DELETE wrapper that returns nothing. Use this instead of `fetchSingle` for
+ * delete operations — the API returns 204/empty body, so there is no payload
+ * to validate and the resulting `Promise<void>` matches every caller's
+ * expectation without an unsafe `undefined as unknown as T` cast.
+ */
+export async function fetchVoid(client: ApiClient, path: string): Promise<void> {
+  await apiDelete(client, path)
 }
 
 // ── Pagination helpers (validated) ──────────────────────────────────
