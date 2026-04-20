@@ -46,7 +46,8 @@ async function main() {
   const spec = JSON.parse(readFileSync(SPEC_PATH, 'utf8'))
 
   console.log('Preprocessing (via @devhelm/openapi-tools)...')
-  const { flattened, inlinedDiscriminators } = preprocessSpec(spec)
+  const { flattened, inlinedDiscriminators, inlinedNullableDeductions } =
+    preprocessSpec(spec)
   if (flattened.length > 0) {
     console.log(`  Flattened circular oneOf: ${flattened.join(', ')}`)
   }
@@ -55,6 +56,11 @@ async function main() {
       `  Inlined discriminator subtypes: ${inlinedDiscriminators
         .map((u) => `${u.parent}(${u.discriminator})`)
         .join(', ')}`,
+    )
+  }
+  if (inlinedNullableDeductions && inlinedNullableDeductions.length > 0) {
+    console.log(
+      `  Inlined nullable deduction refs for: ${inlinedNullableDeductions.join(', ')}`,
     )
   }
 
@@ -70,8 +76,11 @@ async function main() {
     options: {
       shouldExportAllSchemas: true,
       // Strict objects — generated `.passthrough()` masks unknown fields
-      // and breaks `z.infer` narrowing for SDK consumers.
+      // and breaks `z.infer` narrowing for SDK consumers. Required so
+      // `z.union([...])` over polymorphic subtypes rejects wrong variants
+      // instead of silently stripping extras.
       additionalPropertiesDefaultValue: false,
+      strictObjects: true,
     },
   })
 
