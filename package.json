@@ -49,7 +49,6 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@devhelm/openapi-tools": "file:../mini/packages/openapi-tools",
     "@types/node": "^25.6.0",
     "@typescript-eslint/eslint-plugin": "^8.58.1",
     "@typescript-eslint/parser": "^8.58.1",

@@ -17,7 +17,7 @@ import { readFileSync, writeFileSync, unlinkSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execSync } from 'node:child_process'
-import { preprocessSpec } from '@devhelm/openapi-tools/preprocess'
+import { preprocessSpec } from './lib/preprocess.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(__dirname, '..')

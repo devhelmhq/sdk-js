@@ -672,9 +672,9 @@ describe('CreateNotificationPolicyRequest negative validation', () => {
   it('rejects wrong type for name (number)', () => fail(s, {...valid, name: 42}))
   it('rejects name longer than 255 chars', () => fail(s, {...valid, name: 'x'.repeat(256)}))
 
-  it('rejects missing matchRules', () => {
+  it('accepts missing matchRules (catch-all policy)', () => {
     const {matchRules: _, ...rest} = valid
-    fail(s, rest)
+    pass(s, rest)
   })
 
   it('rejects wrong type for matchRules (string)', () => fail(s, {...valid, matchRules: 'all'}))
