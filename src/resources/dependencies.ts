@@ -21,7 +21,13 @@ export class Dependencies {
     return fetchSingle(this.client, 'GET', `/api/v1/service-subscriptions/${id}`, ServiceSubscriptionDtoSchema)
   }
 
-  /** Track (subscribe to) a service from the catalog by its slug. */
+  /**
+   * Track (subscribe to) a service from the catalog by its slug.
+   *
+   * The endpoint takes no request body per the OpenAPI spec — the slug is
+   * the entire payload. If a body is added upstream, wire `validateRequest`
+   * here against the new schema before sending.
+   */
   async track(slug: string): Promise<ServiceSubscriptionDto> {
     return fetchSingle(this.client, 'POST', `/api/v1/service-subscriptions/${slug}`, ServiceSubscriptionDtoSchema)
   }

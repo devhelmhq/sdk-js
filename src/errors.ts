@@ -1,4 +1,6 @@
 import {z} from 'zod'
+import {ErrorResponseSchema} from './schemas.js'
+import type {ErrorResponse} from './types.js'
 
 /**
  * Error taxonomy for the DevHelm SDK (P4 — see
@@ -10,17 +12,6 @@ import {z} from 'zod'
  *
  * All three inherit from `DevhelmError` for catch-all sites.
  */
-
-const ErrorBodySchema = z
-  .object({
-    message: z.string().optional(),
-    error: z.string().optional(),
-    detail: z.string().optional(),
-  })
-  // Error envelope is intentionally permissive: pass through unknown fields
-  // (e.g. a future `traceId`) rather than raising on the response we already
-  // know is broken. Strict-fail would be self-defeating here.
-  .passthrough()
 
 export class DevhelmError extends Error {
   constructor(message: string) {
@@ -58,50 +49,70 @@ export class DevhelmValidationError extends DevhelmError {
   }
 }
 
+export interface DevhelmApiErrorOptions {
+  /** Human-readable detail extracted from the response body, if any. */
+  detail?: string
+  /**
+   * Parsed canonical error envelope (`ErrorResponse` from the OpenAPI
+   * spec) when the response matched the contract. `undefined` for
+   * non-conforming bodies (e.g. proxy 502 HTML, plain text, or JSON
+   * shapes that predate the canonical envelope).
+   */
+  body?: ErrorResponse
+  /**
+   * Raw response body — the unparsed JSON value or response text.
+   * Always populated when there was a body. Useful for debugging
+   * non-conforming responses without losing the original shape.
+   */
+  rawBody?: unknown
+}
+
 export class DevhelmApiError extends DevhelmError {
   readonly status: number
   readonly detail: string | undefined
-  readonly body: unknown
+  readonly body: ErrorResponse | undefined
+  readonly rawBody: unknown
 
-  constructor(message: string, status: number, options?: {detail?: string; body?: unknown}) {
+  constructor(message: string, status: number, options?: DevhelmApiErrorOptions) {
     super(message)
     this.name = 'DevhelmApiError'
     this.status = status
     this.detail = options?.detail
     this.body = options?.body
+    this.rawBody = options?.rawBody
   }
 }
 
 export class DevhelmAuthError extends DevhelmApiError {
-  constructor(message: string, status: number, options?: {detail?: string; body?: unknown}) {
+  constructor(message: string, status: number, options?: DevhelmApiErrorOptions) {
     super(message, status, options)
     this.name = 'DevhelmAuthError'
   }
 }
 
 export class DevhelmNotFoundError extends DevhelmApiError {
-  constructor(message: string, status: number, options?: {detail?: string; body?: unknown}) {
+  constructor(message: string, status: number, options?: DevhelmApiErrorOptions) {
     super(message, status, options)
     this.name = 'DevhelmNotFoundError'
   }
 }
 
 export class DevhelmConflictError extends DevhelmApiError {
-  constructor(message: string, status: number, options?: {detail?: string; body?: unknown}) {
+  constructor(message: string, status: number, options?: DevhelmApiErrorOptions) {
     super(message, status, options)
     this.name = 'DevhelmConflictError'
   }
 }
 
 export class DevhelmRateLimitError extends DevhelmApiError {
-  constructor(message: string, status: number, options?: {detail?: string; body?: unknown}) {
+  constructor(message: string, status: number, options?: DevhelmApiErrorOptions) {
     super(message, status, options)
     this.name = 'DevhelmRateLimitError'
   }
 }
 
 export class DevhelmServerError extends DevhelmApiError {
-  constructor(message: string, status: number, options?: {detail?: string; body?: unknown}) {
+  constructor(message: string, status: number, options?: DevhelmApiErrorOptions) {
     super(message, status, options)
     this.name = 'DevhelmServerError'
   }
@@ -119,31 +130,62 @@ export class DevhelmTransportError extends DevhelmError {
   }
 }
 
+// Lenient shape used to extract a human-readable message + detail from
+// non-conforming error bodies (e.g. older deployments that emit
+// `{message, error, detail}` instead of the canonical `ErrorResponse`,
+// or proxies that include their own shape).
+const FallbackErrorShape = z
+  .object({
+    message: z.string().optional(),
+    error: z.string().optional(),
+    detail: z.string().optional(),
+  })
+  .passthrough()
+
 export function errorFromResponse(status: number, body: string): DevhelmApiError {
   let message = `HTTP ${status}`
   let detail: string | undefined
-  let parsedBody: unknown = body || undefined
+  let parsed: ErrorResponse | undefined
+  let rawBody: unknown = body || undefined
 
-  try {
-    const json: unknown = JSON.parse(body)
-    const result = ErrorBodySchema.safeParse(json)
-    if (result.success) {
-      message = result.data.message ?? result.data.error ?? message
-      detail = result.data.detail
-      parsedBody = json
-    } else if (body) {
+  if (body) {
+    try {
+      const json: unknown = JSON.parse(body)
+      rawBody = json
+
+      // Prefer the canonical envelope (P1 — typed `ErrorResponse`).
+      const canonical = ErrorResponseSchema.safeParse(json)
+      if (canonical.success) {
+        parsed = canonical.data
+        message = parsed.message
+      } else {
+        // Fall back to the lenient shape so older API versions and
+        // proxy-injected error bodies still produce useful messages.
+        const fallback = FallbackErrorShape.safeParse(json)
+        if (fallback.success) {
+          message = fallback.data.message ?? fallback.data.error ?? message
+          detail = fallback.data.detail
+          // Treat empty extracted message as "no useful info" — don't
+          // overwrite the HTTP fallback unless we got *something*.
+          if (message === `HTTP ${status}` && !fallback.data.message && !fallback.data.error) {
+            message = body
+          }
+        } else {
+          message = body
+        }
+      }
+    } catch {
       message = body
     }
-  } catch {
-    if (body) message = body
   }
 
-  if (status === 401 || status === 403) return new DevhelmAuthError(message, status, {detail, body: parsedBody})
-  if (status === 404) return new DevhelmNotFoundError(message, status, {detail, body: parsedBody})
-  if (status === 409) return new DevhelmConflictError(message, status, {detail, body: parsedBody})
-  if (status === 429) return new DevhelmRateLimitError(message, status, {detail, body: parsedBody})
-  if (status >= 500) return new DevhelmServerError(message, status, {detail, body: parsedBody})
-  return new DevhelmApiError(message, status, {detail, body: parsedBody})
+  const opts: DevhelmApiErrorOptions = {detail, body: parsed, rawBody}
+  if (status === 401 || status === 403) return new DevhelmAuthError(message, status, opts)
+  if (status === 404) return new DevhelmNotFoundError(message, status, opts)
+  if (status === 409) return new DevhelmConflictError(message, status, opts)
+  if (status === 429) return new DevhelmRateLimitError(message, status, opts)
+  if (status >= 500) return new DevhelmServerError(message, status, opts)
+  return new DevhelmApiError(message, status, opts)
 }
 
 // ────────────────────────────────────────────────────────────────────────

@@ -85,6 +85,7 @@ export type AffectedComponent = z.infer<typeof S.AffectedComponentSchema>
 
 export type TestChannelResult = z.infer<typeof S.TestChannelResultSchema>
 export type WebhookTestResult = z.infer<typeof S.WebhookTestResultSchema>
+export type ErrorResponse = z.infer<typeof S.ErrorResponseSchema>
 
 // ── Pagination ─────────────────────────────────────────────────────────
 

@@ -106,6 +106,36 @@ describe('errorFromResponse', () => {
     const err = errorFromResponse(500, '{"message":42,"detail":"info"}')
     expect(err.message).toBe('{"message":42,"detail":"info"}')
   })
+
+  it('parses canonical ErrorResponse body and exposes it as typed `.body`', () => {
+    const err = errorFromResponse(
+      404,
+      JSON.stringify({status: 404, message: 'Monitor not found', timestamp: 1700000000000}),
+    )
+    expect(err.body).toBeDefined()
+    expect(err.body?.status).toBe(404)
+    expect(err.body?.message).toBe('Monitor not found')
+    expect(err.body?.timestamp).toBe(1700000000000)
+  })
+
+  it('leaves `.body` undefined for non-conforming error envelopes (lenient fallback)', () => {
+    // Old shape — has `message` and `detail` but no `status` or `timestamp`.
+    const err = errorFromResponse(400, '{"message":"Name is required","detail":"field: name"}')
+    expect(err.body).toBeUndefined()
+    expect(err.message).toBe('Name is required')
+    expect(err.detail).toBe('field: name')
+  })
+
+  it('always populates `.rawBody` when there was a response body', () => {
+    const json = errorFromResponse(500, '{"message":"boom","custom":"x"}')
+    expect(json.rawBody).toEqual({message: 'boom', custom: 'x'})
+
+    const text = errorFromResponse(502, 'Bad Gateway')
+    expect(text.rawBody).toBe('Bad Gateway')
+
+    const empty = errorFromResponse(500, '')
+    expect(empty.rawBody).toBeUndefined()
+  })
 })
 
 describe('DevhelmValidationError', () => {

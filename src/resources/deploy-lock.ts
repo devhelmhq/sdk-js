@@ -14,10 +14,18 @@ export class DeployLock {
     return fetchSingle(this.client, 'POST', '/api/v1/deploy/lock', DeployLockDtoSchema, body)
   }
 
-  /** Get the current deploy lock status (returns null if no lock is held). */
+  /**
+   * Get the current deploy lock status (returns null if no lock is held).
+   *
+   * The API returns `{ data: DeployLockDto | null }` — `data` may be null
+   * when no lock is held (the controller returns `Optional.orElse(null)`),
+   * so this is the one envelope in the SDK whose `data` field is nullable.
+   * The envelope itself is `.strict()` (P1): unknown top-level fields fail
+   * loud rather than being silently dropped.
+   */
   async current(): Promise<DeployLockDto | null> {
     const raw = await apiGet(this.client, '/api/v1/deploy/lock')
-    const envelope = z.object({data: DeployLockDtoSchema.nullable()}).passthrough()
+    const envelope = z.object({data: DeployLockDtoSchema.nullable()}).strict()
     const parsed = parse(envelope, raw, '/api/v1/deploy/lock')
     return parsed.data
   }

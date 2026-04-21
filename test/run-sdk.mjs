@@ -47,7 +47,9 @@ async function run() {
     case 'incidents.get': return client.incidents.get(rest[0])
     case 'incidents.create': return client.incidents.create(JSON.parse(rest[0]))
     case 'incidents.resolve': return client.incidents.resolve(rest[0], rest[1] ? {body: rest[1]} : undefined)
-    case 'incidents.delete': return void await client.incidents.delete(rest[0])
+    // NOTE: incidents have no DELETE endpoint by design (resolve is terminal).
+    // See `docs/openapi/monitoring-api.json` — only GET/POST exist on the
+    // incidents collection and item paths.
 
     // ── Alert Channels ──
     case 'alert-channels.list': return client.alertChannels.list()
@@ -129,6 +131,7 @@ async function run() {
     case 'status-pages.create': return client.statusPages.create(JSON.parse(rest[0]))
     case 'status-pages.update': return client.statusPages.update(rest[0], JSON.parse(rest[1]))
     case 'status-pages.delete': return void await client.statusPages.delete(rest[0])
+    case 'status-pages.reorder-layout': return void await client.statusPages.reorderLayout(rest[0], JSON.parse(rest[1]))
 
     // ── Status Page Components ──
     case 'status-pages.components.list': return client.statusPages.components.list(rest[0])

@@ -92,6 +92,14 @@ export const ReorderPageLayoutRequestSchema = schemas.ReorderPageLayoutRequest
 export const TestChannelResultSchema = schemas.TestChannelResult
 export const WebhookTestResultSchema = schemas.WebhookTestResult
 
+// ── Canonical error envelope ────────────────────────────────────────
+//
+// The API returns this exact shape on every non-2xx response (see
+// `mini/api/.../GlobalExceptionHandler.java`). We expose the generated
+// schema so `DevhelmApiError.body` can be typed against the spec rather
+// than `unknown`.
+export const ErrorResponseSchema = schemas.ErrorResponse
+
 // SingleValueResponse wrappers
 export const SingleValueResponseMonitorDtoSchema = schemas.SingleValueResponseMonitorDto
 export const SingleValueResponseIncidentDetailDtoSchema = schemas.SingleValueResponseIncidentDetailDto
