@@ -110,20 +110,43 @@ describe('errorFromResponse', () => {
   it('parses canonical ErrorResponse body and exposes it as typed `.body`', () => {
     const err = errorFromResponse(
       404,
-      JSON.stringify({status: 404, message: 'Monitor not found', timestamp: 1700000000000}),
+      JSON.stringify({
+        status: 404,
+        code: 'NOT_FOUND',
+        message: 'Monitor not found',
+        timestamp: 1700000000000,
+        requestId: '5b6f7a8c-1234-4d5e-9f0a-1b2c3d4e5f6a',
+      }),
     )
     expect(err.body).toBeDefined()
     expect(err.body?.status).toBe(404)
+    expect(err.body?.code).toBe('NOT_FOUND')
     expect(err.body?.message).toBe('Monitor not found')
     expect(err.body?.timestamp).toBe(1700000000000)
+    expect(err.code).toBe('NOT_FOUND')
+    expect(err.requestId).toBe('5b6f7a8c-1234-4d5e-9f0a-1b2c3d4e5f6a')
   })
 
   it('leaves `.body` undefined for non-conforming error envelopes (lenient fallback)', () => {
-    // Old shape — has `message` and `detail` but no `status` or `timestamp`.
+    // Old shape — has `message` and `detail` but no `status`, `code`, or `timestamp`.
     const err = errorFromResponse(400, '{"message":"Name is required","detail":"field: name"}')
     expect(err.body).toBeUndefined()
     expect(err.message).toBe('Name is required')
     expect(err.detail).toBe('field: name')
+    expect(err.code).toBeUndefined()
+  })
+
+  it('extracts `code` and `requestId` from lenient fallback shape too', () => {
+    const err = errorFromResponse(
+      400,
+      JSON.stringify({
+        message: 'Bad request',
+        code: 'VALIDATION',
+        request_id: 'snake-case-uuid',
+      }),
+    )
+    expect(err.code).toBe('VALIDATION')
+    expect(err.requestId).toBe('snake-case-uuid')
   })
 
   it('always populates `.rawBody` when there was a response body', () => {
@@ -135,6 +158,45 @@ describe('errorFromResponse', () => {
 
     const empty = errorFromResponse(500, '')
     expect(empty.rawBody).toBeUndefined()
+  })
+
+  describe('requestId resolution', () => {
+    it('uses header value when provided, even with non-JSON body', () => {
+      const err = errorFromResponse(502, '<html>Bad Gateway</html>', {
+        requestId: 'header-uuid-1',
+      })
+      expect(err.requestId).toBe('header-uuid-1')
+      expect(err.code).toBeUndefined()
+    })
+
+    it('header value takes precedence over body value', () => {
+      const err = errorFromResponse(
+        500,
+        JSON.stringify({
+          status: 500,
+          code: 'INTERNAL',
+          message: 'boom',
+          timestamp: 0,
+          requestId: 'body-uuid',
+        }),
+        {requestId: 'header-uuid-2'},
+      )
+      expect(err.requestId).toBe('header-uuid-2')
+    })
+
+    it('falls back to body value when header is absent', () => {
+      const err = errorFromResponse(
+        500,
+        JSON.stringify({
+          status: 500,
+          code: 'INTERNAL',
+          message: 'boom',
+          timestamp: 0,
+          requestId: 'body-uuid-3',
+        }),
+      )
+      expect(err.requestId).toBe('body-uuid-3')
+    })
   })
 })
 

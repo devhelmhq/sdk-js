@@ -127,9 +127,26 @@ describe('Devhelm client', () => {
 
 describe('Devhelm exports', () => {
   it('exports error classes', async () => {
-    const {DevhelmError, AuthError} = await import('../src/index.js')
+    const {
+      DevhelmError,
+      DevhelmApiError,
+      DevhelmAuthError,
+      DevhelmNotFoundError,
+      DevhelmConflictError,
+      DevhelmRateLimitError,
+      DevhelmServerError,
+      DevhelmTransportError,
+      DevhelmValidationError,
+    } = await import('../src/index.js')
     expect(DevhelmError).toBeDefined()
-    expect(AuthError).toBeDefined()
+    expect(DevhelmApiError).toBeDefined()
+    expect(DevhelmAuthError).toBeDefined()
+    expect(DevhelmNotFoundError).toBeDefined()
+    expect(DevhelmConflictError).toBeDefined()
+    expect(DevhelmRateLimitError).toBeDefined()
+    expect(DevhelmServerError).toBeDefined()
+    expect(DevhelmTransportError).toBeDefined()
+    expect(DevhelmValidationError).toBeDefined()
   })
 
   it('exports type constructors', async () => {

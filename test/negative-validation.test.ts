@@ -43,7 +43,7 @@ const validAlertChannelDto = {
 
 const validNotificationPolicyDto = {
   id: UUID, organizationId: 1, name: 'Default',
-  matchRules: [{type: 'all'}],
+  matchRules: [{type: 'severity_gte', value: 'DOWN'}],
   escalation: {steps: [{delayMinutes: 0, channelIds: [UUID]}]},
   enabled: true, priority: 0, createdAt: ISO, updatedAt: ISO,
 }
@@ -658,7 +658,7 @@ describe('NotificationPolicyDto negative validation', () => {
 describe('CreateNotificationPolicyRequest negative validation', () => {
   const s = schemas.CreateNotificationPolicyRequest
   const valid = {
-    name: 'Policy', matchRules: [{type: 'all'}],
+    name: 'Policy', matchRules: [{type: 'severity_gte', value: 'DOWN'}],
     escalation: {steps: [{delayMinutes: 0, channelIds: [UUID]}]},
   }
 
