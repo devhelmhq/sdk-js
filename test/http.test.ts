@@ -1,7 +1,7 @@
 import {describe, it, expect} from 'vitest'
 import {z} from 'zod'
 import {parse, parseSingle, parsePage, parseCursorPage} from '../src/validation.js'
-import {DevhelmError} from '../src/errors.js'
+import {DevhelmError, DevhelmValidationError} from '../src/errors.js'
 
 const ItemSchema = z.object({id: z.number(), name: z.string()})
 
@@ -21,14 +21,14 @@ describe('parse', () => {
     expect(() => parse(ItemSchema, {id: 'not-a-number', name: 123})).toThrow(DevhelmError)
   })
 
-  it('includes field path in error message', () => {
+  it('includes field path in error message and structured issues', () => {
     try {
       parse(ItemSchema, {id: 'bad'})
       expect.fail('should throw')
     } catch (e) {
-      expect(e).toBeInstanceOf(DevhelmError)
-      expect((e as DevhelmError).code).toBe('VALIDATION')
-      expect((e as DevhelmError).message).toContain('id')
+      expect(e).toBeInstanceOf(DevhelmValidationError)
+      expect((e as DevhelmValidationError).message).toContain('id')
+      expect((e as DevhelmValidationError).issues.length).toBeGreaterThan(0)
     }
   })
 

@@ -144,6 +144,7 @@ const SDK_ENDPOINTS: ReadonlyArray<readonly [method: string, path: string]> = [
   ['put', '/api/v1/status-pages/{pageId}/components/{componentId}'],
   ['delete', '/api/v1/status-pages/{pageId}/components/{componentId}'],
   ['put', '/api/v1/status-pages/{pageId}/components/reorder'],
+  ['put', '/api/v1/status-pages/{pageId}/layout/reorder'],
 
   // status-pages > groups
   ['get', '/api/v1/status-pages/{pageId}/groups'],

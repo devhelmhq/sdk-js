@@ -394,7 +394,6 @@ describe('parseSingle with real schemas', () => {
       expect.fail('should throw')
     } catch (e) {
       expect(e).toBeInstanceOf(DevhelmError)
-      expect((e as DevhelmError).code).toBe('VALIDATION')
       expect((e as DevhelmError).message).toMatch(/data\.id/)
     }
   })

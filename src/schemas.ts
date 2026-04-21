@@ -5,8 +5,6 @@
  * This mirrors the dashboard's apiSchemas.ts bridge pattern.
  */
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore — generated file has @ts-nocheck
 import {schemas} from './generated/schemas.js'
 export {schemas}
 
@@ -94,6 +92,14 @@ export const ReorderPageLayoutRequestSchema = schemas.ReorderPageLayoutRequest
 export const TestChannelResultSchema = schemas.TestChannelResult
 export const WebhookTestResultSchema = schemas.WebhookTestResult
 
+// ── Canonical error envelope ────────────────────────────────────────
+//
+// The API returns this exact shape on every non-2xx response (see
+// `mini/api/.../GlobalExceptionHandler.java`). We expose the generated
+// schema so `DevhelmApiError.body` can be typed against the spec rather
+// than `unknown`.
+export const ErrorResponseSchema = schemas.ErrorResponse
+
 // SingleValueResponse wrappers
 export const SingleValueResponseMonitorDtoSchema = schemas.SingleValueResponseMonitorDto
 export const SingleValueResponseIncidentDetailDtoSchema = schemas.SingleValueResponseIncidentDetailDto
@@ -145,6 +151,11 @@ export const CursorPageCheckResultDtoSchema = schemas.CursorPageCheckResultDto
 
 // ── Generic pagination schema factory ───────────────────────────────
 
+// Envelope factories for callers that want to compose response schemas
+// outside of the built-in `parseSingle`/`parsePage`/`parseCursorPage`
+// helpers. All envelopes are `.strict()` (P1): an unknown top-level
+// field on a successful response surfaces as a typed Zod error so spec
+// drift fails loud at the SDK boundary.
 export function tableValueResultSchema<T extends z.ZodTypeAny>(itemSchema: T) {
   return z.object({
     data: z.array(itemSchema),
@@ -152,11 +163,11 @@ export function tableValueResultSchema<T extends z.ZodTypeAny>(itemSchema: T) {
     hasPrev: z.boolean(),
     totalElements: z.number().int().nullable(),
     totalPages: z.number().int().nullable(),
-  }).passthrough()
+  }).strict()
 }
 
 export function singleValueResponseSchema<T extends z.ZodTypeAny>(itemSchema: T) {
-  return z.object({data: itemSchema}).passthrough()
+  return z.object({data: itemSchema}).strict()
 }
 
 export function cursorPageSchema<T extends z.ZodTypeAny>(itemSchema: T) {
@@ -164,5 +175,5 @@ export function cursorPageSchema<T extends z.ZodTypeAny>(itemSchema: T) {
     data: z.array(itemSchema),
     nextCursor: z.string().nullable(),
     hasMore: z.boolean(),
-  }).passthrough()
+  }).strict()
 }

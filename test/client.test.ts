@@ -69,6 +69,7 @@ describe('Devhelm client', () => {
     expect(typeof client.statusPages.create).toBe('function')
     expect(typeof client.statusPages.update).toBe('function')
     expect(typeof client.statusPages.delete).toBe('function')
+    expect(typeof client.statusPages.reorderLayout).toBe('function')
   })
 
   it('statusPages expose sub-resource accessors', () => {

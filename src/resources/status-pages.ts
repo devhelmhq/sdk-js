@@ -7,7 +7,7 @@ import type {
   CreateStatusPageIncidentUpdateRequest, PublishStatusPageIncidentRequest,
   StatusPageSubscriberDto, AdminAddSubscriberRequest,
   StatusPageCustomDomainDto, AddCustomDomainRequest,
-  ReorderComponentsRequest,
+  ReorderComponentsRequest, ReorderPageLayoutRequest,
   Page,
 } from '../types.js'
 import {
@@ -19,7 +19,7 @@ import {
   CreateStatusPageIncidentRequestSchema, UpdateStatusPageIncidentRequestSchema,
   CreateStatusPageIncidentUpdateRequestSchema, PublishStatusPageIncidentRequestSchema,
   AdminAddSubscriberRequestSchema, AddCustomDomainRequestSchema,
-  ReorderComponentsRequestSchema,
+  ReorderComponentsRequestSchema, ReorderPageLayoutRequestSchema,
 } from '../schemas.js'
 import {apiPut, fetchAllPages, fetchPage, fetchSingle, fetchVoid} from '../http.js'
 import {validateRequest} from '../validation.js'
@@ -217,5 +217,15 @@ export class StatusPages {
   /** Delete a status page. */
   async delete(id: string | number): Promise<void> {
     return fetchVoid(this.client, `${BASE}/${id}`)
+  }
+
+  /**
+   * Batch-reorder the page layout: top-level sections (groups + ungrouped
+   * components) and, optionally, within-group component ordering. Returns
+   * 204 No Content on success.
+   */
+  async reorderLayout(id: string | number, body: ReorderPageLayoutRequest): Promise<void> {
+    validateRequest(ReorderPageLayoutRequestSchema, body, 'statusPages.reorderLayout')
+    await apiPut(this.client, `${BASE}/${id}/layout/reorder`, body)
   }
 }
