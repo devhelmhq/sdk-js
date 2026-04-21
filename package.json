@@ -25,12 +25,13 @@
   "scripts": {
     "typegen": "node scripts/generate-types.js",
     "schemagen": "node scripts/generate-schemas.js",
-    "build": "npm run typegen && npm run schemagen && tsc -b",
+    "codegen": "npm run typegen && npm run schemagen",
+    "build": "npm run codegen && tsc -b",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "npm run codegen && tsc --noEmit",
     "prepublishOnly": "npm run build"
   },
   "engines": {
