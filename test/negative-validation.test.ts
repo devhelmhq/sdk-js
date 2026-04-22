@@ -115,7 +115,7 @@ const validStatusPageComponentDto = {
 
 const validStatusPageComponentGroupDto = {
   id: UUID, statusPageId: UUID2, name: 'Infrastructure',
-  displayOrder: 0, pageOrder: 0, collapsed: false,
+  displayOrder: 0, pageOrder: 0, defaultOpen: true,
   createdAt: ISO, updatedAt: ISO,
 }
 
@@ -1627,13 +1627,13 @@ describe('StatusPageComponentGroupDto negative validation', () => {
   it('rejects wrong type for displayOrder (string)', () =>
     fail(s, {...validStatusPageComponentGroupDto, displayOrder: 'first'}))
 
-  it('rejects missing collapsed', () => {
-    const {collapsed: _, ...rest} = validStatusPageComponentGroupDto
+  it('rejects missing defaultOpen', () => {
+    const {defaultOpen: _, ...rest} = validStatusPageComponentGroupDto
     fail(s, rest)
   })
 
-  it('rejects wrong type for collapsed (string)', () =>
-    fail(s, {...validStatusPageComponentGroupDto, collapsed: 'no'}))
+  it('rejects wrong type for defaultOpen (string)', () =>
+    fail(s, {...validStatusPageComponentGroupDto, defaultOpen: 'no'}))
 
   it('rejects components with invalid nested component', () =>
     fail(s, {...validStatusPageComponentGroupDto, components: [{id: 'not-uuid', name: 'Bad'}]}))
@@ -1879,7 +1879,7 @@ describe('CreateStatusPageComponentGroupRequest negative validation', () => {
   it('rejects description longer than 500 chars', () => fail(s, {...valid, description: 'x'.repeat(501)}))
   it('rejects wrong type for displayOrder (string)', () => fail(s, {...valid, displayOrder: 'first'}))
   it('rejects non-integer displayOrder', () => fail(s, {...valid, displayOrder: 1.5}))
-  it('rejects wrong type for collapsed (string)', () => fail(s, {...valid, collapsed: 'no'}))
+  it('rejects wrong type for defaultOpen (string)', () => fail(s, {...valid, defaultOpen: 'no'}))
 })
 
 describe('UpdateStatusPageComponentGroupRequest negative validation', () => {
@@ -1889,13 +1889,13 @@ describe('UpdateStatusPageComponentGroupRequest negative validation', () => {
   it('accepts null for name', () => pass(s, {name: null}))
   it('accepts null for description', () => pass(s, {description: null}))
   it('accepts null for displayOrder', () => pass(s, {displayOrder: null}))
-  it('accepts null for collapsed', () => pass(s, {collapsed: null}))
+  it('accepts null for defaultOpen', () => pass(s, {defaultOpen: null}))
 
   it('rejects wrong type for name (number)', () => fail(s, {name: 42}))
   it('rejects name longer than 255 chars', () => fail(s, {name: 'x'.repeat(256)}))
   it('rejects description longer than 500 chars', () => fail(s, {description: 'x'.repeat(501)}))
   it('rejects wrong type for displayOrder (string)', () => fail(s, {displayOrder: 'first'}))
-  it('rejects wrong type for collapsed (string)', () => fail(s, {collapsed: 'no'}))
+  it('rejects wrong type for defaultOpen (string)', () => fail(s, {defaultOpen: 'no'}))
 })
 
 describe('CreateStatusPageIncidentRequest negative validation', () => {

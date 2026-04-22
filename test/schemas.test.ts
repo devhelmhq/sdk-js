@@ -508,7 +508,7 @@ describe('cross-schema type references', () => {
       id: '550e8400-e29b-41d4-a716-446655440000',
       statusPageId: '550e8400-e29b-41d4-a716-446655440001',
       name: 'Infrastructure', description: null,
-      displayOrder: 0, pageOrder: 0, collapsed: false,
+      displayOrder: 0, pageOrder: 0, defaultOpen: true,
       components: [validComponentDto],
       createdAt: '2024-01-01T00:00:00Z', updatedAt: '2024-01-01T00:00:00Z',
     }
@@ -524,7 +524,7 @@ describe('cross-schema type references', () => {
       id: '550e8400-e29b-41d4-a716-446655440000',
       statusPageId: '550e8400-e29b-41d4-a716-446655440001',
       name: 'Infra', description: null,
-      displayOrder: 0, pageOrder: 0, collapsed: false,
+      displayOrder: 0, pageOrder: 0, defaultOpen: true,
       components: [{id: 'not-uuid', name: 'Bad'}],
       createdAt: '2024-01-01T00:00:00Z', updatedAt: '2024-01-01T00:00:00Z',
     }
