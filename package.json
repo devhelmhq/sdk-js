@@ -1,6 +1,6 @@
 {
   "name": "@devhelm/sdk",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "description": "DevHelm SDK for TypeScript and JavaScript — typed client for monitors, incidents, alerting, and more",
   "author": "DevHelm <hello@devhelm.io>",
   "license": "MIT",
