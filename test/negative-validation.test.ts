@@ -43,7 +43,7 @@ const validAlertChannelDto = {
 
 const validNotificationPolicyDto = {
   id: UUID, organizationId: 1, name: 'Default',
-  matchRules: [{type: 'all'}],
+  matchRules: [{type: 'severity_gte', value: 'DOWN'}],
   escalation: {steps: [{delayMinutes: 0, channelIds: [UUID]}]},
   enabled: true, priority: 0, createdAt: ISO, updatedAt: ISO,
 }
@@ -658,7 +658,7 @@ describe('NotificationPolicyDto negative validation', () => {
 describe('CreateNotificationPolicyRequest negative validation', () => {
   const s = schemas.CreateNotificationPolicyRequest
   const valid = {
-    name: 'Policy', matchRules: [{type: 'all'}],
+    name: 'Policy', matchRules: [{type: 'severity_gte', value: 'DOWN'}],
     escalation: {steps: [{delayMinutes: 0, channelIds: [UUID]}]},
   }
 
@@ -805,7 +805,10 @@ describe('CreateEnvironmentRequest negative validation', () => {
   it('rejects slug starting with hyphen', () => fail(s, {...valid, slug: '-staging'}))
   it('rejects slug longer than 100 chars', () => fail(s, {...valid, slug: 'a'.repeat(101)}))
 
-  it('rejects missing isDefault', () => fail(s, {name: 'Staging', slug: 'staging'}))
+  // `isDefault` is optional on the API contract (server defaults to false). The Zod
+  // schema mirrors that — omitting the field is valid; only a wrong *type* is rejected.
+  it('accepts missing isDefault (optional, server defaults to false)', () =>
+    pass(s, {name: 'Staging', slug: 'staging'}))
   it('rejects wrong type for isDefault (string)', () => fail(s, {...valid, isDefault: 'yes'}))
 
   it('rejects wrong type for variables (string)', () => fail(s, {...valid, variables: 'bad'}))

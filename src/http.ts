@@ -49,8 +49,27 @@ export async function checkedFetch(
   }
   const {data, error, response} = resolved
   if (error || !response.ok) {
-    const body = typeof error === 'string' ? error : await response.text().catch(() => '')
-    throw errorFromResponse(response.status, body)
+    // openapi-fetch parses JSON error bodies into `error` (object); for non-JSON
+    // it leaves `error` as a string or undefined. Re-serialize objects so
+    // `errorFromResponse` can extract `code`/`requestId`/`message` uniformly,
+    // and only fall back to `response.text()` when openapi-fetch handed us
+    // nothing (which also indicates the body wasn't already consumed).
+    let body: string
+    if (typeof error === 'string') {
+      body = error
+    } else if (error !== undefined && error !== null) {
+      try {
+        body = JSON.stringify(error)
+      } catch {
+        body = String(error)
+      }
+    } else {
+      body = await response.text().catch(() => '')
+    }
+    const requestIdHeader = response.headers.get('x-request-id')
+    throw errorFromResponse(response.status, body, {
+      requestId: requestIdHeader ?? undefined,
+    })
   }
   return data
 }

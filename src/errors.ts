@@ -14,9 +14,20 @@ import type {ErrorResponse} from './types.js'
  */
 
 export class DevhelmError extends Error {
-  constructor(message: string) {
+  /**
+   * Coarse machine-readable category for switching on error class without
+   * `instanceof` chains. Standardised across every {@link DevhelmError}
+   * subclass so `err.code` is always populated:
+   *   - {@link DevhelmValidationError} → `"VALIDATION"`
+   *   - {@link DevhelmTransportError}  → `"TRANSPORT"`
+   *   - {@link DevhelmApiError}        → server-supplied (e.g. `"NOT_FOUND"`)
+   */
+  readonly code: string
+
+  constructor(message: string, code = 'ERROR') {
     super(message)
     this.name = 'DevhelmError'
+    this.code = code
   }
 }
 
@@ -30,7 +41,7 @@ export class DevhelmValidationError extends DevhelmError {
   readonly issues: ReadonlyArray<ValidationIssue>
 
   constructor(message: string, issues: ReadonlyArray<ValidationIssue> = []) {
-    super(message)
+    super(message, 'VALIDATION')
     this.name = 'DevhelmValidationError'
     this.issues = issues
   }
@@ -53,6 +64,18 @@ export interface DevhelmApiErrorOptions {
   /** Human-readable detail extracted from the response body, if any. */
   detail?: string
   /**
+   * Coarse machine-readable category from `ErrorResponse.code`
+   * (e.g. `NOT_FOUND`, `RATE_LIMITED`). Switch on this — never on
+   * `message` — when adapting behaviour to specific error classes.
+   */
+  code?: string
+  /**
+   * Per-request id from the API's `X-Request-Id` response header
+   * (and mirrored in `ErrorResponse.requestId`). Always include it
+   * when filing a support ticket.
+   */
+  requestId?: string
+  /**
    * Parsed canonical error envelope (`ErrorResponse` from the OpenAPI
    * spec) when the response matched the contract. `undefined` for
    * non-conforming bodies (e.g. proxy 502 HTML, plain text, or JSON
@@ -70,14 +93,18 @@ export interface DevhelmApiErrorOptions {
 export class DevhelmApiError extends DevhelmError {
   readonly status: number
   readonly detail: string | undefined
+  readonly requestId: string | undefined
   readonly body: ErrorResponse | undefined
   readonly rawBody: unknown
 
   constructor(message: string, status: number, options?: DevhelmApiErrorOptions) {
-    super(message)
+    // Server-supplied code wins; fall back to a generic API-error label so
+    // `err.code` is never undefined for catch sites switching on category.
+    super(message, options?.code ?? 'API_ERROR')
     this.name = 'DevhelmApiError'
     this.status = status
     this.detail = options?.detail
+    this.requestId = options?.requestId
     this.body = options?.body
     this.rawBody = options?.rawBody
   }
@@ -120,7 +147,7 @@ export class DevhelmServerError extends DevhelmApiError {
 
 export class DevhelmTransportError extends DevhelmError {
   constructor(message: string, options?: {cause?: unknown}) {
-    super(message)
+    super(message, 'TRANSPORT')
     this.name = 'DevhelmTransportError'
     if (options?.cause !== undefined) {
       // Node 16+ supports the standard cause chain; we set it explicitly so
@@ -139,12 +166,30 @@ const FallbackErrorShape = z
     message: z.string().optional(),
     error: z.string().optional(),
     detail: z.string().optional(),
+    code: z.string().optional(),
+    requestId: z.string().optional(),
+    request_id: z.string().optional(),
   })
   .passthrough()
 
-export function errorFromResponse(status: number, body: string): DevhelmApiError {
+/**
+ * Map an HTTP error response to a typed {@link DevhelmApiError} subclass.
+ *
+ * `requestId` is the value of the `X-Request-Id` response header. Pass it
+ * in from the call site so the SDK still surfaces the id even when the
+ * server returned a non-JSON body (e.g. an HTML error page from a
+ * misconfigured proxy). The header takes precedence over any value found
+ * in the body.
+ */
+export function errorFromResponse(
+  status: number,
+  body: string,
+  options?: {requestId?: string},
+): DevhelmApiError {
   let message = `HTTP ${status}`
   let detail: string | undefined
+  let code: string | undefined
+  let bodyRequestId: string | undefined
   let parsed: ErrorResponse | undefined
   let rawBody: unknown = body || undefined
 
@@ -153,20 +198,19 @@ export function errorFromResponse(status: number, body: string): DevhelmApiError
       const json: unknown = JSON.parse(body)
       rawBody = json
 
-      // Prefer the canonical envelope (P1 — typed `ErrorResponse`).
       const canonical = ErrorResponseSchema.safeParse(json)
       if (canonical.success) {
         parsed = canonical.data
         message = parsed.message
+        code = parsed.code
+        bodyRequestId = parsed.requestId ?? undefined
       } else {
-        // Fall back to the lenient shape so older API versions and
-        // proxy-injected error bodies still produce useful messages.
         const fallback = FallbackErrorShape.safeParse(json)
         if (fallback.success) {
           message = fallback.data.message ?? fallback.data.error ?? message
           detail = fallback.data.detail
-          // Treat empty extracted message as "no useful info" — don't
-          // overwrite the HTTP fallback unless we got *something*.
+          code = fallback.data.code
+          bodyRequestId = fallback.data.requestId ?? fallback.data.request_id
           if (message === `HTTP ${status}` && !fallback.data.message && !fallback.data.error) {
             message = body
           }
@@ -179,7 +223,13 @@ export function errorFromResponse(status: number, body: string): DevhelmApiError
     }
   }
 
-  const opts: DevhelmApiErrorOptions = {detail, body: parsed, rawBody}
+  const opts: DevhelmApiErrorOptions = {
+    detail,
+    code,
+    requestId: options?.requestId ?? bodyRequestId,
+    body: parsed,
+    rawBody,
+  }
   if (status === 401 || status === 403) return new DevhelmAuthError(message, status, opts)
   if (status === 404) return new DevhelmNotFoundError(message, status, opts)
   if (status === 409) return new DevhelmConflictError(message, status, opts)
@@ -187,13 +237,3 @@ export function errorFromResponse(status: number, body: string): DevhelmApiError
   if (status >= 500) return new DevhelmServerError(message, status, opts)
   return new DevhelmApiError(message, status, opts)
 }
-
-// ────────────────────────────────────────────────────────────────────────
-// Backwards-compat aliases. We have no shipping consumers yet so these are
-// here purely so internal scripts/tests keep working until they're migrated
-// off the legacy names; flip them to deprecation warnings once the rest of
-// the surface is updated.
-// ────────────────────────────────────────────────────────────────────────
-
-export const AuthError = DevhelmAuthError
-export type DevhelmErrorCode = 'AUTH' | 'NOT_FOUND' | 'CONFLICT' | 'VALIDATION' | 'API'
