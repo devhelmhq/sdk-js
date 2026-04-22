@@ -133,7 +133,9 @@ describe('errorFromResponse', () => {
     expect(err.body).toBeUndefined()
     expect(err.message).toBe('Name is required')
     expect(err.detail).toBe('field: name')
-    expect(err.code).toBeUndefined()
+    // Server-supplied code is absent → SDK falls back to the API_ERROR sentinel
+    // so callers can switch on `err.code` uniformly.
+    expect(err.code).toBe('API_ERROR')
   })
 
   it('extracts `code` and `requestId` from lenient fallback shape too', () => {
@@ -166,7 +168,7 @@ describe('errorFromResponse', () => {
         requestId: 'header-uuid-1',
       })
       expect(err.requestId).toBe('header-uuid-1')
-      expect(err.code).toBeUndefined()
+      expect(err.code).toBe('API_ERROR')
     })
 
     it('header value takes precedence over body value', () => {

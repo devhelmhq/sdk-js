@@ -14,9 +14,20 @@ import type {ErrorResponse} from './types.js'
  */
 
 export class DevhelmError extends Error {
-  constructor(message: string) {
+  /**
+   * Coarse machine-readable category for switching on error class without
+   * `instanceof` chains. Standardised across every {@link DevhelmError}
+   * subclass so `err.code` is always populated:
+   *   - {@link DevhelmValidationError} → `"VALIDATION"`
+   *   - {@link DevhelmTransportError}  → `"TRANSPORT"`
+   *   - {@link DevhelmApiError}        → server-supplied (e.g. `"NOT_FOUND"`)
+   */
+  readonly code: string
+
+  constructor(message: string, code = 'ERROR') {
     super(message)
     this.name = 'DevhelmError'
+    this.code = code
   }
 }
 
@@ -30,7 +41,7 @@ export class DevhelmValidationError extends DevhelmError {
   readonly issues: ReadonlyArray<ValidationIssue>
 
   constructor(message: string, issues: ReadonlyArray<ValidationIssue> = []) {
-    super(message)
+    super(message, 'VALIDATION')
     this.name = 'DevhelmValidationError'
     this.issues = issues
   }
@@ -82,17 +93,17 @@ export interface DevhelmApiErrorOptions {
 export class DevhelmApiError extends DevhelmError {
   readonly status: number
   readonly detail: string | undefined
-  readonly code: string | undefined
   readonly requestId: string | undefined
   readonly body: ErrorResponse | undefined
   readonly rawBody: unknown
 
   constructor(message: string, status: number, options?: DevhelmApiErrorOptions) {
-    super(message)
+    // Server-supplied code wins; fall back to a generic API-error label so
+    // `err.code` is never undefined for catch sites switching on category.
+    super(message, options?.code ?? 'API_ERROR')
     this.name = 'DevhelmApiError'
     this.status = status
     this.detail = options?.detail
-    this.code = options?.code
     this.requestId = options?.requestId
     this.body = options?.body
     this.rawBody = options?.rawBody
@@ -136,7 +147,7 @@ export class DevhelmServerError extends DevhelmApiError {
 
 export class DevhelmTransportError extends DevhelmError {
   constructor(message: string, options?: {cause?: unknown}) {
-    super(message)
+    super(message, 'TRANSPORT')
     this.name = 'DevhelmTransportError'
     if (options?.cause !== undefined) {
       // Node 16+ supports the standard cause chain; we set it explicitly so
