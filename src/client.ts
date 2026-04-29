@@ -2,6 +2,7 @@ import type {DevhelmConfig} from './types.js'
 import {buildClient} from './http.js'
 import {Monitors} from './resources/monitors.js'
 import {Incidents} from './resources/incidents.js'
+import {Forensics} from './resources/forensics.js'
 import {AlertChannels} from './resources/alert-channels.js'
 import {NotificationPolicies} from './resources/notification-policies.js'
 import {Environments} from './resources/environments.js'
@@ -36,6 +37,7 @@ import {StatusPages} from './resources/status-pages.js'
 export class Devhelm {
   readonly monitors: Monitors
   readonly incidents: Incidents
+  readonly forensics: Forensics
   readonly alertChannels: AlertChannels
   readonly notificationPolicies: NotificationPolicies
   readonly environments: Environments
@@ -53,6 +55,7 @@ export class Devhelm {
     const client = buildClient(config)
     this.monitors = new Monitors(client)
     this.incidents = new Incidents(client)
+    this.forensics = new Forensics(client)
     this.alertChannels = new AlertChannels(client)
     this.notificationPolicies = new NotificationPolicies(client)
     this.environments = new Environments(client)

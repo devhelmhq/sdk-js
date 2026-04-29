@@ -32,6 +32,14 @@ export const DeployLockDtoSchema = schemas.DeployLockDto
 export const AssertionTestResultDtoSchema = schemas.AssertionTestResultDto
 export const MonitorTestResultDtoSchema = schemas.MonitorTestResultDto
 
+// ── Forensic DTO schemas ────────────────────────────────────────────
+
+export const IncidentTimelineDtoSchema = schemas.IncidentTimelineDto
+export const CheckTraceDtoSchema = schemas.CheckTraceDto
+export const PolicySnapshotDtoSchema = schemas.PolicySnapshotDto
+export const RuleEvaluationDtoSchema = schemas.RuleEvaluationDto
+export const IncidentStateTransitionDtoSchema = schemas.IncidentStateTransitionDto
+
 // ── Status Page DTO schemas ─────────────────────────────────────────
 
 export const StatusPageDtoSchema = schemas.StatusPageDto

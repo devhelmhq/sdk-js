@@ -34,6 +34,11 @@ export type {
   DeployLockDto,
   AssertionTestResultDto,
   MonitorTestResultDto,
+  IncidentTimelineDto,
+  CheckTraceDto,
+  PolicySnapshotDto,
+  RuleEvaluationDto,
+  IncidentStateTransitionDto,
   CreateMonitorRequest,
   UpdateMonitorRequest,
   CreateManualIncidentRequest,
@@ -90,6 +95,8 @@ export * as schemas from './schemas.js'
 // Re-export resource classes for advanced usage (custom composition)
 export {Monitors} from './resources/monitors.js'
 export {Incidents} from './resources/incidents.js'
+export {Forensics} from './resources/forensics.js'
+export type {RuleEvaluationFilters, TransitionFilters} from './resources/forensics.js'
 export {AlertChannels} from './resources/alert-channels.js'
 export {NotificationPolicies} from './resources/notification-policies.js'
 export {Environments} from './resources/environments.js'
