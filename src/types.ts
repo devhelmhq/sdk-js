@@ -26,6 +26,14 @@ export type DeployLockDto = z.infer<typeof S.DeployLockDtoSchema>
 export type AssertionTestResultDto = z.infer<typeof S.AssertionTestResultDtoSchema>
 export type MonitorTestResultDto = z.infer<typeof S.MonitorTestResultDtoSchema>
 
+// ── Forensic DTOs ─────────────────────────────────────────────────────
+
+export type IncidentTimelineDto = z.infer<typeof S.IncidentTimelineDtoSchema>
+export type CheckTraceDto = z.infer<typeof S.CheckTraceDtoSchema>
+export type PolicySnapshotDto = z.infer<typeof S.PolicySnapshotDtoSchema>
+export type RuleEvaluationDto = z.infer<typeof S.RuleEvaluationDtoSchema>
+export type IncidentStateTransitionDto = z.infer<typeof S.IncidentStateTransitionDtoSchema>
+
 // ── Status Page DTOs ──────────────────────────────────────────────────
 
 export type StatusPageDto = z.infer<typeof S.StatusPageDtoSchema>
