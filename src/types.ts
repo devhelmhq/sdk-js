@@ -122,4 +122,19 @@ export interface DevhelmConfig {
   orgId?: string
   /** Workspace ID header. Defaults to env DEVHELM_WORKSPACE_ID or "1". */
   workspaceId?: string
+  /**
+   * Devtool surface identifier reported to the API for adoption / version
+   * telemetry. Defaults to `"sdk-js"`. Wrappers (a CLI, an MCP server, a
+   * custom SDK build) can override this so their traffic is attributed
+   * correctly. End users of the SDK should leave it unset.
+   * See https://devhelm.io/telemetry for the wire contract and opt-out.
+   */
+  surface?: string
+  /** Surface version. Defaults to the installed `@devhelm/sdk` package version. */
+  surfaceVersion?: string
+  /**
+   * Surface-specific metadata forwarded as `X-DevHelm-<key>` headers
+   * (e.g. an MCP wrapper might attach `{ "Mcp-Client": "cursor" }`).
+   */
+  surfaceMetadata?: Record<string, string>
 }

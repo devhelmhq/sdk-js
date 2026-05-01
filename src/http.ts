@@ -4,11 +4,42 @@ import type {paths} from './generated/api.js'
 import type {DevhelmConfig, Page, CursorPage} from './types.js'
 import {DevhelmTransportError, errorFromResponse} from './errors.js'
 import {parseSingle, parsePage, parseCursorPage} from './validation.js'
+import {SDK_VERSION} from './version.js'
 
 const DEFAULT_BASE_URL = 'https://api.devhelm.io'
 const DEFAULT_PAGE_SIZE = 200
+const DEFAULT_SURFACE = 'sdk-js'
 
 export type ApiClient = ReturnType<typeof createClient<paths>>
+
+/**
+ * Build the X-DevHelm-Surface* telemetry headers for one client instance.
+ *
+ * Returns an empty object when DEVHELM_TELEMETRY=0 so the API receives no
+ * surface signal at all. Opt-out is intentionally a single env var rather
+ * than a constructor flag — users opt out once for the whole process, not
+ * per call site. See https://devhelm.io/telemetry.
+ */
+function buildTelemetryHeaders(config: DevhelmConfig): Record<string, string> {
+  if ((process.env['DEVHELM_TELEMETRY'] ?? '').trim() === '0') {
+    return {}
+  }
+  const headers: Record<string, string> = {
+    'X-DevHelm-Surface': config.surface ?? DEFAULT_SURFACE,
+    'X-DevHelm-Surface-Version': config.surfaceVersion ?? SDK_VERSION,
+    // Always identify the underlying SDK so the API can distinguish a raw
+    // SDK call from a wrapper-on-top-of-SDK call (the latter overrides
+    // Surface but the SDK fingerprint stays available for client-version
+    // skew debugging).
+    'X-DevHelm-Sdk-Name': DEFAULT_SURFACE,
+  }
+  if (config.surfaceMetadata) {
+    for (const [key, value] of Object.entries(config.surfaceMetadata)) {
+      headers[`X-DevHelm-${key}`] = value
+    }
+  }
+  return headers
+}
 
 export function buildClient(config: DevhelmConfig): ApiClient {
   const baseUrl = (config.baseUrl ?? DEFAULT_BASE_URL).replace(/\/+$/, '')
@@ -22,6 +53,7 @@ export function buildClient(config: DevhelmConfig): ApiClient {
       'Content-Type': 'application/json',
       'x-phelm-org-id': orgId,
       'x-phelm-workspace-id': workspaceId,
+      ...buildTelemetryHeaders(config),
     },
   })
 }
