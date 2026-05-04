@@ -167,6 +167,13 @@ async function run() {
     case 'status-pages.subscribers.add': return client.statusPages.subscribers.add(rest[0], JSON.parse(rest[1]))
     case 'status-pages.subscribers.remove': return void await client.statusPages.subscribers.remove(rest[0], rest[1])
 
+    // ── Forensics ──
+    case 'forensics.incident-timeline': return client.forensics.incidentTimeline(rest[0])
+    case 'forensics.check-trace': return client.forensics.checkTrace(rest[0])
+    case 'forensics.policy-snapshot': return client.forensics.policySnapshot(rest[0])
+    case 'forensics.monitor-rule-evaluations': return client.forensics.monitorRuleEvaluations(rest[0], rest[1] ? JSON.parse(rest[1]) : {})
+    case 'forensics.monitor-transitions': return client.forensics.monitorTransitions(rest[0], rest[1] ? JSON.parse(rest[1]) : {})
+
     // ── Status Page Domains ──
     case 'status-pages.domains.list': return client.statusPages.domains.list(rest[0])
     case 'status-pages.domains.add': return client.statusPages.domains.add(rest[0], JSON.parse(rest[1]))
