@@ -50,7 +50,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           branch="chore/update-api-types-$(date +%Y%m%d%H%M%S)"
           git checkout -b "$branch"
-          git add src/generated/api.ts docs/openapi/monitoring-api.json
+          git add -f src/generated/api.ts docs/openapi/monitoring-api.json
           git commit -m "chore: update generated API types from latest spec"
           git push -u origin "$branch"
           gh pr create \
