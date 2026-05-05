@@ -38,6 +38,7 @@ const monitor = await client.monitors.create({
   // re-deploy, or `TERRAFORM` if it lives in `.tf` you re-apply.
   managedBy: 'DASHBOARD',
 })
+// Note: `monitor.currentStatus` is null until the first probe runs (~1 minute); display `monitor.currentStatus ?? 'PENDING'`.
 
 // Get a single monitor
 const fetched = await client.monitors.get(monitor.id)
