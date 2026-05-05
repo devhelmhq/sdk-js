@@ -6,7 +6,24 @@ export type Schemas = components['schemas']
 
 // ── Response DTOs ──────────────────────────────────────────────────────
 
-export type MonitorDto = z.infer<typeof S.MonitorDtoSchema>
+type MonitorDtoBase = z.infer<typeof S.MonitorDtoSchema>
+
+/**
+ * Full monitor representation returned by GET, POST, and PUT endpoints.
+ *
+ * `currentStatus` is the derived health of the monitor (e.g. `"up"`,
+ * `"degraded"`, `"down"`). It is populated after the first probe runs —
+ * typically ~1 minute after create — so on a freshly-created monitor it
+ * may be `null` or `undefined`. Always provide a fallback when displaying
+ * it, e.g. `monitor.currentStatus ?? 'PENDING'`.
+ */
+export type MonitorDto = MonitorDtoBase & {
+  /**
+   * Populated after the first probe (~1 minute after create). May be
+   * null or undefined immediately after create.
+   */
+  currentStatus?: string | null
+}
 export type IncidentDto = z.infer<typeof S.IncidentDtoSchema>
 export type IncidentDetailDto = z.infer<typeof S.IncidentDetailDtoSchema>
 export type AlertChannelDto = z.infer<typeof S.AlertChannelDtoSchema>
