@@ -32,7 +32,11 @@ const monitor = await client.monitors.create({
   config: {url: 'https://api.example.com/health', method: 'GET'},
   frequencySeconds: 60,
   regions: ['us-east'],
-  managedBy: 'CLI',
+  // `managedBy` records who reconciles drift. `DASHBOARD` (default) means
+  // "no reconciliation" — the right answer for one-off scripts and most
+  // SDK use. Use `CLI` if this monitor lives in a `devhelm.yml` you
+  // re-deploy, or `TERRAFORM` if it lives in `.tf` you re-apply.
+  managedBy: 'DASHBOARD',
 })
 
 // Get a single monitor
