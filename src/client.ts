@@ -15,6 +15,7 @@ import {Dependencies} from './resources/dependencies.js'
 import {DeployLock} from './resources/deploy-lock.js'
 import {Status} from './resources/status.js'
 import {StatusPages} from './resources/status-pages.js'
+import {MaintenanceWindows} from './resources/maintenance-windows.js'
 
 /**
  * DevHelm API client.
@@ -50,6 +51,7 @@ export class Devhelm {
   readonly deployLock: DeployLock
   readonly status: Status
   readonly statusPages: StatusPages
+  readonly maintenanceWindows: MaintenanceWindows
 
   constructor(config: DevhelmConfig) {
     const client = buildClient(config)
@@ -68,5 +70,6 @@ export class Devhelm {
     this.deployLock = new DeployLock(client)
     this.status = new Status(client)
     this.statusPages = new StatusPages(client)
+    this.maintenanceWindows = new MaintenanceWindows(client)
   }
 }

@@ -131,6 +131,13 @@ const SDK_ENDPOINTS: ReadonlyArray<readonly [method: string, path: string]> = [
   // dashboard
   ['get', '/api/v1/dashboard/overview'],
 
+  // maintenance-windows
+  ['get', '/api/v1/maintenance-windows'],
+  ['post', '/api/v1/maintenance-windows'],
+  ['get', '/api/v1/maintenance-windows/{id}'],
+  ['put', '/api/v1/maintenance-windows/{id}'],
+  ['delete', '/api/v1/maintenance-windows/{id}'],
+
   // status-pages
   ['get', '/api/v1/status-pages'],
   ['post', '/api/v1/status-pages'],

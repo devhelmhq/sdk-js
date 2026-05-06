@@ -42,6 +42,7 @@ export type DashboardOverviewDto = z.infer<typeof S.DashboardOverviewDtoSchema>
 export type DeployLockDto = z.infer<typeof S.DeployLockDtoSchema>
 export type AssertionTestResultDto = z.infer<typeof S.AssertionTestResultDtoSchema>
 export type MonitorTestResultDto = z.infer<typeof S.MonitorTestResultDtoSchema>
+export type MaintenanceWindowDto = z.infer<typeof S.MaintenanceWindowDtoSchema>
 
 // ── Forensic DTOs ─────────────────────────────────────────────────────
 
@@ -86,6 +87,8 @@ export type CreateWebhookEndpointRequest = z.infer<typeof S.CreateWebhookEndpoin
 export type UpdateWebhookEndpointRequest = z.infer<typeof S.UpdateWebhookEndpointRequestSchema>
 export type CreateApiKeyRequest = z.infer<typeof S.CreateApiKeyRequestSchema>
 export type AcquireDeployLockRequest = z.infer<typeof S.AcquireDeployLockRequestSchema>
+export type CreateMaintenanceWindowRequest = z.infer<typeof S.CreateMaintenanceWindowRequestSchema>
+export type UpdateMaintenanceWindowRequest = z.infer<typeof S.UpdateMaintenanceWindowRequestSchema>
 
 // ── Status Page Request types ─────────────────────────────────────────
 

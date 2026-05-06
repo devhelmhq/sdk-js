@@ -19,6 +19,7 @@ describe('Devhelm client', () => {
     expect(client.deployLock).toBeDefined()
     expect(client.status).toBeDefined()
     expect(client.statusPages).toBeDefined()
+    expect(client.maintenanceWindows).toBeDefined()
   })
 
   it('resource modules have expected CRUD methods', () => {
