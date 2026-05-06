@@ -34,6 +34,7 @@ export type {
   DeployLockDto,
   AssertionTestResultDto,
   MonitorTestResultDto,
+  MaintenanceWindowDto,
   IncidentTimelineDto,
   CheckTraceDto,
   PolicySnapshotDto,
@@ -60,6 +61,8 @@ export type {
   UpdateWebhookEndpointRequest,
   CreateApiKeyRequest,
   AcquireDeployLockRequest,
+  CreateMaintenanceWindowRequest,
+  UpdateMaintenanceWindowRequest,
   StatusPageDto,
   StatusPageComponentDto,
   StatusPageComponentGroupDto,
@@ -109,3 +112,5 @@ export {Dependencies} from './resources/dependencies.js'
 export {DeployLock} from './resources/deploy-lock.js'
 export {Status} from './resources/status.js'
 export {StatusPages} from './resources/status-pages.js'
+export {MaintenanceWindows} from './resources/maintenance-windows.js'
+export type {MaintenanceWindowFilters} from './resources/maintenance-windows.js'

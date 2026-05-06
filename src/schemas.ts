@@ -31,6 +31,7 @@ export const DashboardOverviewDtoSchema = schemas.DashboardOverviewDto
 export const DeployLockDtoSchema = schemas.DeployLockDto
 export const AssertionTestResultDtoSchema = schemas.AssertionTestResultDto
 export const MonitorTestResultDtoSchema = schemas.MonitorTestResultDto
+export const MaintenanceWindowDtoSchema = schemas.MaintenanceWindowDto
 
 // ── Forensic DTO schemas ────────────────────────────────────────────
 
@@ -75,6 +76,8 @@ export const CreateWebhookEndpointRequestSchema = schemas.CreateWebhookEndpointR
 export const UpdateWebhookEndpointRequestSchema = schemas.UpdateWebhookEndpointRequest
 export const CreateApiKeyRequestSchema = schemas.CreateApiKeyRequest
 export const AcquireDeployLockRequestSchema = schemas.AcquireDeployLockRequest
+export const CreateMaintenanceWindowRequestSchema = schemas.CreateMaintenanceWindowRequest
+export const UpdateMaintenanceWindowRequestSchema = schemas.UpdateMaintenanceWindowRequest
 
 // ── Status Page Request schemas ─────────────────────────────────────
 
@@ -124,6 +127,7 @@ export const SingleValueResponseServiceSubscriptionDtoSchema = schemas.SingleVal
 export const SingleValueResponseDashboardOverviewDtoSchema = schemas.SingleValueResponseDashboardOverviewDto
 export const SingleValueResponseDeployLockDtoSchema = schemas.SingleValueResponseDeployLockDto
 export const SingleValueResponseMonitorTestResultDtoSchema = schemas.SingleValueResponseMonitorTestResultDto
+export const SingleValueResponseMaintenanceWindowDtoSchema = schemas.SingleValueResponseMaintenanceWindowDto
 export const SingleValueResponseStatusPageDtoSchema = schemas.SingleValueResponseStatusPageDto
 export const SingleValueResponseStatusPageComponentDtoSchema = schemas.SingleValueResponseStatusPageComponentDto
 export const SingleValueResponseStatusPageComponentGroupDtoSchema = schemas.SingleValueResponseStatusPageComponentGroupDto
@@ -147,6 +151,7 @@ export const TableValueResultWebhookEndpointDtoSchema = schemas.TableValueResult
 export const TableValueResultApiKeyDtoSchema = schemas.TableValueResultApiKeyDto
 export const TableValueResultServiceSubscriptionDtoSchema = schemas.TableValueResultServiceSubscriptionDto
 export const TableValueResultMonitorVersionDtoSchema = schemas.TableValueResultMonitorVersionDto
+export const TableValueResultMaintenanceWindowDtoSchema = schemas.TableValueResultMaintenanceWindowDto
 export const TableValueResultStatusPageDtoSchema = schemas.TableValueResultStatusPageDto
 export const TableValueResultStatusPageComponentDtoSchema = schemas.TableValueResultStatusPageComponentDto
 export const TableValueResultStatusPageComponentGroupDtoSchema = schemas.TableValueResultStatusPageComponentGroupDto
