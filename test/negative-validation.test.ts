@@ -293,9 +293,13 @@ describe('CreateMonitorRequest negative validation', () => {
   it('rejects wrong config type (string)', () => fail(s, {...valid, config: 'https://example.com'}))
   it('rejects wrong config type (array)', () => fail(s, {...valid, config: []}))
 
-  it('rejects missing managedBy', () => {
+  // managedBy is optional on CreateMonitorRequest — the API defaults to "API"
+  // (or to the surface-injected value, e.g. "CLI") when the field is omitted.
+  // See mono#369 / sdk-python#26: switching from required to optional was a
+  // deliberate ergonomic fix so users don't have to set this on every request.
+  it('accepts missing managedBy (server defaults to API)', () => {
     const {managedBy: _, ...rest} = valid
-    fail(s, rest)
+    pass(s, rest)
   })
 
   it('rejects invalid managedBy enum', () => fail(s, {...valid, managedBy: 'PULUMI'}))
