@@ -2490,11 +2490,8 @@ export interface components {
             id: string;
             /** @description Human-readable channel name */
             name: string;
-            /**
-             * @description Channel integration type (e.g. SLACK, PAGERDUTY, EMAIL)
-             * @enum {string}
-             */
-            channelType: "email" | "webhook" | "slack" | "pagerduty" | "opsgenie" | "teams" | "discord";
+            /** @description Channel integration type (e.g. SLACK, PAGERDUTY, EMAIL) */
+            channelType: string;
             displayConfig?: components["schemas"]["AlertChannelDisplayConfig"] | null;
             /**
              * Format: date-time
@@ -2508,11 +2505,8 @@ export interface components {
             updatedAt: string;
             /** @description SHA-256 hash of the channel config; use for change detection */
             configHash?: string | null;
-            /**
-             * @description Source that created/owns this channel: DASHBOARD, CLI, TERRAFORM, MCP, or API. Null on channels created before this attribution column existed.
-             * @enum {string|null}
-             */
-            managedBy?: "DASHBOARD" | "CLI" | "TERRAFORM" | "MCP" | "API" | null;
+            /** @description Source that created/owns this channel: DASHBOARD, CLI, TERRAFORM, MCP, or API. Null on channels created before this attribution column existed. */
+            managedBy?: string | null;
             /**
              * Format: date-time
              * @description Timestamp of the most recent delivery attempt
@@ -2544,16 +2538,10 @@ export interface components {
             channel: string;
             /** @description Alert channel type (e.g. slack, email, webhook) */
             channelType: string;
-            /**
-             * @description Current delivery status
-             * @enum {string}
-             */
-            status: "PENDING" | "DELIVERED" | "RETRY_PENDING" | "FAILED" | "CANCELLED";
-            /**
-             * @description Incident lifecycle event that triggered this delivery
-             * @enum {string}
-             */
-            eventType: "INCIDENT_CREATED" | "INCIDENT_RESOLVED" | "INCIDENT_REOPENED";
+            /** @description Current delivery status */
+            status: string;
+            /** @description Incident lifecycle event that triggered this delivery */
+            eventType: string;
             /**
              * Format: int32
              * @description 1-based escalation step this delivery belongs to
@@ -2671,11 +2659,8 @@ export interface components {
             type: string;
             /** @description Whether the assertion passed */
             passed: boolean;
-            /**
-             * @description Assertion severity
-             * @enum {string}
-             */
-            severity: "fail" | "warn";
+            /** @description Assertion severity */
+            severity: string;
             /** @description Human-readable result message */
             message?: string | null;
             /**
@@ -2690,18 +2675,12 @@ export interface components {
             actual?: string | null;
         };
         AssertionTestResultDto: {
-            /**
-             * @description Assertion type evaluated
-             * @enum {string}
-             */
-            assertionType: "status_code" | "response_time" | "body_contains" | "json_path" | "header_value" | "regex_body" | "dns_resolves" | "dns_response_time" | "dns_expected_ips" | "dns_expected_cname" | "dns_record_contains" | "dns_record_equals" | "dns_txt_contains" | "dns_min_answers" | "dns_max_answers" | "dns_response_time_warn" | "dns_ttl_low" | "dns_ttl_high" | "mcp_connects" | "mcp_response_time" | "mcp_has_capability" | "mcp_tool_available" | "mcp_min_tools" | "mcp_protocol_version" | "mcp_response_time_warn" | "mcp_tool_count_changed" | "ssl_expiry" | "response_size" | "redirect_count" | "redirect_target" | "response_time_warn" | "tcp_connects" | "tcp_response_time" | "tcp_response_time_warn" | "icmp_reachable" | "icmp_response_time" | "icmp_response_time_warn" | "icmp_packet_loss" | "heartbeat_received" | "heartbeat_max_interval" | "heartbeat_interval_drift" | "heartbeat_payload_contains";
+            /** @description Assertion type evaluated */
+            assertionType: string;
             /** @description Whether the assertion passed */
             passed: boolean;
-            /**
-             * @description Assertion severity: FAIL or WARN
-             * @enum {string}
-             */
-            severity: "fail" | "warn";
+            /** @description Assertion severity: FAIL or WARN */
+            severity: string;
             /** @description Human-readable result description */
             message: string;
             /** @description Expected value */
@@ -4170,21 +4149,12 @@ export interface components {
              * @description Organization this incident belongs to
              */
             organizationId: number;
-            /**
-             * @description Incident origin: MONITOR, SERVICE, or MANUAL
-             * @enum {string}
-             */
-            source: "AUTOMATIC" | "MANUAL" | "MONITORS" | "STATUS_DATA" | "RESOURCE_GROUP";
-            /**
-             * @description Current lifecycle status (OPEN, RESOLVED, etc.)
-             * @enum {string}
-             */
-            status: "WATCHING" | "TRIGGERED" | "CONFIRMED" | "RESOLVED";
-            /**
-             * @description Severity level: DOWN, DEGRADED, or MAINTENANCE
-             * @enum {string}
-             */
-            severity: "DOWN" | "DEGRADED" | "MAINTENANCE";
+            /** @description Incident origin: MONITOR, SERVICE, or MANUAL */
+            source: string;
+            /** @description Current lifecycle status (OPEN, RESOLVED, etc.) */
+            status: string;
+            /** @description Severity level: DOWN, DEGRADED, or MAINTENANCE */
+            severity: string;
             /** @description Short summary of the incident; null for auto-generated incidents */
             title?: string | null;
             /** @description Human-readable description of the trigger rule that fired */
@@ -4219,11 +4189,8 @@ export interface components {
             affectedComponents?: string[] | null;
             /** @description Short URL linking to the incident details */
             shortlink?: string | null;
-            /**
-             * @description How the incident was resolved (AUTO_RECOVERED, MANUAL, etc.)
-             * @enum {string|null}
-             */
-            resolutionReason?: "MANUAL" | "AUTO_RECOVERED" | "AUTO_RESOLVED" | null;
+            /** @description How the incident was resolved (AUTO_RECOVERED, MANUAL, etc.) */
+            resolutionReason?: string | null;
             /**
              * Format: date-time
              * @description Timestamp when the incident was detected or created
@@ -4461,13 +4428,10 @@ export interface components {
             id: string;
             /** Format: uuid */
             incidentId: string;
-            /** @enum {string|null} */
-            oldStatus?: "WATCHING" | "TRIGGERED" | "CONFIRMED" | "RESOLVED" | null;
-            /** @enum {string|null} */
-            newStatus?: "WATCHING" | "TRIGGERED" | "CONFIRMED" | "RESOLVED" | null;
+            oldStatus?: string | null;
+            newStatus?: string | null;
             body?: string | null;
-            /** @enum {string|null} */
-            createdBy?: "SYSTEM" | "USER" | null;
+            createdBy?: string | null;
             notifySubscribers: boolean;
             /** Format: date-time */
             createdAt: string;
@@ -4482,8 +4446,7 @@ export interface components {
             description: string;
             logoUrl: string;
             authType: string;
-            /** @enum {string} */
-            tierAvailability: "FREE" | "STARTER" | "PRO" | "TEAM" | "BUSINESS" | "ENTERPRISE";
+            tierAvailability: string;
             lifecycle: string;
             setupGuideUrl: string;
             configSchema: components["schemas"]["IntegrationConfigSchemaDto"];
@@ -4508,11 +4471,8 @@ export interface components {
             inviteId: number;
             /** @description Email address the invite was sent to */
             email: string;
-            /**
-             * @description Role that will be assigned to the invitee on acceptance
-             * @enum {string}
-             */
-            roleOffered: "OWNER" | "ADMIN" | "MEMBER";
+            /** @description Role that will be assigned to the invitee on acceptance */
+            roleOffered: string;
             /**
              * Format: date-time
              * @description Timestamp when the invite expires
@@ -4575,10 +4535,8 @@ export interface components {
             statusPageName: string;
             statusPageSlug: string;
             title: string;
-            /** @enum {string} */
-            status: "INVESTIGATING" | "IDENTIFIED" | "MONITORING" | "RESOLVED";
-            /** @enum {string} */
-            impact: "NONE" | "MINOR" | "MAJOR" | "CRITICAL";
+            status: string;
+            impact: string;
             scheduled: boolean;
             /** Format: date-time */
             publishedAt?: string | null;
@@ -4777,16 +4735,10 @@ export interface components {
             email: string;
             /** @description Member display name; null if not set */
             name?: string | null;
-            /**
-             * @description Member role within this organization (OWNER, ADMIN, MEMBER)
-             * @enum {string}
-             */
-            orgRole: "OWNER" | "ADMIN" | "MEMBER";
-            /**
-             * @description Membership status (ACTIVE, PENDING, SUSPENDED)
-             * @enum {string}
-             */
-            status: "INVITED" | "ACTIVE" | "SUSPENDED" | "LEFT" | "REMOVED" | "DECLINED";
+            /** @description Member role within this organization (OWNER, ADMIN, MEMBER) */
+            orgRole: string;
+            /** @description Membership status (ACTIVE, PENDING, SUSPENDED) */
+            status: string;
             /**
              * Format: date-time
              * @description Timestamp when the member was added to the organization
@@ -4816,11 +4768,9 @@ export interface components {
             id: string;
             /** Format: uuid */
             monitorId: string;
-            /** @enum {string} */
-            assertionType: "status_code" | "response_time" | "body_contains" | "json_path" | "header_value" | "regex_body" | "dns_resolves" | "dns_response_time" | "dns_expected_ips" | "dns_expected_cname" | "dns_record_contains" | "dns_record_equals" | "dns_txt_contains" | "dns_min_answers" | "dns_max_answers" | "dns_response_time_warn" | "dns_ttl_low" | "dns_ttl_high" | "mcp_connects" | "mcp_response_time" | "mcp_has_capability" | "mcp_tool_available" | "mcp_min_tools" | "mcp_protocol_version" | "mcp_response_time_warn" | "mcp_tool_count_changed" | "ssl_expiry" | "response_size" | "redirect_count" | "redirect_target" | "response_time_warn" | "tcp_connects" | "tcp_response_time" | "tcp_response_time_warn" | "icmp_reachable" | "icmp_response_time" | "icmp_response_time_warn" | "icmp_packet_loss" | "heartbeat_received" | "heartbeat_max_interval" | "heartbeat_interval_drift" | "heartbeat_payload_contains";
+            assertionType: string;
             config: components["schemas"]["BodyContainsAssertion"] | components["schemas"]["DnsExpectedCnameAssertion"] | components["schemas"]["DnsExpectedIpsAssertion"] | components["schemas"]["DnsMaxAnswersAssertion"] | components["schemas"]["DnsMinAnswersAssertion"] | components["schemas"]["DnsRecordContainsAssertion"] | components["schemas"]["DnsRecordEqualsAssertion"] | components["schemas"]["DnsResolvesAssertion"] | components["schemas"]["DnsResponseTimeAssertion"] | components["schemas"]["DnsResponseTimeWarnAssertion"] | components["schemas"]["DnsTtlHighAssertion"] | components["schemas"]["DnsTtlLowAssertion"] | components["schemas"]["DnsTxtContainsAssertion"] | components["schemas"]["HeaderValueAssertion"] | components["schemas"]["HeartbeatIntervalDriftAssertion"] | components["schemas"]["HeartbeatMaxIntervalAssertion"] | components["schemas"]["HeartbeatPayloadContainsAssertion"] | components["schemas"]["HeartbeatReceivedAssertion"] | components["schemas"]["IcmpPacketLossAssertion"] | components["schemas"]["IcmpReachableAssertion"] | components["schemas"]["IcmpResponseTimeAssertion"] | components["schemas"]["IcmpResponseTimeWarnAssertion"] | components["schemas"]["JsonPathAssertion"] | components["schemas"]["McpConnectsAssertion"] | components["schemas"]["McpHasCapabilityAssertion"] | components["schemas"]["McpMinToolsAssertion"] | components["schemas"]["McpProtocolVersionAssertion"] | components["schemas"]["McpResponseTimeAssertion"] | components["schemas"]["McpResponseTimeWarnAssertion"] | components["schemas"]["McpToolAvailableAssertion"] | components["schemas"]["McpToolCountChangedAssertion"] | components["schemas"]["RedirectCountAssertion"] | components["schemas"]["RedirectTargetAssertion"] | components["schemas"]["RegexBodyAssertion"] | components["schemas"]["ResponseSizeAssertion"] | components["schemas"]["ResponseTimeAssertion"] | components["schemas"]["ResponseTimeWarnAssertion"] | components["schemas"]["SslExpiryAssertion"] | components["schemas"]["StatusCodeAssertion"] | components["schemas"]["TcpConnectsAssertion"] | components["schemas"]["TcpResponseTimeAssertion"] | components["schemas"]["TcpResponseTimeWarnAssertion"];
-            /** @enum {string} */
-            severity: "fail" | "warn";
+            severity: string;
         };
         /** @description New authentication configuration (full replacement) */
         MonitorAuthConfig: components["schemas"]["BearerAuthConfig"] | components["schemas"]["BasicAuthConfig"] | components["schemas"]["HeaderAuthConfig"] | components["schemas"]["ApiKeyAuthConfig"];
@@ -4829,8 +4779,7 @@ export interface components {
             id: string;
             /** Format: uuid */
             monitorId: string;
-            /** @enum {string} */
-            authType: "bearer" | "basic" | "header" | "api_key";
+            authType: string;
             config: components["schemas"]["ApiKeyAuthConfig"] | components["schemas"]["BasicAuthConfig"] | components["schemas"]["BearerAuthConfig"] | components["schemas"]["HeaderAuthConfig"];
         };
         /** @description Full monitor representation */
@@ -4847,8 +4796,7 @@ export interface components {
             organizationId: number;
             /** @description Human-readable name for this monitor */
             name: string;
-            /** @enum {string} */
-            type: "HTTP" | "DNS" | "MCP_SERVER" | "TCP" | "ICMP" | "HEARTBEAT";
+            type: string;
             config: components["schemas"]["DnsMonitorConfig"] | components["schemas"]["HeartbeatMonitorConfig"] | components["schemas"]["HttpMonitorConfig"] | components["schemas"]["IcmpMonitorConfig"] | components["schemas"]["McpServerMonitorConfig"] | components["schemas"]["TcpMonitorConfig"];
             /**
              * Format: int32
@@ -4859,11 +4807,8 @@ export interface components {
             enabled: boolean;
             /** @description Probe regions where checks are executed */
             regions: string[];
-            /**
-             * @description Source that created/owns this monitor: DASHBOARD, CLI, TERRAFORM, MCP, or API
-             * @enum {string}
-             */
-            managedBy: "DASHBOARD" | "CLI" | "TERRAFORM" | "MCP" | "API";
+            /** @description Source that created/owns this monitor: DASHBOARD, CLI, TERRAFORM, MCP, or API */
+            managedBy: string;
             /**
              * Format: date-time
              * @description Timestamp when the monitor was created
@@ -4885,11 +4830,8 @@ export interface components {
             incidentPolicy?: components["schemas"]["IncidentPolicyDto"] | null;
             /** @description Alert channel IDs linked to this monitor; populated on single-monitor responses */
             alertChannelIds?: string[] | null;
-            /**
-             * @description Current operational state — UP, DOWN, DEGRADED, PAUSED, or UNKNOWN if no probe data yet
-             * @enum {string|null}
-             */
-            currentStatus?: "up" | "degraded" | "down" | "paused" | "unknown" | null;
+            /** @description Current operational state — UP, DOWN, DEGRADED, PAUSED, or UNKNOWN if no probe data yet */
+            currentStatus?: string | null;
         };
         /** @description Monitors that reference this secret; null on create/update responses */
         MonitorReference: {
@@ -4991,11 +4933,8 @@ export interface components {
              * @description User ID who made the change; null for automated changes
              */
             changedById?: number | null;
-            /**
-             * @description Change source (DASHBOARD, CLI, API)
-             * @enum {string}
-             */
-            changedVia: "API" | "DASHBOARD" | "CLI" | "TERRAFORM";
+            /** @description Change source (DASHBOARD, CLI, API) */
+            changedVia: string;
             /** @description Human-readable description of what changed */
             changeSummary?: string | null;
             /**
@@ -5030,16 +4969,10 @@ export interface components {
             policyId: string;
             /** @description Human-readable name of the matched policy (null if policy has been deleted) */
             policyName?: string | null;
-            /**
-             * @description Current dispatch state
-             * @enum {string}
-             */
-            status: "PENDING" | "DISPATCHING" | "DELIVERED" | "ESCALATING" | "ACKNOWLEDGED" | "COMPLETED";
-            /**
-             * @description Why the dispatch reached COMPLETED: EXHAUSTED (all steps ran, no ack), RESOLVED (incident resolved), NO_STEPS (policy had no steps). Null for non-terminal states.
-             * @enum {string|null}
-             */
-            completionReason?: "EXHAUSTED" | "RESOLVED" | "NO_STEPS" | null;
+            /** @description Current dispatch state */
+            status: string;
+            /** @description Why the dispatch reached COMPLETED: EXHAUSTED (all steps ran, no ack), RESOLVED (incident resolved), NO_STEPS (policy had no steps). Null for non-terminal states. */
+            completionReason?: string | null;
             /**
              * Format: int32
              * @description 1-based index of the currently active escalation step
@@ -5446,11 +5379,8 @@ export interface components {
              * @description Default environment ID for member monitors
              */
             defaultEnvironmentId?: string | null;
-            /**
-             * @description Health threshold type: COUNT or PERCENTAGE
-             * @enum {string|null}
-             */
-            healthThresholdType?: "COUNT" | "PERCENTAGE" | null;
+            /** @description Health threshold type: COUNT or PERCENTAGE */
+            healthThresholdType?: string | null;
             /** @description Health threshold value */
             healthThresholdValue?: number | null;
             /** @description When true, member-level incidents skip notification dispatch; only group alerts fire */
@@ -5468,11 +5398,8 @@ export interface components {
             health: components["schemas"]["ResourceGroupHealthDto"];
             /** @description Member list with individual statuses; populated on detail GET only */
             members?: components["schemas"]["ResourceGroupMemberDto"][] | null;
-            /**
-             * @description Source that created/owns this group: DASHBOARD, CLI, TERRAFORM, MCP, or API. Null on groups created before this attribution column existed.
-             * @enum {string|null}
-             */
-            managedBy?: "DASHBOARD" | "CLI" | "TERRAFORM" | "MCP" | "API" | null;
+            /** @description Source that created/owns this group: DASHBOARD, CLI, TERRAFORM, MCP, or API. Null on groups created before this attribution column existed. */
+            managedBy?: string | null;
             /**
              * Format: date-time
              * @description Timestamp when the group was created
@@ -5486,11 +5413,8 @@ export interface components {
         };
         /** @description Aggregated health summary for a resource group */
         ResourceGroupHealthDto: {
-            /**
-             * @description Worst-of health status across all members
-             * @enum {string}
-             */
-            status: "operational" | "maintenance" | "degraded" | "down";
+            /** @description Worst-of health status across all members */
+            status: string;
             /**
              * Format: int32
              * @description Total number of members in the group
@@ -5506,11 +5430,8 @@ export interface components {
              * @description Number of members with an active incident or non-operational status
              */
             activeIncidents: number;
-            /**
-             * @description Computed group health status based on threshold: 'healthy', 'degraded', or 'down'. Null when no health threshold is configured.
-             * @enum {string|null}
-             */
-            thresholdStatus?: "healthy" | "degraded" | "down" | null;
+            /** @description Computed group health status based on threshold: 'healthy', 'degraded', or 'down'. Null when no health threshold is configured. */
+            thresholdStatus?: string | null;
             /**
              * Format: int32
              * @description Number of failing members at time of last evaluation
@@ -5550,11 +5471,8 @@ export interface components {
              * @description Subscription ID for the service (services only); used to link to the dependency detail page
              */
             subscriptionId?: string | null;
-            /**
-             * @description Computed health status for this member
-             * @enum {string}
-             */
-            status: "operational" | "maintenance" | "degraded" | "down";
+            /** @description Computed health status for this member */
+            status: string;
             /** @description Effective check frequency label showing the group default when the monitor inherits it; null for services or when no group default is configured */
             effectiveFrequency?: string | null;
             /**
@@ -5618,11 +5536,8 @@ export interface components {
         };
         /** @description Dashboard summary: current status, per-region latest results, and chart data */
         ResultSummaryDto: {
-            /**
-             * @description Derived current status across all regions
-             * @enum {string}
-             */
-            currentStatus: "up" | "degraded" | "down" | "paused" | "unknown";
+            /** @description Derived current status across all regions */
+            currentStatus: string;
             /** @description Latest check result per region */
             latestPerRegion: components["schemas"]["RegionStatusDto"][];
             /** @description Time-bucketed chart data for the requested window */
@@ -6114,11 +6029,8 @@ export interface components {
              */
             componentId?: string | null;
             component?: components["schemas"]["ServiceComponentDto"] | null;
-            /**
-             * @description Alert sensitivity: ALL (synthetic + real incidents), INCIDENTS_ONLY (real vendor incidents, default), MAJOR_ONLY (real + DOWN severity)
-             * @enum {string}
-             */
-            alertSensitivity: "ALL" | "INCIDENTS_ONLY" | "MAJOR_ONLY";
+            /** @description Alert sensitivity: ALL (synthetic + real incidents), INCIDENTS_ONLY (real vendor incidents, default), MAJOR_ONLY (real + DOWN severity) */
+            alertSensitivity: string;
             /**
              * Format: date-time
              * @description When the organization subscribed to this service
@@ -6405,14 +6317,12 @@ export interface components {
             groupId?: string | null;
             name: string;
             description?: string | null;
-            /** @enum {string} */
-            type: "MONITOR" | "GROUP" | "STATIC";
+            type: string;
             /** Format: uuid */
             monitorId?: string | null;
             /** Format: uuid */
             resourceGroupId?: string | null;
-            /** @enum {string} */
-            currentStatus: "OPERATIONAL" | "DEGRADED_PERFORMANCE" | "PARTIAL_OUTAGE" | "MAJOR_OUTAGE" | "UNDER_MAINTENANCE";
+            currentStatus: string;
             showUptime: boolean;
             /** Format: int32 */
             displayOrder: number;
@@ -6448,10 +6358,8 @@ export interface components {
             /** Format: uuid */
             id: string;
             hostname: string;
-            /** @enum {string} */
-            status: "PENDING_VERIFICATION" | "VERIFICATION_FAILED" | "VERIFIED" | "SSL_PENDING" | "ACTIVE" | "FAILED" | "REMOVED";
-            /** @enum {string} */
-            verificationMethod: "CNAME" | "TXT";
+            status: string;
+            verificationMethod: string;
             verificationToken: string;
             verificationCnameTarget: string;
             /** Format: date-time */
@@ -6478,22 +6386,16 @@ export interface components {
             slug: string;
             description?: string | null;
             branding: components["schemas"]["StatusPageBranding"];
-            /** @enum {string} */
-            visibility: "PUBLIC" | "PASSWORD" | "IP_RESTRICTED";
+            visibility: string;
             enabled: boolean;
-            /** @enum {string} */
-            incidentMode: "MANUAL" | "REVIEW" | "AUTOMATIC";
+            incidentMode: string;
             /** Format: int32 */
             componentCount?: number | null;
             /** Format: int64 */
             subscriberCount?: number | null;
-            /** @enum {string|null} */
-            overallStatus?: "OPERATIONAL" | "DEGRADED_PERFORMANCE" | "PARTIAL_OUTAGE" | "MAJOR_OUTAGE" | "UNDER_MAINTENANCE" | null;
-            /**
-             * @description Source that created/owns this status page: DASHBOARD, CLI, TERRAFORM, MCP, or API. Null on pages created before this attribution column existed.
-             * @enum {string|null}
-             */
-            managedBy?: "DASHBOARD" | "CLI" | "TERRAFORM" | "MCP" | "API" | null;
+            overallStatus?: string | null;
+            /** @description Source that created/owns this status page: DASHBOARD, CLI, TERRAFORM, MCP, or API. Null on pages created before this attribution column existed. */
+            managedBy?: string | null;
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
@@ -6502,8 +6404,7 @@ export interface components {
         StatusPageIncidentComponentDto: {
             /** Format: uuid */
             statusPageComponentId: string;
-            /** @enum {string} */
-            componentStatus: "OPERATIONAL" | "DEGRADED_PERFORMANCE" | "PARTIAL_OUTAGE" | "MAJOR_OUTAGE" | "UNDER_MAINTENANCE";
+            componentStatus: string;
             componentName: string;
         };
         StatusPageIncidentDto: {
@@ -6512,10 +6413,8 @@ export interface components {
             /** Format: uuid */
             statusPageId: string;
             title: string;
-            /** @enum {string} */
-            status: "INVESTIGATING" | "IDENTIFIED" | "MONITORING" | "RESOLVED";
-            /** @enum {string} */
-            impact: "NONE" | "MINOR" | "MAJOR" | "CRITICAL";
+            status: string;
+            impact: string;
             scheduled: boolean;
             /** Format: date-time */
             scheduledFor?: string | null;
@@ -6544,11 +6443,9 @@ export interface components {
         StatusPageIncidentUpdateDto: {
             /** Format: uuid */
             id: string;
-            /** @enum {string} */
-            status: "INVESTIGATING" | "IDENTIFIED" | "MONITORING" | "RESOLVED";
+            status: string;
             body: string;
-            /** @enum {string|null} */
-            createdBy?: "USER" | "SYSTEM" | null;
+            createdBy?: string | null;
             /** Format: int32 */
             createdByUserId?: number | null;
             notifySubscribers: boolean;

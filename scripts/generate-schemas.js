@@ -113,8 +113,12 @@ async function main() {
   const spec = JSON.parse(readFileSync(SPEC_PATH, 'utf8'))
 
   console.log('Preprocessing (via @devhelm/openapi-tools)...')
-  const { flattened, inlinedDiscriminators, inlinedNullableDeductions } =
-    preprocessSpec(spec)
+  const {
+    flattened,
+    inlinedDiscriminators,
+    inlinedNullableDeductions,
+    relaxedEnums,
+  } = preprocessSpec(spec)
   if (flattened.length > 0) {
     console.log(`  Flattened circular oneOf: ${flattened.join(', ')}`)
   }
@@ -128,6 +132,11 @@ async function main() {
   if (inlinedNullableDeductions && inlinedNullableDeductions.length > 0) {
     console.log(
       `  Inlined nullable deduction refs for: ${inlinedNullableDeductions.join(', ')}`,
+    )
+  }
+  if (relaxedEnums && relaxedEnums.length > 0) {
+    console.log(
+      `  Relaxed response-DTO enums (Postel's Law): ${relaxedEnums.length} fields`,
     )
   }
 
