@@ -178,8 +178,10 @@ describe('MonitorDto negative validation', () => {
     fail(s, rest)
   })
 
-  it('rejects invalid type enum', () => fail(s, {...validMonitorDto, type: 'WEBSOCKET'}))
-  it('rejects lowercase type enum', () => fail(s, {...validMonitorDto, type: 'http'}))
+  it('accepts unknown type (Postel tolerant reader)', () =>
+    pass(s, {...validMonitorDto, type: 'WEBSOCKET'}))
+  it('accepts unknown type (Postel tolerant reader)', () =>
+    pass(s, {...validMonitorDto, type: 'http'}))
 
   it('rejects missing config', () => {
     const {config: _, ...rest} = validMonitorDto
@@ -218,8 +220,8 @@ describe('MonitorDto negative validation', () => {
     fail(s, rest)
   })
 
-  it('rejects invalid managedBy enum', () =>
-    fail(s, {...validMonitorDto, managedBy: 'GITHUB_ACTIONS'}))
+  it('accepts unknown managedBy (Postel tolerant reader)', () =>
+    pass(s, {...validMonitorDto, managedBy: 'GITHUB_ACTIONS'}))
 
   it('rejects missing createdAt', () => {
     const {createdAt: _, ...rest} = validMonitorDto
@@ -373,22 +375,26 @@ describe('IncidentDto negative validation', () => {
     fail(s, rest)
   })
 
-  it('rejects invalid source enum', () => fail(s, {...validIncidentDto, source: 'WEBHOOK'}))
+  it('accepts unknown source (Postel tolerant reader)', () =>
+    pass(s, {...validIncidentDto, source: 'WEBHOOK'}))
 
   it('rejects missing status', () => {
     const {status: _, ...rest} = validIncidentDto
     fail(s, rest)
   })
 
-  it('rejects invalid status enum', () => fail(s, {...validIncidentDto, status: 'OPEN'}))
-  it('rejects lowercase status enum', () => fail(s, {...validIncidentDto, status: 'triggered'}))
+  it('accepts unknown status (Postel tolerant reader)', () =>
+    pass(s, {...validIncidentDto, status: 'OPEN'}))
+  it('accepts unknown status (Postel tolerant reader)', () =>
+    pass(s, {...validIncidentDto, status: 'triggered'}))
 
   it('rejects missing severity', () => {
     const {severity: _, ...rest} = validIncidentDto
     fail(s, rest)
   })
 
-  it('rejects invalid severity enum', () => fail(s, {...validIncidentDto, severity: 'CRITICAL'}))
+  it('accepts unknown severity (Postel tolerant reader)', () =>
+    pass(s, {...validIncidentDto, severity: 'CRITICAL'}))
 
   it('rejects missing affectedRegions', () => {
     const {affectedRegions: _, ...rest} = validIncidentDto
@@ -434,8 +440,8 @@ describe('IncidentDto negative validation', () => {
   it('rejects null for non-nullable severity', () =>
     fail(s, {...validIncidentDto, severity: null}))
 
-  it('rejects invalid resolutionReason enum', () =>
-    fail(s, {...validIncidentDto, resolutionReason: 'TIMEOUT'}))
+  it('accepts unknown resolutionReason (Postel tolerant reader)', () =>
+    pass(s, {...validIncidentDto, resolutionReason: 'TIMEOUT'}))
 
   it('rejects non-UUID monitorId', () =>
     fail(s, {...validIncidentDto, monitorId: 'mon-123'}))
@@ -499,8 +505,10 @@ describe('AlertChannelDto negative validation', () => {
     fail(s, rest)
   })
 
-  it('rejects invalid channelType enum', () => fail(s, {...validAlertChannelDto, channelType: 'sms'}))
-  it('rejects uppercase channelType', () => fail(s, {...validAlertChannelDto, channelType: 'SLACK'}))
+  it('accepts unknown channelType (Postel tolerant reader)', () =>
+    pass(s, {...validAlertChannelDto, channelType: 'sms'}))
+  it('accepts unknown channelType (Postel tolerant reader)', () =>
+    pass(s, {...validAlertChannelDto, channelType: 'SLACK'}))
 
   it('rejects missing createdAt', () => {
     const {createdAt: _, ...rest} = validAlertChannelDto
@@ -1046,8 +1054,8 @@ describe('ResourceGroupDto negative validation', () => {
   it('rejects wrong type for health (string)', () =>
     fail(s, {...validResourceGroupDto, health: 'good'}))
 
-  it('rejects health with invalid status enum', () =>
-    fail(s, {...validResourceGroupDto, health: {status: 'critical', totalMembers: 0, operationalCount: 0, activeIncidents: 0}}))
+  it('accepts health with unknown status enum (Postel)', () =>
+    pass(s, {...validResourceGroupDto, health: {status: 'critical', totalMembers: 0, operationalCount: 0, activeIncidents: 0}}))
 
   it('rejects non-UUID alertPolicyId', () =>
     fail(s, {...validResourceGroupDto, alertPolicyId: 'policy-1'}))
@@ -1055,8 +1063,8 @@ describe('ResourceGroupDto negative validation', () => {
   it('rejects non-UUID defaultEnvironmentId', () =>
     fail(s, {...validResourceGroupDto, defaultEnvironmentId: 'env-1'}))
 
-  it('rejects invalid healthThresholdType enum', () =>
-    fail(s, {...validResourceGroupDto, healthThresholdType: 'ABSOLUTE'}))
+  it('accepts unknown healthThresholdType (Postel tolerant reader)', () =>
+    pass(s, {...validResourceGroupDto, healthThresholdType: 'ABSOLUTE'}))
 
   it('rejects null for non-nullable id', () => fail(s, {...validResourceGroupDto, id: null}))
   it('rejects null for non-nullable name', () => fail(s, {...validResourceGroupDto, name: null}))
@@ -1485,8 +1493,10 @@ describe('StatusPageDto negative validation', () => {
     fail(s, rest)
   })
 
-  it('rejects invalid visibility enum', () => fail(s, {...validStatusPageDto, visibility: 'PRIVATE'}))
-  it('rejects lowercase visibility', () => fail(s, {...validStatusPageDto, visibility: 'public'}))
+  it('accepts unknown visibility (Postel tolerant reader)', () =>
+    pass(s, {...validStatusPageDto, visibility: 'PRIVATE'}))
+  it('accepts unknown visibility (Postel tolerant reader)', () =>
+    pass(s, {...validStatusPageDto, visibility: 'public'}))
 
   it('rejects missing enabled', () => {
     const {enabled: _, ...rest} = validStatusPageDto
@@ -1501,10 +1511,11 @@ describe('StatusPageDto negative validation', () => {
     fail(s, rest)
   })
 
-  it('rejects invalid incidentMode', () => fail(s, {...validStatusPageDto, incidentMode: 'AUTO'}))
+  it('accepts unknown incidentMode (Postel tolerant reader)', () =>
+    pass(s, {...validStatusPageDto, incidentMode: 'AUTO'}))
 
-  it('rejects invalid overallStatus', () =>
-    fail(s, {...validStatusPageDto, overallStatus: 'BROKEN'}))
+  it('accepts unknown overallStatus (Postel tolerant reader)', () =>
+    pass(s, {...validStatusPageDto, overallStatus: 'BROKEN'}))
 
   it('rejects null for non-nullable id', () => fail(s, {...validStatusPageDto, id: null}))
   it('rejects null for non-nullable name', () => fail(s, {...validStatusPageDto, name: null}))
@@ -1565,15 +1576,16 @@ describe('StatusPageComponentDto negative validation', () => {
     fail(s, rest)
   })
 
-  it('rejects invalid type enum', () => fail(s, {...validStatusPageComponentDto, type: 'SERVICE'}))
+  it('accepts unknown type (Postel tolerant reader)', () =>
+    pass(s, {...validStatusPageComponentDto, type: 'SERVICE'}))
 
   it('rejects missing currentStatus', () => {
     const {currentStatus: _, ...rest} = validStatusPageComponentDto
     fail(s, rest)
   })
 
-  it('rejects invalid currentStatus', () =>
-    fail(s, {...validStatusPageComponentDto, currentStatus: 'BROKEN'}))
+  it('accepts unknown currentStatus (Postel tolerant reader)', () =>
+    pass(s, {...validStatusPageComponentDto, currentStatus: 'BROKEN'}))
 
   it('rejects missing showUptime', () => {
     const {showUptime: _, ...rest} = validStatusPageComponentDto
@@ -1667,14 +1679,16 @@ describe('StatusPageIncidentDto negative validation', () => {
     fail(s, rest)
   })
 
-  it('rejects invalid status', () => fail(s, {...validStatusPageIncidentDto, status: 'OPEN'}))
+  it('accepts unknown status (Postel tolerant reader)', () =>
+    pass(s, {...validStatusPageIncidentDto, status: 'OPEN'}))
 
   it('rejects missing impact', () => {
     const {impact: _, ...rest} = validStatusPageIncidentDto
     fail(s, rest)
   })
 
-  it('rejects invalid impact', () => fail(s, {...validStatusPageIncidentDto, impact: 'APOCALYPTIC'}))
+  it('accepts unknown impact (Postel tolerant reader)', () =>
+    pass(s, {...validStatusPageIncidentDto, impact: 'APOCALYPTIC'}))
 
   it('rejects missing scheduled', () => {
     const {scheduled: _, ...rest} = validStatusPageIncidentDto
@@ -1719,7 +1733,8 @@ describe('StatusPageIncidentUpdateDto negative validation', () => {
     fail(s, rest)
   })
 
-  it('rejects invalid status', () => fail(s, {...validStatusPageIncidentUpdateDto, status: 'PANICKING'}))
+  it('accepts unknown status (Postel tolerant reader)', () =>
+    pass(s, {...validStatusPageIncidentUpdateDto, status: 'PANICKING'}))
 
   it('rejects missing body', () => {
     const {body: _, ...rest} = validStatusPageIncidentUpdateDto
@@ -1792,16 +1807,16 @@ describe('StatusPageCustomDomainDto negative validation', () => {
     fail(s, rest)
   })
 
-  it('rejects invalid status enum', () =>
-    fail(s, {...validStatusPageCustomDomainDto, status: 'READY'}))
+  it('accepts unknown status (Postel tolerant reader)', () =>
+    pass(s, {...validStatusPageCustomDomainDto, status: 'READY'}))
 
   it('rejects missing verificationMethod', () => {
     const {verificationMethod: _, ...rest} = validStatusPageCustomDomainDto
     fail(s, rest)
   })
 
-  it('rejects invalid verificationMethod', () =>
-    fail(s, {...validStatusPageCustomDomainDto, verificationMethod: 'DNS'}))
+  it('accepts unknown verificationMethod (Postel tolerant reader)', () =>
+    pass(s, {...validStatusPageCustomDomainDto, verificationMethod: 'DNS'}))
 
   it('rejects missing verificationToken', () => {
     const {verificationToken: _, ...rest} = validStatusPageCustomDomainDto
@@ -2078,7 +2093,7 @@ describe('MonitorVersionDto negative validation', () => {
   it('rejects wrong type for snapshot (string)', () =>
     fail(s, {...validMonitorVersionDto, snapshot: 'snapshot-data'}))
 
-  it('rejects snapshot with invalid MonitorDto', () =>
+  it('rejects snapshot with malformed nested fields', () =>
     fail(s, {...validMonitorVersionDto, snapshot: {id: 'not-uuid', name: 123}}))
 
   it('rejects missing changedVia', () => {
@@ -2086,8 +2101,8 @@ describe('MonitorVersionDto negative validation', () => {
     fail(s, rest)
   })
 
-  it('rejects invalid changedVia enum', () =>
-    fail(s, {...validMonitorVersionDto, changedVia: 'GITHUB'}))
+  it('accepts unknown changedVia (Postel tolerant reader)', () =>
+    pass(s, {...validMonitorVersionDto, changedVia: 'GITHUB'}))
 
   it('rejects missing createdAt', () => {
     const {createdAt: _, ...rest} = validMonitorVersionDto
@@ -2172,8 +2187,8 @@ describe('ServiceSubscriptionDto negative validation', () => {
     fail(s, rest)
   })
 
-  it('rejects invalid alertSensitivity enum', () =>
-    fail(s, {...validServiceSubscriptionDto, alertSensitivity: 'NONE'}))
+  it('accepts unknown alertSensitivity (Postel tolerant reader)', () =>
+    pass(s, {...validServiceSubscriptionDto, alertSensitivity: 'NONE'}))
 
   it('rejects missing subscribedAt', () => {
     const {subscribedAt: _, ...rest} = validServiceSubscriptionDto
@@ -2482,10 +2497,10 @@ describe('parseCursorPage() validation layer', () => {
 // =====================================================================
 
 describe('cross-schema negative validation', () => {
-  it('MonitorVersionDto rejects snapshot with invalid type enum', () =>
-    fail(schemas.MonitorVersionDto, {
+  it('MonitorVersionDto accepts snapshot with unknown type enum (Postel tolerant reader)', () =>
+    pass(schemas.MonitorVersionDto, {
       ...validMonitorVersionDto,
-      snapshot: {...validMonitorDto, type: 'INVALID'},
+      snapshot: {...validMonitorDto, type: 'GRPC_FUTURE'},
     }))
 
   it('ResourceGroupDto rejects health with missing totalMembers', () => {
@@ -2493,10 +2508,10 @@ describe('cross-schema negative validation', () => {
     fail(schemas.ResourceGroupDto, {...validResourceGroupDto, health: badHealth})
   })
 
-  it('StatusPageComponentGroupDto rejects components with invalid currentStatus', () =>
-    fail(schemas.StatusPageComponentGroupDto, {
+  it('StatusPageComponentGroupDto accepts components with unknown currentStatus (Postel tolerant reader)', () =>
+    pass(schemas.StatusPageComponentGroupDto, {
       ...validStatusPageComponentGroupDto,
-      components: [{...validStatusPageComponentDto, currentStatus: 'BROKEN'}],
+      components: [{...validStatusPageComponentDto, currentStatus: 'FUTURE_STATUS'}],
     }))
 
   it('DashboardOverviewDto rejects monitors with string total', () =>
@@ -2505,16 +2520,16 @@ describe('cross-schema negative validation', () => {
       monitors: {...validDashboardOverviewDto.monitors, total: 'ten'},
     }))
 
-  it('StatusPageIncidentDto rejects updates with invalid status', () =>
-    fail(schemas.StatusPageIncidentDto, {
+  it('StatusPageIncidentDto accepts updates with unknown status (Postel tolerant reader)', () =>
+    pass(schemas.StatusPageIncidentDto, {
       ...validStatusPageIncidentDto,
-      updates: [{...validStatusPageIncidentUpdateDto, status: 'PANICKING'}],
+      updates: [{...validStatusPageIncidentUpdateDto, status: 'FUTURE_STATUS'}],
     }))
 
-  it('StatusPageIncidentDto rejects affectedComponents with invalid componentStatus', () =>
-    fail(schemas.StatusPageIncidentDto, {
+  it('StatusPageIncidentDto accepts affectedComponents with unknown componentStatus (Postel tolerant reader)', () =>
+    pass(schemas.StatusPageIncidentDto, {
       ...validStatusPageIncidentDto,
-      affectedComponents: [{statusPageComponentId: UUID, componentStatus: 'BROKEN', componentName: 'API'}],
+      affectedComponents: [{statusPageComponentId: UUID, componentStatus: 'FUTURE_STATUS', componentName: 'API'}],
     }))
 })
 

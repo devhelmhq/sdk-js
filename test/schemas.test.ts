@@ -295,8 +295,8 @@ describe('StatusPageDto response validation', () => {
     expect(schema.safeParse({...validStatusPageDto, id: 'not-uuid'}).success).toBe(false)
   })
 
-  it('rejects invalid visibility enum in response', () => {
-    expect(schema.safeParse({...validStatusPageDto, visibility: 'HIDDEN'}).success).toBe(false)
+  it('accepts unknown visibility in response (Postel tolerant reader)', () => {
+    expect(schema.safeParse({...validStatusPageDto, visibility: 'INTERNAL_FUTURE'}).success).toBe(true)
   })
 
   it('rejects missing name', () => {
@@ -337,11 +337,11 @@ describe('StatusPageComponentDto response validation', () => {
     expect(schema.safeParse(validComponentDto).success).toBe(true)
   })
 
-  it('rejects invalid currentStatus', () => {
-    expect(schema.safeParse({...validComponentDto, currentStatus: 'BROKEN'}).success).toBe(false)
+  it('accepts unknown currentStatus (Postel tolerant reader)', () => {
+    expect(schema.safeParse({...validComponentDto, currentStatus: 'SCHEDULED_MAINTENANCE_FUTURE'}).success).toBe(true)
   })
 
-  it('validates all currentStatus enum values', () => {
+  it('accepts all known currentStatus values', () => {
     for (const status of ['OPERATIONAL', 'DEGRADED_PERFORMANCE', 'PARTIAL_OUTAGE', 'MAJOR_OUTAGE', 'UNDER_MAINTENANCE']) {
       expect(schema.safeParse({...validComponentDto, currentStatus: status}).success).toBe(true)
     }
@@ -360,8 +360,8 @@ describe('StatusPageIncidentDto response validation', () => {
     expect(schema.safeParse(noScheduled).success).toBe(false)
   })
 
-  it('rejects incident with invalid status', () => {
-    expect(schema.safeParse({...validIncidentDto, status: 'OPEN'}).success).toBe(false)
+  it('accepts incident with unknown status (Postel tolerant reader)', () => {
+    expect(schema.safeParse({...validIncidentDto, status: 'OPEN'}).success).toBe(true)
   })
 
   it('accepts incident with all nullable fields null', () => {
@@ -412,12 +412,13 @@ describe('parsePage with real schemas', () => {
     expect(result.totalElements).toBe(1)
   })
 
-  it('throws when a page item has invalid impact enum', () => {
+  it('passes through page items with unknown impact (Postel tolerant reader)', () => {
     const raw = {
       data: [{...validIncidentDto, impact: 'APOCALYPTIC'}],
       hasNext: false, hasPrev: false,
     }
-    expect(() => parsePage(schemas.StatusPageIncidentDto, raw)).toThrow(DevhelmError)
+    const page = parsePage(schemas.StatusPageIncidentDto, raw)
+    expect(page.data[0].impact).toBe('APOCALYPTIC')
   })
 })
 
