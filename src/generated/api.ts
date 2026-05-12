@@ -618,7 +618,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Resend invite */
-        post: operations["resend"];
+        post: operations["resend_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1521,7 +1521,7 @@ export interface paths {
         head?: never;
         /**
          * Update alert sensitivity for a subscription
-         * @description Controls which external incidents trigger alerts: ALL (any status change), INCIDENTS_ONLY (real vendor incidents, default), MAJOR_ONLY (only DOWN-level incidents).
+         * @description Controls which external incidents trigger alerts and whether they page anyone: ALL (any status change, paged), INCIDENTS_ONLY (real vendor incidents, default, paged), MAJOR_ONLY (only DOWN-level incidents, paged), AWARENESS (real vendor incidents tracked silently — visible on the dashboard but no alert channels fire).
          */
         patch: operations["updateAlertSensitivity"];
         trace?: never;
@@ -5996,7 +5996,7 @@ export interface components {
              * @description ID of the component to subscribe to. Omit or null for whole-service subscription.
              */
             componentId?: string | null;
-            /** @description Alert sensitivity level. Defaults to INCIDENTS_ONLY when not provided. */
+            /** @description Alert sensitivity: ALL (any status change), INCIDENTS_ONLY (real vendor incidents, default), MAJOR_ONLY (only DOWN-level incidents), AWARENESS (track silently — show on dashboard, never send alerts). Defaults to INCIDENTS_ONLY when not provided. */
             alertSensitivity?: string | null;
         };
         /** @description An org-level service subscription with current status information */
@@ -6029,7 +6029,7 @@ export interface components {
              */
             componentId?: string | null;
             component?: components["schemas"]["ServiceComponentDto"] | null;
-            /** @description Alert sensitivity: ALL (synthetic + real incidents), INCIDENTS_ONLY (real vendor incidents, default), MAJOR_ONLY (real + DOWN severity) */
+            /** @description Alert sensitivity: ALL (synthetic + real incidents), INCIDENTS_ONLY (real vendor incidents, default), MAJOR_ONLY (real + DOWN severity), AWARENESS (real vendor incidents tracked silently — visible on dashboard, never paged) */
             alertSensitivity: string;
             /**
              * Format: date-time
@@ -7052,7 +7052,7 @@ export interface components {
         };
         /** @description Request body for updating alert sensitivity on a service subscription */
         UpdateAlertSensitivityRequest: {
-            /** @description Alert sensitivity: ALL (any status change), INCIDENTS_ONLY (real vendor incidents, default), MAJOR_ONLY (only DOWN-level incidents) */
+            /** @description Alert sensitivity: ALL (any status change), INCIDENTS_ONLY (real vendor incidents, default), MAJOR_ONLY (only DOWN-level incidents), AWARENESS (track silently — show on dashboard, never send alerts) */
             alertSensitivity: string;
         };
         UpdateApiKeyRequest: {
@@ -11700,7 +11700,7 @@ export interface operations {
             };
         };
     };
-    resend: {
+    resend_1: {
         parameters: {
             query?: never;
             header?: never;
