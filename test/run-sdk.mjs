@@ -114,7 +114,23 @@ async function run() {
     case 'dependencies.list': return client.dependencies.list()
     case 'dependencies.get': return client.dependencies.get(rest[0])
     case 'dependencies.track': return client.dependencies.track(rest[0])
+    case 'dependencies.update-alert-sensitivity': return client.dependencies.updateAlertSensitivity(rest[0], rest[1])
     case 'dependencies.delete': return void await client.dependencies.delete(rest[0])
+
+    // ── Services (Status Data catalog, read-only) ──
+    case 'services.list': return client.services.list()
+    case 'services.get': return client.services.get(rest[0])
+    case 'services.live-status': return client.services.liveStatus(rest[0])
+    case 'services.categories': return client.services.categories()
+    case 'services.summary': return client.services.summary()
+    case 'services.components': return client.services.components(rest[0])
+    case 'services.component-uptime': return client.services.componentUptime(rest[0], rest[1])
+    case 'services.batch-component-uptime': return client.services.batchComponentUptime(rest[0])
+    case 'services.day': return client.services.day(rest[0], rest[1])
+    case 'services.incidents': return client.services.incidents(rest[0] ? {slugOrId: rest[0]} : {})
+    case 'services.incident': return client.services.incident(rest[0], rest[1])
+    case 'services.uptime': return client.services.uptime(rest[0])
+    case 'services.maintenances': return client.services.maintenances(rest[0])
 
     // ── Deploy Lock ──
     case 'deploy-lock.acquire': return client.deployLock.acquire(JSON.parse(rest[0]))
