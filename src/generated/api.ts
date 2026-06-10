@@ -9403,7 +9403,10 @@ export interface operations {
     };
     listCategories: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Count only published services (curated public pSEO set); default false */
+                publishedOnly?: boolean;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -18842,6 +18845,8 @@ export interface operations {
             query?: {
                 /** @description Return a curated subset of components (groups + showcase + impacted + ungrouped) and a componentsSummary block; default false */
                 summary?: boolean;
+                /** @description Resolve only published services (curated public pSEO set); 404 otherwise. Default false */
+                publishedOnly?: boolean;
             };
             header?: never;
             path: {
@@ -20113,7 +20118,10 @@ export interface operations {
     };
     getGlobalStatusSummary: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Aggregate only published services (curated public pSEO set); default false */
+                publishedOnly?: boolean;
+            };
             header?: never;
             path?: never;
             cookie?: never;
