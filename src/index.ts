@@ -35,6 +35,25 @@ export type {
   AssertionTestResultDto,
   MonitorTestResultDto,
   MaintenanceWindowDto,
+  ServiceCatalogDto,
+  ServiceDetailDto,
+  ServiceLiveStatusDto,
+  ServiceStatusDto,
+  CategoryDto,
+  GlobalStatusSummaryDto,
+  ServiceComponentDto,
+  ComponentStatusDto,
+  ComponentsSummaryDto,
+  ComponentUptimeSummaryDto,
+  ComponentUptimeDayDto,
+  BatchComponentUptimeDto,
+  ServiceDayDetailDto,
+  ServiceIncidentDto,
+  ServiceIncidentDetailDto,
+  ServiceIncidentUpdateDto,
+  ServiceUptimeResponse,
+  UptimeBucketDto,
+  ScheduledMaintenanceDto,
   IncidentTimelineDto,
   CheckTraceDto,
   PolicySnapshotDto,
@@ -63,6 +82,8 @@ export type {
   AcquireDeployLockRequest,
   CreateMaintenanceWindowRequest,
   UpdateMaintenanceWindowRequest,
+  ServiceSubscribeRequest,
+  UpdateAlertSensitivityRequest,
   StatusPageDto,
   StatusPageComponentDto,
   StatusPageComponentGroupDto,
@@ -109,6 +130,8 @@ export {ResourceGroups} from './resources/resource-groups.js'
 export {Webhooks} from './resources/webhooks.js'
 export {ApiKeys} from './resources/api-keys.js'
 export {Dependencies} from './resources/dependencies.js'
+export {Services} from './resources/services.js'
+export type {ServiceListFilters, ServiceIncidentFilters, UptimeRangeOptions} from './resources/services.js'
 export {DeployLock} from './resources/deploy-lock.js'
 export {Status} from './resources/status.js'
 export {StatusPages} from './resources/status-pages.js'

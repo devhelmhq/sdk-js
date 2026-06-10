@@ -1,7 +1,12 @@
 import type {ApiClient} from '../http.js'
-import type {ServiceSubscriptionDto, Page} from '../types.js'
-import {ServiceSubscriptionDtoSchema} from '../schemas.js'
+import type {ServiceSubscriptionDto, ServiceSubscribeRequest, Page} from '../types.js'
+import {
+  ServiceSubscriptionDtoSchema,
+  ServiceSubscribeRequestSchema,
+  UpdateAlertSensitivityRequestSchema,
+} from '../schemas.js'
 import {fetchAllPages, fetchPage, fetchSingle, fetchVoid} from '../http.js'
+import {validateRequest} from '../validation.js'
 
 export class Dependencies {
   constructor(private readonly client: ApiClient) {}
@@ -24,12 +29,37 @@ export class Dependencies {
   /**
    * Track (subscribe to) a service from the catalog by its slug.
    *
-   * The endpoint takes no request body per the OpenAPI spec — the slug is
-   * the entire payload. If a body is added upstream, wire `validateRequest`
-   * here against the new schema before sending.
+   * Optionally scope the subscription to a single component (`componentId`)
+   * and/or set the alert sensitivity. When neither option is provided the
+   * request is sent without a body, matching the server's defaults
+   * (whole-service subscription, default sensitivity).
    */
-  async track(slug: string): Promise<ServiceSubscriptionDto> {
-    return fetchSingle(this.client, 'POST', `/api/v1/service-subscriptions/${slug}`, ServiceSubscriptionDtoSchema)
+  async track(slug: string, options?: ServiceSubscribeRequest): Promise<ServiceSubscriptionDto> {
+    const hasBody = options !== undefined && (options.componentId !== undefined || options.alertSensitivity !== undefined)
+    if (hasBody) validateRequest(ServiceSubscribeRequestSchema, options, 'dependencies.track')
+    return fetchSingle(
+      this.client,
+      'POST',
+      `/api/v1/service-subscriptions/${slug}`,
+      ServiceSubscriptionDtoSchema,
+      hasBody ? options : undefined,
+    )
+  }
+
+  /** Change how sensitively a subscription alerts (e.g. `ALL`, `MAJOR_ONLY`). */
+  async updateAlertSensitivity(
+    subscriptionId: string | number,
+    alertSensitivity: string,
+  ): Promise<ServiceSubscriptionDto> {
+    const body = {alertSensitivity}
+    validateRequest(UpdateAlertSensitivityRequestSchema, body, 'dependencies.updateAlertSensitivity')
+    return fetchSingle(
+      this.client,
+      'PATCH',
+      `/api/v1/service-subscriptions/${subscriptionId}/alert-sensitivity`,
+      ServiceSubscriptionDtoSchema,
+      body,
+    )
   }
 
   /** Untrack (unsubscribe from) a service subscription. */

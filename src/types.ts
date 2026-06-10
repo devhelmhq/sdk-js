@@ -44,6 +44,28 @@ export type AssertionTestResultDto = z.infer<typeof S.AssertionTestResultDtoSche
 export type MonitorTestResultDto = z.infer<typeof S.MonitorTestResultDtoSchema>
 export type MaintenanceWindowDto = z.infer<typeof S.MaintenanceWindowDtoSchema>
 
+// ── Status Data catalog DTOs ──────────────────────────────────────────
+
+export type ServiceCatalogDto = z.infer<typeof S.ServiceCatalogDtoSchema>
+export type ServiceDetailDto = z.infer<typeof S.ServiceDetailDtoSchema>
+export type ServiceLiveStatusDto = z.infer<typeof S.ServiceLiveStatusDtoSchema>
+export type ServiceStatusDto = z.infer<typeof S.ServiceStatusDtoSchema>
+export type CategoryDto = z.infer<typeof S.CategoryDtoSchema>
+export type GlobalStatusSummaryDto = z.infer<typeof S.GlobalStatusSummaryDtoSchema>
+export type ServiceComponentDto = z.infer<typeof S.ServiceComponentDtoSchema>
+export type ComponentStatusDto = z.infer<typeof S.ComponentStatusDtoSchema>
+export type ComponentsSummaryDto = z.infer<typeof S.ComponentsSummaryDtoSchema>
+export type ComponentUptimeSummaryDto = z.infer<typeof S.ComponentUptimeSummaryDtoSchema>
+export type ComponentUptimeDayDto = z.infer<typeof S.ComponentUptimeDayDtoSchema>
+export type BatchComponentUptimeDto = z.infer<typeof S.BatchComponentUptimeDtoSchema>
+export type ServiceDayDetailDto = z.infer<typeof S.ServiceDayDetailDtoSchema>
+export type ServiceIncidentDto = z.infer<typeof S.ServiceIncidentDtoSchema>
+export type ServiceIncidentDetailDto = z.infer<typeof S.ServiceIncidentDetailDtoSchema>
+export type ServiceIncidentUpdateDto = z.infer<typeof S.ServiceIncidentUpdateDtoSchema>
+export type ServiceUptimeResponse = z.infer<typeof S.ServiceUptimeResponseSchema>
+export type UptimeBucketDto = z.infer<typeof S.UptimeBucketDtoSchema>
+export type ScheduledMaintenanceDto = z.infer<typeof S.ScheduledMaintenanceDtoSchema>
+
 // ── Forensic DTOs ─────────────────────────────────────────────────────
 
 export type IncidentTimelineDto = z.infer<typeof S.IncidentTimelineDtoSchema>
@@ -89,6 +111,8 @@ export type CreateApiKeyRequest = z.infer<typeof S.CreateApiKeyRequestSchema>
 export type AcquireDeployLockRequest = z.infer<typeof S.AcquireDeployLockRequestSchema>
 export type CreateMaintenanceWindowRequest = z.infer<typeof S.CreateMaintenanceWindowRequestSchema>
 export type UpdateMaintenanceWindowRequest = z.infer<typeof S.UpdateMaintenanceWindowRequestSchema>
+export type ServiceSubscribeRequest = z.infer<typeof S.ServiceSubscribeRequestSchema>
+export type UpdateAlertSensitivityRequest = z.infer<typeof S.UpdateAlertSensitivityRequestSchema>
 
 // ── Status Page Request types ─────────────────────────────────────────
 

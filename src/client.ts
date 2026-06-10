@@ -12,6 +12,7 @@ import {ResourceGroups} from './resources/resource-groups.js'
 import {Webhooks} from './resources/webhooks.js'
 import {ApiKeys} from './resources/api-keys.js'
 import {Dependencies} from './resources/dependencies.js'
+import {Services} from './resources/services.js'
 import {DeployLock} from './resources/deploy-lock.js'
 import {Status} from './resources/status.js'
 import {StatusPages} from './resources/status-pages.js'
@@ -48,6 +49,7 @@ export class Devhelm {
   readonly webhooks: Webhooks
   readonly apiKeys: ApiKeys
   readonly dependencies: Dependencies
+  readonly services: Services
   readonly deployLock: DeployLock
   readonly status: Status
   readonly statusPages: StatusPages
@@ -67,6 +69,7 @@ export class Devhelm {
     this.webhooks = new Webhooks(client)
     this.apiKeys = new ApiKeys(client)
     this.dependencies = new Dependencies(client)
+    this.services = new Services(client)
     this.deployLock = new DeployLock(client)
     this.status = new Status(client)
     this.statusPages = new StatusPages(client)
