@@ -127,6 +127,23 @@ const SDK_ENDPOINTS: ReadonlyArray<readonly [method: string, path: string]> = [
   ['get', '/api/v1/service-subscriptions/{id}'],
   ['post', '/api/v1/service-subscriptions/{slug}'],
   ['delete', '/api/v1/service-subscriptions/{subscriptionId}'],
+  ['patch', '/api/v1/service-subscriptions/{id}/alert-sensitivity'],
+
+  // services (Status Data catalog)
+  ['get', '/api/v1/services'],
+  ['get', '/api/v1/services/{slugOrId}'],
+  ['get', '/api/v1/services/{slugOrId}/live-status'],
+  ['get', '/api/v1/categories'],
+  ['get', '/api/v1/services/summary'],
+  ['get', '/api/v1/services/{slugOrId}/components'],
+  ['get', '/api/v1/services/{slugOrId}/components/{componentId}/uptime'],
+  ['get', '/api/v1/services/{slugOrId}/components/uptime'],
+  ['get', '/api/v1/services/{slugOrId}/days/{date}'],
+  ['get', '/api/v1/services/{slugOrId}/incidents'],
+  ['get', '/api/v1/services/incidents'],
+  ['get', '/api/v1/services/{slugOrId}/incidents/{incidentId}'],
+  ['get', '/api/v1/services/{slugOrId}/uptime'],
+  ['get', '/api/v1/services/{slugOrId}/maintenances'],
 
   // dashboard
   ['get', '/api/v1/dashboard/overview'],

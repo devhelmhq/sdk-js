@@ -90,6 +90,7 @@ The client exposes the following resource modules:
 | `client.webhooks`              | Outgoing webhook endpoints                                 |
 | `client.apiKeys`               | API key management                                         |
 | `client.dependencies`          | Service dependency tracking                                |
+| `client.services`              | Status Data catalog (third-party service status, incidents, uptime) |
 | `client.deployLock`            | Deploy lock for safe deployments                           |
 | `client.statusPages`           | Public status page management                              |
 | `client.status`                | Dashboard overview                                         |

@@ -41,6 +41,28 @@ export const PolicySnapshotDtoSchema = schemas.PolicySnapshotDto
 export const RuleEvaluationDtoSchema = schemas.RuleEvaluationDto
 export const IncidentStateTransitionDtoSchema = schemas.IncidentStateTransitionDto
 
+// ── Status Data catalog DTO schemas ─────────────────────────────────
+
+export const ServiceCatalogDtoSchema = schemas.ServiceCatalogDto
+export const ServiceDetailDtoSchema = schemas.ServiceDetailDto
+export const ServiceLiveStatusDtoSchema = schemas.ServiceLiveStatusDto
+export const ServiceStatusDtoSchema = schemas.ServiceStatusDto
+export const CategoryDtoSchema = schemas.CategoryDto
+export const GlobalStatusSummaryDtoSchema = schemas.GlobalStatusSummaryDto
+export const ServiceComponentDtoSchema = schemas.ServiceComponentDto
+export const ComponentStatusDtoSchema = schemas.ComponentStatusDto
+export const ComponentsSummaryDtoSchema = schemas.ComponentsSummaryDto
+export const ComponentUptimeSummaryDtoSchema = schemas.ComponentUptimeSummaryDto
+export const ComponentUptimeDayDtoSchema = schemas.ComponentUptimeDayDto
+export const BatchComponentUptimeDtoSchema = schemas.BatchComponentUptimeDto
+export const ServiceDayDetailDtoSchema = schemas.ServiceDayDetailDto
+export const ServiceIncidentDtoSchema = schemas.ServiceIncidentDto
+export const ServiceIncidentDetailDtoSchema = schemas.ServiceIncidentDetailDto
+export const ServiceIncidentUpdateDtoSchema = schemas.ServiceIncidentUpdateDto
+export const ServiceUptimeResponseSchema = schemas.ServiceUptimeResponse
+export const UptimeBucketDtoSchema = schemas.UptimeBucketDto
+export const ScheduledMaintenanceDtoSchema = schemas.ScheduledMaintenanceDto
+
 // ── Status Page DTO schemas ─────────────────────────────────────────
 
 export const StatusPageDtoSchema = schemas.StatusPageDto
@@ -78,6 +100,8 @@ export const CreateApiKeyRequestSchema = schemas.CreateApiKeyRequest
 export const AcquireDeployLockRequestSchema = schemas.AcquireDeployLockRequest
 export const CreateMaintenanceWindowRequestSchema = schemas.CreateMaintenanceWindowRequest
 export const UpdateMaintenanceWindowRequestSchema = schemas.UpdateMaintenanceWindowRequest
+export const ServiceSubscribeRequestSchema = schemas.ServiceSubscribeRequest
+export const UpdateAlertSensitivityRequestSchema = schemas.UpdateAlertSensitivityRequest
 
 // ── Status Page Request schemas ─────────────────────────────────────
 
@@ -137,6 +161,13 @@ export const SingleValueResponseStatusPageCustomDomainDtoSchema = schemas.Single
 export const SingleValueResponseTestChannelResultSchema = schemas.SingleValueResponseTestChannelResult
 export const SingleValueResponseWebhookTestResultSchema = schemas.SingleValueResponseWebhookTestResult
 export const SingleValueResponseResourceGroupMemberDtoSchema = schemas.SingleValueResponseResourceGroupMemberDto
+export const SingleValueResponseServiceDetailDtoSchema = schemas.SingleValueResponseServiceDetailDto
+export const SingleValueResponseServiceLiveStatusDtoSchema = schemas.SingleValueResponseServiceLiveStatusDto
+export const SingleValueResponseGlobalStatusSummaryDtoSchema = schemas.SingleValueResponseGlobalStatusSummaryDto
+export const SingleValueResponseBatchComponentUptimeDtoSchema = schemas.SingleValueResponseBatchComponentUptimeDto
+export const SingleValueResponseServiceDayDetailDtoSchema = schemas.SingleValueResponseServiceDayDetailDto
+export const SingleValueResponseServiceIncidentDetailDtoSchema = schemas.SingleValueResponseServiceIncidentDetailDto
+export const SingleValueResponseServiceUptimeResponseSchema = schemas.SingleValueResponseServiceUptimeResponse
 
 // TableValueResult (paginated) wrappers
 export const TableValueResultMonitorDtoSchema = schemas.TableValueResultMonitorDto
@@ -158,9 +189,15 @@ export const TableValueResultStatusPageComponentGroupDtoSchema = schemas.TableVa
 export const TableValueResultStatusPageIncidentDtoSchema = schemas.TableValueResultStatusPageIncidentDto
 export const TableValueResultStatusPageSubscriberDtoSchema = schemas.TableValueResultStatusPageSubscriberDto
 export const TableValueResultStatusPageCustomDomainDtoSchema = schemas.TableValueResultStatusPageCustomDomainDto
+export const TableValueResultCategoryDtoSchema = schemas.TableValueResultCategoryDto
+export const TableValueResultServiceComponentDtoSchema = schemas.TableValueResultServiceComponentDto
+export const TableValueResultComponentUptimeDayDtoSchema = schemas.TableValueResultComponentUptimeDayDto
+export const TableValueResultServiceIncidentDtoSchema = schemas.TableValueResultServiceIncidentDto
+export const TableValueResultScheduledMaintenanceDtoSchema = schemas.TableValueResultScheduledMaintenanceDto
 
 // CursorPage wrappers
 export const CursorPageCheckResultDtoSchema = schemas.CursorPageCheckResultDto
+export const CursorPageServiceCatalogDtoSchema = schemas.CursorPageServiceCatalogDto
 
 // ── Generic pagination schema factory ───────────────────────────────
 
