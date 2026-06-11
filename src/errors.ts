@@ -88,6 +88,12 @@ export interface DevhelmApiErrorOptions {
    * non-conforming responses without losing the original shape.
    */
   rawBody?: unknown
+  /**
+   * Seconds to wait before retrying, parsed from the `Retry-After`
+   * response header on a 429. `undefined` when the header was absent
+   * or not a valid integer.
+   */
+  retryAfter?: number
 }
 
 export class DevhelmApiError extends DevhelmError {
@@ -96,6 +102,7 @@ export class DevhelmApiError extends DevhelmError {
   readonly requestId: string | undefined
   readonly body: ErrorResponse | undefined
   readonly rawBody: unknown
+  readonly retryAfter: number | undefined
 
   constructor(message: string, status: number, options?: DevhelmApiErrorOptions) {
     // Server-supplied code wins; fall back to a generic API-error label so
@@ -107,6 +114,7 @@ export class DevhelmApiError extends DevhelmError {
     this.requestId = options?.requestId
     this.body = options?.body
     this.rawBody = options?.rawBody
+    this.retryAfter = options?.retryAfter
   }
 }
 
@@ -184,7 +192,7 @@ const FallbackErrorShape = z
 export function errorFromResponse(
   status: number,
   body: string,
-  options?: {requestId?: string},
+  options?: {requestId?: string; retryAfter?: string},
 ): DevhelmApiError {
   let message = `HTTP ${status}`
   let detail: string | undefined
@@ -223,12 +231,14 @@ export function errorFromResponse(
     }
   }
 
+  const retryAfter = options?.retryAfter ? Number.parseInt(options.retryAfter, 10) : undefined
   const opts: DevhelmApiErrorOptions = {
     detail,
     code,
     requestId: options?.requestId ?? bodyRequestId,
     body: parsed,
     rawBody,
+    retryAfter: Number.isFinite(retryAfter) ? retryAfter : undefined,
   }
   if (status === 401 || status === 403) return new DevhelmAuthError(message, status, opts)
   if (status === 404) return new DevhelmNotFoundError(message, status, opts)

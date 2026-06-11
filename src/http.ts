@@ -99,8 +99,10 @@ export async function checkedFetch(
       body = await response.text().catch(() => '')
     }
     const requestIdHeader = response.headers.get('x-request-id')
+    const retryAfterHeader = response.headers.get('retry-after')
     throw errorFromResponse(response.status, body, {
       requestId: requestIdHeader ?? undefined,
+      retryAfter: retryAfterHeader ?? undefined,
     })
   }
   return data
