@@ -106,6 +106,7 @@ async function run() {
 
     // ── API Keys ──
     case 'api-keys.list': return client.apiKeys.list()
+    case 'api-keys.get': return client.apiKeys.get(rest[0])
     case 'api-keys.create': return client.apiKeys.create(JSON.parse(rest[0]))
     case 'api-keys.revoke': return void await client.apiKeys.revoke(rest[0])
     case 'api-keys.delete': return void await client.apiKeys.delete(rest[0])
