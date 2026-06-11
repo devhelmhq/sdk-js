@@ -9403,7 +9403,10 @@ export interface operations {
     };
     listCategories: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Count only published services (curated public pSEO set); default false */
+                publishedOnly?: boolean;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -18743,6 +18746,8 @@ export interface operations {
                 published?: boolean;
                 /** @description Case-insensitive substring match on service name or slug */
                 search?: string;
+                /** @description Result ordering: 'recent' (default, newest first) or 'curated' (curated/recognizable first) */
+                sort?: string;
                 /** @description Opaque cursor from a previous response */
                 cursor?: string;
                 /** @description Page size (1–100, default 20) */
@@ -18842,6 +18847,8 @@ export interface operations {
             query?: {
                 /** @description Return a curated subset of components (groups + showcase + impacted + ungrouped) and a componentsSummary block; default false */
                 summary?: boolean;
+                /** @description Resolve only published services (curated public pSEO set); 404 otherwise. Default false */
+                publishedOnly?: boolean;
             };
             header?: never;
             path: {
@@ -20113,7 +20120,10 @@ export interface operations {
     };
     getGlobalStatusSummary: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Aggregate only published services (curated public pSEO set); default false */
+                publishedOnly?: boolean;
+            };
             header?: never;
             path?: never;
             cookie?: never;
