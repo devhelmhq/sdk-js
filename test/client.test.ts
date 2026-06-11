@@ -60,6 +60,10 @@ describe('Devhelm client', () => {
     expect(typeof client.apiKeys.revoke).toBe('function')
   })
 
+  it('api keys have get method', () => {
+    expect(typeof client.apiKeys.get).toBe('function')
+  })
+
   it('dependencies have track method', () => {
     expect(typeof client.dependencies.track).toBe('function')
   })

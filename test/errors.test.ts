@@ -60,6 +60,22 @@ describe('errorFromResponse', () => {
     expect(err.status).toBe(429)
   })
 
+  it('exposes retryAfter parsed from the Retry-After header on 429', () => {
+    const err = errorFromResponse(429, '{"message":"Slow down"}', {retryAfter: '30'})
+    expect(err).toBeInstanceOf(DevhelmRateLimitError)
+    expect(err.retryAfter).toBe(30)
+  })
+
+  it('leaves retryAfter undefined when the header is absent', () => {
+    const err = errorFromResponse(429, '{"message":"Slow down"}')
+    expect(err.retryAfter).toBeUndefined()
+  })
+
+  it('leaves retryAfter undefined when the header is not a valid integer', () => {
+    const err = errorFromResponse(429, '{"message":"Slow down"}', {retryAfter: 'not-a-number'})
+    expect(err.retryAfter).toBeUndefined()
+  })
+
   it('returns DevhelmServerError for 500', () => {
     const err = errorFromResponse(500, '{"error":"Internal Server Error"}')
     expect(err).toBeInstanceOf(DevhelmServerError)

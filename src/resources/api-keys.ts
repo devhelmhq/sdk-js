@@ -17,6 +17,11 @@ export class ApiKeys {
     return fetchPage(this.client, '/api/v1/api-keys', ApiKeyDtoSchema, page, size)
   }
 
+  /** Get a single API key by ID. */
+  async get(id: string | number): Promise<ApiKeyDto> {
+    return fetchSingle(this.client, 'GET', `/api/v1/api-keys/${id}`, ApiKeyDtoSchema)
+  }
+
   /** Create a new API key. Returns the full key value (only available at creation time). */
   async create(body: CreateApiKeyRequest): Promise<ApiKeyCreateResponse> {
     validateRequest(CreateApiKeyRequestSchema, body, 'apiKeys.create')
