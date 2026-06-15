@@ -1592,7 +1592,7 @@ export interface paths {
         };
         /**
          * List active components for a service with current status and inline uptime
-         * @description When ``groupId`` is supplied, only direct children of that group are returned — used by the pSEO renderer to lazy-load the leaves under a group that summary mode trimmed. Without ``groupId`` the response includes every active component for the service.
+         * @description When ``groupId`` is supplied, only direct children of that group are returned — used by the pSEO renderer to lazy-load the leaves under a group that summary mode trimmed. Without ``groupId`` the response includes every active component for the service. Supports pagination via ``page``/``size`` and case-insensitive name search via ``search``.
          */
         get: operations["getComponents"];
         put?: never;
@@ -5988,6 +5988,7 @@ export interface components {
             detectedAt?: string | null;
             shortlink?: string | null;
             affectedComponents?: string[] | null;
+            affectedRegions?: string[] | null;
             updates: components["schemas"]["ServiceIncidentUpdateDto"][];
         };
         ServiceIncidentDto: {
@@ -6012,6 +6013,7 @@ export interface components {
             detectedAt?: string | null;
             /** Format: date-time */
             vendorCreatedAt?: string | null;
+            affectedRegions?: string[] | null;
         };
         ServiceIncidentUpdateDto: {
             status: string;
@@ -18946,6 +18948,12 @@ export interface operations {
             query?: {
                 /** @description Restrict result to direct children of this group component id */
                 groupId?: string;
+                /** @description Case-insensitive substring match on component name */
+                search?: string;
+                /** @description Zero-based page index */
+                page?: number;
+                /** @description Page size (default 25, max 100) */
+                size?: number;
             };
             header?: never;
             path: {
