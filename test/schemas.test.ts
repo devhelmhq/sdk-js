@@ -484,16 +484,21 @@ describe('enum validation rejects unknown values', () => {
   })
 })
 
-// ── Strict objects (no passthrough on generated DTOs) ──────────────
-// Generated schemas emit `.strict()` so unknown fields are REJECTED
-// (not silently stripped). This catches API schema drift at the parse
-// boundary instead of allowing new server-side fields to vanish into
-// consumer code that hasn't been updated yet.
+// ── Response DTOs use .passthrough() (Postel's Law) ─────────────────
+// Response-shape schemas (.passthrough()) tolerate unknown fields so
+// that new API fields don't break older SDK versions. Request schemas
+// keep .strict() for typo detection.
 
-describe('strict object schemas reject unknown fields', () => {
-  it('StatusPageDto rejects unknown fields on parse', () => {
+describe('response DTOs tolerate unknown fields (Postel\'s Law)', () => {
+  it('StatusPageDto accepts unknown fields without error', () => {
     const raw = {...validStatusPageDto, futureField: 'new-api-version-data'}
     const result = schemas.StatusPageDto.safeParse(raw)
+    expect(result.success).toBe(true)
+  })
+
+  it('CreateStatusPageRequest still rejects unknown fields', () => {
+    const raw = {name: 'Test', slug: 'test', typo: 'caught'}
+    const result = schemas.CreateStatusPageRequest.safeParse(raw)
     expect(result.success).toBe(false)
     if (!result.success) {
       expect(result.error.issues[0].code).toBe('unrecognized_keys')
