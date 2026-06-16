@@ -24,7 +24,7 @@ const ErrorResponse = z
     requestId: z.string().nullish(),
     errors: z.array(ErrorEntry.nullable()).nullish(),
   })
-  .strict();
+  .passthrough();
 const DatadogChannelConfig = z
   .object({
     channelType: z.literal("datadog"),
@@ -1458,7 +1458,7 @@ const AlertChannelDto = z
     lastDeliveryAt: z.string().datetime({ offset: true }).nullish(),
     lastDeliveryStatus: z.string().nullish(),
   })
-  .strict();
+  .passthrough();
 const AlertDeliveryDto = z
   .object({
     id: z.string().uuid(),
@@ -1478,7 +1478,7 @@ const AlertDeliveryDto = z
     errorMessage: z.string().nullish(),
     createdAt: z.string().datetime({ offset: true }),
   })
-  .strict();
+  .passthrough();
 const ApiKeyCreateResponse = z
   .object({
     id: z.number().int(),
@@ -1487,7 +1487,7 @@ const ApiKeyCreateResponse = z
     createdAt: z.string().datetime({ offset: true }),
     expiresAt: z.string().datetime({ offset: true }).nullish(),
   })
-  .strict();
+  .passthrough();
 const ApiKeyDto = z
   .object({
     id: z.number().int(),
@@ -1499,7 +1499,7 @@ const ApiKeyDto = z
     revokedAt: z.string().datetime({ offset: true }).nullish(),
     expiresAt: z.string().datetime({ offset: true }).nullish(),
   })
-  .strict();
+  .passthrough();
 const AssertionResultDto = z
   .object({
     type: z.string(),
@@ -1509,7 +1509,7 @@ const AssertionResultDto = z
     expected: z.string().nullish(),
     actual: z.string().nullish(),
   })
-  .strict();
+  .passthrough();
 const AssertionTestResultDto = z
   .object({
     assertionType: z.string(),
@@ -1519,7 +1519,7 @@ const AssertionTestResultDto = z
     expected: z.string().nullish(),
     actual: z.string().nullish(),
   })
-  .strict();
+  .passthrough();
 const MemberRoleChangedMetadata = z
   .object({
     kind: z.literal("member_role_changed"),
@@ -1540,7 +1540,7 @@ const AuditEventDto = z
     metadata: AuditMetadata.nullish(),
     createdAt: z.string().datetime({ offset: true }),
   })
-  .strict();
+  .passthrough();
 const KeyInfo = z
   .object({
     id: z.number().int(),
@@ -1558,7 +1558,7 @@ const EntitlementDto = z
     defaultValue: z.number().int(),
     overridden: z.boolean(),
   })
-  .strict();
+  .passthrough();
 const PlanInfo = z
   .object({
     tier: z.enum(["FREE", "STARTER", "PRO", "TEAM", "BUSINESS", "ENTERPRISE"]),
@@ -1583,7 +1583,7 @@ const AuthMeResponse = z
     plan: PlanInfo,
     rateLimits: RateLimitInfo,
   })
-  .strict();
+  .passthrough();
 const IncidentRef = z
   .object({ id: z.string().uuid(), title: z.string(), impact: z.string() })
   .strict();
@@ -1596,10 +1596,10 @@ const ComponentUptimeDayDto = z
     uptimePercentage: z.number(),
     incidents: z.array(IncidentRef).nullish(),
   })
-  .strict();
+  .passthrough();
 const BatchComponentUptimeDto = z
   .object({ components: z.record(z.string(), z.array(ComponentUptimeDayDto)) })
-  .strict();
+  .passthrough();
 const FailureDetail = z
   .object({ monitorId: z.string().uuid(), reason: z.string() })
   .strict();
@@ -1611,7 +1611,7 @@ const BulkMonitorActionResult = z
   .strict();
 const CategoryDto = z
   .object({ category: z.string(), serviceCount: z.number().int() })
-  .strict();
+  .passthrough();
 const ChartBucketDto = z
   .object({
     bucket: z.string().datetime({ offset: true }),
@@ -1620,7 +1620,7 @@ const ChartBucketDto = z
     p95LatencyMs: z.number().nullish(),
     p99LatencyMs: z.number().nullish(),
   })
-  .strict();
+  .passthrough();
 const TlsInfoDto = z
   .object({
     subjectCn: z.string().nullable(),
@@ -1635,7 +1635,7 @@ const TlsInfoDto = z
     chainValid: z.boolean().nullable(),
   })
   .partial()
-  .strict();
+  .passthrough();
 const TimingPhasesDto = z
   .object({
     dns_ms: z.number().int().nullable(),
@@ -1646,7 +1646,7 @@ const TimingPhasesDto = z
     total_ms: z.number().int().nullable(),
   })
   .partial()
-  .strict();
+  .passthrough();
 const Http = z
   .object({
     check_type: z.literal("http"),
@@ -1729,7 +1729,7 @@ const CheckResultDetailsDto = z
     checkDetails: CheckTypeDetailsDto.nullable(),
   })
   .partial()
-  .strict();
+  .passthrough();
 const CheckResultDto = z
   .object({
     id: z.string().uuid(),
@@ -1742,7 +1742,7 @@ const CheckResultDto = z
     details: CheckResultDetailsDto.nullish(),
     checkId: z.string().uuid().nullish(),
   })
-  .strict();
+  .passthrough();
 const RuleEvaluationDto = z
   .object({
     id: z.string().uuid(),
@@ -1755,12 +1755,12 @@ const RuleEvaluationDto = z
     ruleScope: z.string().min(1),
     inputResultIds: z.array(z.string().uuid()).min(1),
     outputMatched: z.boolean(),
-    evaluationDetails: z.record(z.string(), z.object({}).partial().strict()),
+    evaluationDetails: z.record(z.string(), z.object({}).partial().passthrough()),
     engineVersion: z.string().min(1),
     checkId: z.string().uuid(),
     triggeringTransitionId: z.string().uuid().nullish(),
   })
-  .strict();
+  .passthrough();
 const StateTransitionDetails = z
   .object({ source: z.enum(["pipeline", "public-api"]) })
   .strict();
@@ -1780,16 +1780,16 @@ const IncidentStateTransitionDto = z
     checkId: z.string().uuid(),
     details: StateTransitionDetails,
   })
-  .strict();
+  .passthrough();
 const PolicySnapshotDto = z
   .object({
     hashHex: z.string().min(1),
-    policy: z.record(z.string(), z.object({}).partial().strict()),
+    policy: z.record(z.string(), z.object({}).partial().passthrough()),
     engineVersion: z.string().min(1),
     firstSeenAt: z.string().datetime({ offset: true }),
     lastSeenAt: z.string().datetime({ offset: true }),
   })
-  .strict();
+  .passthrough();
 const CheckTraceDto = z
   .object({
     checkId: z.string().uuid(),
@@ -1797,7 +1797,7 @@ const CheckTraceDto = z
     transitions: z.array(IncidentStateTransitionDto),
     policySnapshot: PolicySnapshotDto.nullish(),
   })
-  .strict();
+  .passthrough();
 const ComponentImpact = z
   .object({
     componentId: z.string().uuid(),
@@ -1814,10 +1814,10 @@ const ComponentsSummaryDto = z
     includedCount: z.number().int(),
     groupComponentCounts: z.record(z.string(), z.number().int()),
   })
-  .strict();
+  .passthrough();
 const ComponentStatusDto = z
   .object({ id: z.string(), name: z.string(), status: z.string() })
-  .strict();
+  .passthrough();
 const ComponentUptimeSummaryDto = z
   .object({
     day: z.number().nullish(),
@@ -1825,14 +1825,14 @@ const ComponentUptimeSummaryDto = z
     month: z.number().nullish(),
     source: z.string(),
   })
-  .strict();
+  .passthrough();
 const CursorPageCheckResultDto = z
   .object({
     data: z.array(CheckResultDto),
     nextCursor: z.string().nullish(),
     hasMore: z.boolean(),
   })
-  .strict();
+  .passthrough();
 const ServiceCatalogDto = z
   .object({
     id: z.string().uuid(),
@@ -1855,14 +1855,14 @@ const ServiceCatalogDto = z
     dataCompleteness: z.string(),
     uptime30d: z.number().nullish(),
   })
-  .strict();
+  .passthrough();
 const CursorPageServiceCatalogDto = z
   .object({
     data: z.array(ServiceCatalogDto),
     nextCursor: z.string().nullish(),
     hasMore: z.boolean(),
   })
-  .strict();
+  .passthrough();
 const ServicePollResultDto = z
   .object({
     serviceId: z.string().uuid(),
@@ -1875,14 +1875,14 @@ const ServicePollResultDto = z
     componentCount: z.number().int(),
     degradedCount: z.number().int(),
   })
-  .strict();
+  .passthrough();
 const CursorPageServicePollResultDto = z
   .object({
     data: z.array(ServicePollResultDto),
     nextCursor: z.string().nullish(),
     hasMore: z.boolean(),
   })
-  .strict();
+  .passthrough();
 const MonitorsSummaryDto = z
   .object({
     total: z.number().int(),
@@ -1893,17 +1893,17 @@ const MonitorsSummaryDto = z
     avgUptime24h: z.number().nullish(),
     avgUptime30d: z.number().nullish(),
   })
-  .strict();
+  .passthrough();
 const IncidentsSummaryDto = z
   .object({
     active: z.number().int(),
     resolvedToday: z.number().int(),
     mttr30d: z.number().nullish(),
   })
-  .strict();
+  .passthrough();
 const DashboardOverviewDto = z
   .object({ monitors: MonitorsSummaryDto, incidents: IncidentsSummaryDto })
-  .strict();
+  .passthrough();
 const DayIncident = z
   .object({
     id: z.string().uuid(),
@@ -1924,7 +1924,7 @@ const DekRotationResultDto = z
     channelsReEncrypted: z.number().int(),
     rotatedAt: z.string().datetime({ offset: true }),
   })
-  .strict();
+  .passthrough();
 const DeleteChannelResult = z
   .object({
     affectedPolicies: z.number().int(),
@@ -1946,7 +1946,7 @@ const DeliveryAttemptDto = z
     requestHeaders: z.record(z.string(), z.string().nullable()).nullish(),
     attemptedAt: z.string().datetime({ offset: true }),
   })
-  .strict();
+  .passthrough();
 const DeployLockDto = z
   .object({
     id: z.string().uuid(),
@@ -1954,7 +1954,7 @@ const DeployLockDto = z
     lockedAt: z.string().datetime({ offset: true }),
     expiresAt: z.string().datetime({ offset: true }),
   })
-  .strict();
+  .passthrough();
 const EnvironmentDto = z
   .object({
     id: z.string().uuid(),
@@ -1967,7 +1967,7 @@ const EnvironmentDto = z
     monitorCount: z.number().int(),
     isDefault: z.boolean(),
   })
-  .strict();
+  .passthrough();
 const GlobalStatusSummaryDto = z
   .object({
     totalServices: z.number().int(),
@@ -1980,8 +1980,8 @@ const GlobalStatusSummaryDto = z
     activeIncidentCount: z.number().int(),
     servicesWithIssues: z.array(ServiceCatalogDto),
   })
-  .strict();
-const HeartbeatPingResponse = z.object({ ok: z.boolean() }).strict();
+  .passthrough();
+const HeartbeatPingResponse = z.object({ ok: z.boolean() }).passthrough();
 const IncidentDto = z
   .object({
     id: z.string().uuid(),
@@ -2019,7 +2019,7 @@ const IncidentDto = z
     triggeredByRuleIndex: z.number().int().nullish(),
     engineVersion: z.string().nullish(),
   })
-  .strict();
+  .passthrough();
 const IncidentUpdateDto = z
   .object({
     id: z.string().uuid(),
@@ -2031,7 +2031,7 @@ const IncidentUpdateDto = z
     notifySubscribers: z.boolean(),
     createdAt: z.string().datetime({ offset: true }),
   })
-  .strict();
+  .passthrough();
 const LinkedStatusPageIncidentDto = z
   .object({
     id: z.string().uuid(),
@@ -2044,14 +2044,14 @@ const LinkedStatusPageIncidentDto = z
     scheduled: z.boolean(),
     publishedAt: z.string().datetime({ offset: true }).nullish(),
   })
-  .strict();
+  .passthrough();
 const IncidentDetailDto = z
   .object({
     incident: IncidentDto,
     updates: z.array(IncidentUpdateDto),
     statusPageIncidents: z.array(LinkedStatusPageIncidentDto).nullish(),
   })
-  .strict();
+  .passthrough();
 const IncidentFilterParams = z
   .object({
     status: z
@@ -2090,14 +2090,14 @@ const IncidentPolicyDto = z
     monitorRegionCount: z.number().int().nullish(),
     checkFrequencySeconds: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const IncidentTimelineDto = z
   .object({
     transitions: z.array(IncidentStateTransitionDto),
     triggeringEvaluations: z.array(RuleEvaluationDto),
     policySnapshot: PolicySnapshotDto.nullish(),
   })
-  .strict();
+  .passthrough();
 const IntegrationFieldDto = z
   .object({
     key: z.string(),
@@ -2110,13 +2110,13 @@ const IntegrationFieldDto = z
     options: z.array(z.string()).nullish(),
     default: z.string().nullish(),
   })
-  .strict();
+  .passthrough();
 const IntegrationConfigSchemaDto = z
   .object({
     connectionFields: z.array(IntegrationFieldDto),
     channelFields: z.array(IntegrationFieldDto),
   })
-  .strict();
+  .passthrough();
 const IntegrationDto = z
   .object({
     type: z.string(),
@@ -2129,7 +2129,7 @@ const IntegrationDto = z
     setupGuideUrl: z.string(),
     configSchema: IntegrationConfigSchemaDto,
   })
-  .strict();
+  .passthrough();
 const InviteDto = z
   .object({
     inviteId: z.number().int(),
@@ -2139,7 +2139,7 @@ const InviteDto = z
     consumedAt: z.string().datetime({ offset: true }).nullish(),
     revokedAt: z.string().datetime({ offset: true }).nullish(),
   })
-  .strict();
+  .passthrough();
 const MaintenanceComponentRef = z
   .object({ id: z.string().uuid(), name: z.string(), status: z.string() })
   .strict();
@@ -2150,7 +2150,7 @@ const MaintenanceUpdateDto = z
     body: z.string().nullish(),
     displayAt: z.string().datetime({ offset: true }).nullish(),
   })
-  .strict();
+  .passthrough();
 const MaintenanceWindowDto = z
   .object({
     id: z.string().uuid(),
@@ -2163,7 +2163,7 @@ const MaintenanceWindowDto = z
     suppressAlerts: z.boolean(),
     createdAt: z.string().datetime({ offset: true }),
   })
-  .strict();
+  .passthrough();
 const MemberDto = z
   .object({
     userId: z.number().int(),
@@ -2173,7 +2173,7 @@ const MemberDto = z
     status: z.string(),
     createdAt: z.string().datetime({ offset: true }),
   })
-  .strict();
+  .passthrough();
 const MonitorAssertionDto = z
   .object({
     id: z.string().uuid(),
@@ -2225,7 +2225,7 @@ const MonitorAssertionDto = z
     ]),
     severity: z.string(),
   })
-  .strict();
+  .passthrough();
 const MonitorAuthDto = z
   .object({
     id: z.string().uuid(),
@@ -2233,7 +2233,7 @@ const MonitorAuthDto = z
     authType: z.string(),
     config: z.discriminatedUnion("type", [ApiKeyAuthConfig, BasicAuthConfig, BearerAuthConfig, HeaderAuthConfig]),
   })
-  .strict();
+  .passthrough();
 const TagDto = z
   .object({
     id: z.string().uuid(),
@@ -2243,7 +2243,7 @@ const TagDto = z
     createdAt: z.string().datetime({ offset: true }),
     updatedAt: z.string().datetime({ offset: true }),
   })
-  .strict();
+  .passthrough();
 const Summary = z
   .object({
     id: z.string().uuid(),
@@ -2280,7 +2280,7 @@ const MonitorDto = z
     alertChannelIds: z.array(z.string().uuid()).nullish(),
     currentStatus: z.string().nullish(),
   })
-  .strict();
+  .passthrough();
 const MonitorReference = z
   .object({ id: z.string().uuid(), name: z.string() })
   .strict();
@@ -2300,7 +2300,7 @@ const MonitorTestResultDto = z
     assertionResults: z.array(AssertionTestResultDto),
     warnings: z.array(z.string()).nullish(),
   })
-  .strict();
+  .passthrough();
 const MonitorVersionDto = z
   .object({
     id: z.string().uuid(),
@@ -2312,7 +2312,7 @@ const MonitorVersionDto = z
     changeSummary: z.string().nullish(),
     createdAt: z.string().datetime({ offset: true }),
   })
-  .strict();
+  .passthrough();
 const NotificationDispatchDto = z
   .object({
     id: z.string().uuid(),
@@ -2330,7 +2330,7 @@ const NotificationDispatchDto = z
     createdAt: z.string().datetime({ offset: true }),
     updatedAt: z.string().datetime({ offset: true }),
   })
-  .strict();
+  .passthrough();
 const NotificationDto = z
   .object({
     id: z.number().int(),
@@ -2342,7 +2342,7 @@ const NotificationDto = z
     read: z.boolean(),
     createdAt: z.string().datetime({ offset: true }),
   })
-  .strict();
+  .passthrough();
 const NotificationPolicyDto = z
   .object({
     id: z.string().uuid(),
@@ -2355,7 +2355,7 @@ const NotificationPolicyDto = z
     createdAt: z.string().datetime({ offset: true }),
     updatedAt: z.string().datetime({ offset: true }),
   })
-  .strict();
+  .passthrough();
 const OrganizationDto = z
   .object({
     id: z.number().int(),
@@ -2365,7 +2365,7 @@ const OrganizationDto = z
     industry: z.string().nullish(),
     websiteUrl: z.string().nullish(),
   })
-  .strict();
+  .passthrough();
 const Pageable = z
   .object({
     page: z.number().int().gte(0),
@@ -2380,7 +2380,7 @@ const PollChartBucketDto = z
     avgResponseTimeMs: z.number().nullish(),
     totalPolls: z.number().int(),
   })
-  .strict();
+  .passthrough();
 const RegionStatusDto = z
   .object({
     region: z.string(),
@@ -2389,7 +2389,7 @@ const RegionStatusDto = z
     timestamp: z.string().datetime({ offset: true }),
     severityHint: z.string().nullish(),
   })
-  .strict();
+  .passthrough();
 const ResourceGroupHealthDto = z
   .object({
     status: z.string(),
@@ -2399,7 +2399,7 @@ const ResourceGroupHealthDto = z
     thresholdStatus: z.string().nullish(),
     failingCount: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const ResourceGroupMemberDto = z
   .object({
     id: z.string().uuid(),
@@ -2421,7 +2421,7 @@ const ResourceGroupMemberDto = z
     monitorType: z.string().nullish(),
     environmentName: z.string().nullish(),
   })
-  .strict();
+  .passthrough();
 const ResourceGroupDto = z
   .object({
     id: z.string().uuid(),
@@ -2446,7 +2446,7 @@ const ResourceGroupDto = z
     createdAt: z.string().datetime({ offset: true }),
     updatedAt: z.string().datetime({ offset: true }),
   })
-  .strict();
+  .passthrough();
 const ResultSummaryDto = z
   .object({
     currentStatus: z.string(),
@@ -2455,7 +2455,7 @@ const ResultSummaryDto = z
     uptime24h: z.number().nullish(),
     uptimeWindow: z.number().nullish(),
   })
-  .strict();
+  .passthrough();
 const ScheduledMaintenanceDto = z
   .object({
     id: z.string().uuid(),
@@ -2471,7 +2471,7 @@ const ScheduledMaintenanceDto = z
     affectedComponents: z.array(MaintenanceComponentRef),
     updates: z.array(MaintenanceUpdateDto),
   })
-  .strict();
+  .passthrough();
 const SecretDto = z
   .object({
     id: z.string().uuid(),
@@ -2482,7 +2482,7 @@ const SecretDto = z
     updatedAt: z.string().datetime({ offset: true }),
     usedByMonitors: z.array(MonitorReference).nullish(),
   })
-  .strict();
+  .passthrough();
 const SeoMetadataDto = z
   .object({
     shortDescription: z.string().nullable(),
@@ -2490,7 +2490,7 @@ const SeoMetadataDto = z
     about: z.string().nullable(),
   })
   .partial()
-  .strict();
+  .passthrough();
 const ServiceComponentDto = z
   .object({
     id: z.string().uuid(),
@@ -2517,7 +2517,7 @@ const ServiceComponentDto = z
     lastSeenAt: z.string().datetime({ offset: true }),
     isGroup: z.boolean(),
   })
-  .strict();
+  .passthrough();
 const ServiceDayDetailDto = z
   .object({
     date: z.string(),
@@ -2528,13 +2528,13 @@ const ServiceDayDetailDto = z
     components: z.array(ComponentImpact),
     incidents: z.array(DayIncident),
   })
-  .strict();
+  .passthrough();
 const ServiceStatusDto = z
   .object({
     overallStatus: z.string(),
     lastPolledAt: z.string().datetime({ offset: true }).nullish(),
   })
-  .strict();
+  .passthrough();
 const ServiceIncidentDto = z
   .object({
     id: z.string().uuid(),
@@ -2552,7 +2552,7 @@ const ServiceIncidentDto = z
     detectedAt: z.string().datetime({ offset: true }).nullish(),
     vendorCreatedAt: z.string().datetime({ offset: true }).nullish(),
   })
-  .strict();
+  .passthrough();
 const ServiceDetailDto = z
   .object({
     id: z.string().uuid(),
@@ -2578,14 +2578,14 @@ const ServiceDetailDto = z
     seoMetadata: SeoMetadataDto.nullish(),
     relatedServices: z.array(ServiceCatalogDto).nullish(),
   })
-  .strict();
+  .passthrough();
 const ServiceIncidentUpdateDto = z
   .object({
     status: z.string(),
     body: z.string().nullish(),
     displayAt: z.string().datetime({ offset: true }).nullish(),
   })
-  .strict();
+  .passthrough();
 const ServiceIncidentDetailDto = z
   .object({
     id: z.string().uuid(),
@@ -2599,7 +2599,7 @@ const ServiceIncidentDetailDto = z
     affectedComponents: z.array(z.string()).nullish(),
     updates: z.array(ServiceIncidentUpdateDto),
   })
-  .strict();
+  .passthrough();
 const ServiceLiveStatusDto = z
   .object({
     overallStatus: z.string().nullish(),
@@ -2607,7 +2607,7 @@ const ServiceLiveStatusDto = z
     activeIncidentCount: z.number().int(),
     lastPolledAt: z.string().nullish(),
   })
-  .strict();
+  .passthrough();
 const ServicePollSummaryDto = z
   .object({
     uptimePercentage: z.number().nullish(),
@@ -2618,7 +2618,7 @@ const ServicePollSummaryDto = z
     window: z.string(),
     chartData: z.array(PollChartBucketDto),
   })
-  .strict();
+  .passthrough();
 const ServiceSubscriptionDto = z
   .object({
     subscriptionId: z.string().uuid(),
@@ -2637,14 +2637,14 @@ const ServiceSubscriptionDto = z
     alertSensitivity: z.string().min(1),
     subscribedAt: z.string().datetime({ offset: true }),
   })
-  .strict();
+  .passthrough();
 const UptimeBucketDto = z
   .object({
     timestamp: z.string().datetime({ offset: true }),
     uptimePct: z.number().nullish(),
     totalPolls: z.number().int(),
   })
-  .strict();
+  .passthrough();
 const ServiceUptimeResponse = z
   .object({
     overallUptimePct: z.number().nullish(),
@@ -2653,120 +2653,120 @@ const ServiceUptimeResponse = z
     buckets: z.array(UptimeBucketDto),
     source: z.string().nullish(),
   })
-  .strict();
+  .passthrough();
 const SingleValueResponseAlertChannelDto = z
   .object({ data: AlertChannelDto })
-  .strict();
+  .passthrough();
 const SingleValueResponseAlertDeliveryDto = z
   .object({ data: AlertDeliveryDto })
-  .strict();
+  .passthrough();
 const SingleValueResponseApiKeyCreateResponse = z
   .object({ data: ApiKeyCreateResponse })
-  .strict();
-const SingleValueResponseApiKeyDto = z.object({ data: ApiKeyDto }).strict();
+  .passthrough();
+const SingleValueResponseApiKeyDto = z.object({ data: ApiKeyDto }).passthrough();
 const SingleValueResponseAuthMeResponse = z
   .object({ data: AuthMeResponse })
-  .strict();
+  .passthrough();
 const SingleValueResponseBatchComponentUptimeDto = z
   .object({ data: BatchComponentUptimeDto })
-  .strict();
+  .passthrough();
 const SingleValueResponseBulkMonitorActionResult = z
   .object({ data: BulkMonitorActionResult })
-  .strict();
+  .passthrough();
 const SingleValueResponseCheckTraceDto = z
   .object({ data: CheckTraceDto })
-  .strict();
+  .passthrough();
 const SingleValueResponseDashboardOverviewDto = z
   .object({ data: DashboardOverviewDto })
-  .strict();
+  .passthrough();
 const SingleValueResponseDekRotationResultDto = z
   .object({ data: DekRotationResultDto })
-  .strict();
+  .passthrough();
 const SingleValueResponseDeployLockDto = z
   .object({ data: DeployLockDto })
-  .strict();
+  .passthrough();
 const SingleValueResponseEnvironmentDto = z
   .object({ data: EnvironmentDto })
-  .strict();
+  .passthrough();
 const SingleValueResponseGlobalStatusSummaryDto = z
   .object({ data: GlobalStatusSummaryDto })
-  .strict();
+  .passthrough();
 const SingleValueResponseIncidentDetailDto = z
   .object({ data: IncidentDetailDto })
-  .strict();
+  .passthrough();
 const SingleValueResponseIncidentPolicyDto = z
   .object({ data: IncidentPolicyDto })
-  .strict();
+  .passthrough();
 const SingleValueResponseIncidentTimelineDto = z
   .object({ data: IncidentTimelineDto })
-  .strict();
-const SingleValueResponseInviteDto = z.object({ data: InviteDto }).strict();
+  .passthrough();
+const SingleValueResponseInviteDto = z.object({ data: InviteDto }).passthrough();
 const SingleValueResponseListUUID = z
   .object({ data: z.array(z.string().uuid()) })
-  .strict();
-const SingleValueResponseLong = z.object({ data: z.number().int() }).strict();
+  .passthrough();
+const SingleValueResponseLong = z.object({ data: z.number().int() }).passthrough();
 const SingleValueResponseMaintenanceWindowDto = z
   .object({ data: MaintenanceWindowDto })
-  .strict();
+  .passthrough();
 const SingleValueResponseMonitorAssertionDto = z
   .object({ data: MonitorAssertionDto })
-  .strict();
+  .passthrough();
 const SingleValueResponseMonitorAuthDto = z
   .object({ data: MonitorAuthDto })
-  .strict();
-const SingleValueResponseMonitorDto = z.object({ data: MonitorDto }).strict();
+  .passthrough();
+const SingleValueResponseMonitorDto = z.object({ data: MonitorDto }).passthrough();
 const SingleValueResponseMonitorTestResultDto = z
   .object({ data: MonitorTestResultDto })
-  .strict();
+  .passthrough();
 const SingleValueResponseMonitorVersionDto = z
   .object({ data: MonitorVersionDto })
-  .strict();
+  .passthrough();
 const SingleValueResponseNotificationDispatchDto = z
   .object({ data: NotificationDispatchDto })
-  .strict();
+  .passthrough();
 const SingleValueResponseNotificationPolicyDto = z
   .object({ data: NotificationPolicyDto })
-  .strict();
+  .passthrough();
 const SingleValueResponseOrganizationDto = z
   .object({ data: OrganizationDto })
-  .strict();
+  .passthrough();
 const SingleValueResponsePolicySnapshotDto = z
   .object({ data: PolicySnapshotDto.nullable() })
-  .strict();
+  .passthrough();
 const SingleValueResponseResourceGroupDto = z
   .object({ data: ResourceGroupDto })
-  .strict();
+  .passthrough();
 const SingleValueResponseResourceGroupHealthDto = z
   .object({ data: ResourceGroupHealthDto })
-  .strict();
+  .passthrough();
 const SingleValueResponseResourceGroupMemberDto = z
   .object({ data: ResourceGroupMemberDto })
-  .strict();
+  .passthrough();
 const SingleValueResponseResultSummaryDto = z
   .object({ data: ResultSummaryDto })
-  .strict();
-const SingleValueResponseSecretDto = z.object({ data: SecretDto }).strict();
+  .passthrough();
+const SingleValueResponseSecretDto = z.object({ data: SecretDto }).passthrough();
 const SingleValueResponseServiceDayDetailDto = z
   .object({ data: ServiceDayDetailDto })
-  .strict();
+  .passthrough();
 const SingleValueResponseServiceDetailDto = z
   .object({ data: ServiceDetailDto })
-  .strict();
+  .passthrough();
 const SingleValueResponseServiceIncidentDetailDto = z
   .object({ data: ServiceIncidentDetailDto })
-  .strict();
+  .passthrough();
 const SingleValueResponseServiceLiveStatusDto = z
   .object({ data: ServiceLiveStatusDto })
-  .strict();
+  .passthrough();
 const SingleValueResponseServicePollSummaryDto = z
   .object({ data: ServicePollSummaryDto })
-  .strict();
+  .passthrough();
 const SingleValueResponseServiceSubscriptionDto = z
   .object({ data: ServiceSubscriptionDto })
-  .strict();
+  .passthrough();
 const SingleValueResponseServiceUptimeResponse = z
   .object({ data: ServiceUptimeResponse })
-  .strict();
+  .passthrough();
 const StatusPageComponentDto = z
   .object({
     id: z.string().uuid(),
@@ -2786,10 +2786,10 @@ const StatusPageComponentDto = z
     createdAt: z.string().datetime({ offset: true }),
     updatedAt: z.string().datetime({ offset: true }),
   })
-  .strict();
+  .passthrough();
 const SingleValueResponseStatusPageComponentDto = z
   .object({ data: StatusPageComponentDto })
-  .strict();
+  .passthrough();
 const StatusPageComponentGroupDto = z
   .object({
     id: z.string().uuid(),
@@ -2803,10 +2803,10 @@ const StatusPageComponentGroupDto = z
     createdAt: z.string().datetime({ offset: true }),
     updatedAt: z.string().datetime({ offset: true }),
   })
-  .strict();
+  .passthrough();
 const SingleValueResponseStatusPageComponentGroupDto = z
   .object({ data: StatusPageComponentGroupDto })
-  .strict();
+  .passthrough();
 const StatusPageCustomDomainDto = z
   .object({
     id: z.string().uuid(),
@@ -2824,10 +2824,10 @@ const StatusPageCustomDomainDto = z
     updatedAt: z.string().datetime({ offset: true }),
     primary: z.boolean(),
   })
-  .strict();
+  .passthrough();
 const SingleValueResponseStatusPageCustomDomainDto = z
   .object({ data: StatusPageCustomDomainDto })
-  .strict();
+  .passthrough();
 const StatusPageDto = z
   .object({
     id: z.string().uuid(),
@@ -2847,17 +2847,17 @@ const StatusPageDto = z
     createdAt: z.string().datetime({ offset: true }),
     updatedAt: z.string().datetime({ offset: true }),
   })
-  .strict();
+  .passthrough();
 const SingleValueResponseStatusPageDto = z
   .object({ data: StatusPageDto })
-  .strict();
+  .passthrough();
 const StatusPageIncidentComponentDto = z
   .object({
     statusPageComponentId: z.string().uuid(),
     componentStatus: z.string(),
     componentName: z.string(),
   })
-  .strict();
+  .passthrough();
 const StatusPageIncidentUpdateDto = z
   .object({
     id: z.string().uuid(),
@@ -2868,7 +2868,7 @@ const StatusPageIncidentUpdateDto = z
     notifySubscribers: z.boolean(),
     createdAt: z.string().datetime({ offset: true }),
   })
-  .strict();
+  .passthrough();
 const StatusPageIncidentDto = z
   .object({
     id: z.string().uuid(),
@@ -2892,10 +2892,10 @@ const StatusPageIncidentDto = z
     createdAt: z.string().datetime({ offset: true }),
     updatedAt: z.string().datetime({ offset: true }),
   })
-  .strict();
+  .passthrough();
 const SingleValueResponseStatusPageIncidentDto = z
   .object({ data: StatusPageIncidentDto })
-  .strict();
+  .passthrough();
 const StatusPageSubscriberDto = z
   .object({
     id: z.string().uuid(),
@@ -2903,18 +2903,18 @@ const StatusPageSubscriberDto = z
     confirmed: z.boolean(),
     createdAt: z.string().datetime({ offset: true }),
   })
-  .strict();
+  .passthrough();
 const SingleValueResponseStatusPageSubscriberDto = z
   .object({ data: StatusPageSubscriberDto })
-  .strict();
-const SingleValueResponseString = z.object({ data: z.string() }).strict();
-const SingleValueResponseTagDto = z.object({ data: TagDto }).strict();
+  .passthrough();
+const SingleValueResponseString = z.object({ data: z.string() }).passthrough();
+const SingleValueResponseTagDto = z.object({ data: TagDto }).passthrough();
 const TestChannelResult = z
   .object({ success: z.boolean(), message: z.string() })
   .strict();
 const SingleValueResponseTestChannelResult = z
   .object({ data: TestChannelResult })
-  .strict();
+  .passthrough();
 const TestMatchResult = z
   .object({
     matched: z.boolean(),
@@ -2924,7 +2924,7 @@ const TestMatchResult = z
   .strict();
 const SingleValueResponseTestMatchResult = z
   .object({ data: TestMatchResult })
-  .strict();
+  .passthrough();
 const UptimeDto = z
   .object({
     uptimePercentage: z.number().nullish(),
@@ -2933,8 +2933,8 @@ const UptimeDto = z
     avgLatencyMs: z.number().nullish(),
     p95LatencyMs: z.number().nullish(),
   })
-  .strict();
-const SingleValueResponseUptimeDto = z.object({ data: UptimeDto }).strict();
+  .passthrough();
+const SingleValueResponseUptimeDto = z.object({ data: UptimeDto }).passthrough();
 const WebhookEndpointDto = z
   .object({
     id: z.string().uuid(),
@@ -2948,16 +2948,16 @@ const WebhookEndpointDto = z
     createdAt: z.string().datetime({ offset: true }),
     updatedAt: z.string().datetime({ offset: true }),
   })
-  .strict();
+  .passthrough();
 const SingleValueResponseWebhookEndpointDto = z
   .object({ data: WebhookEndpointDto })
-  .strict();
+  .passthrough();
 const WebhookSigningSecretDto = z
   .object({ configured: z.boolean(), maskedSecret: z.string().nullish() })
-  .strict();
+  .passthrough();
 const SingleValueResponseWebhookSigningSecretDto = z
   .object({ data: WebhookSigningSecretDto })
-  .strict();
+  .passthrough();
 const WebhookTestResult = z
   .object({
     success: z.boolean(),
@@ -2968,7 +2968,7 @@ const WebhookTestResult = z
   .strict();
 const SingleValueResponseWebhookTestResult = z
   .object({ data: WebhookTestResult })
-  .strict();
+  .passthrough();
 const WorkspaceDto = z
   .object({
     id: z.number().int(),
@@ -2977,10 +2977,10 @@ const WorkspaceDto = z
     name: z.string().min(1),
     orgId: z.number().int(),
   })
-  .strict();
+  .passthrough();
 const SingleValueResponseWorkspaceDto = z
   .object({ data: WorkspaceDto })
-  .strict();
+  .passthrough();
 const TableValueResultAlertChannelDto = z
   .object({
     data: z.array(AlertChannelDto),
@@ -2989,7 +2989,7 @@ const TableValueResultAlertChannelDto = z
     totalElements: z.number().int().nullish(),
     totalPages: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const TableValueResultAlertDeliveryDto = z
   .object({
     data: z.array(AlertDeliveryDto),
@@ -2998,7 +2998,7 @@ const TableValueResultAlertDeliveryDto = z
     totalElements: z.number().int().nullish(),
     totalPages: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const TableValueResultApiKeyDto = z
   .object({
     data: z.array(ApiKeyDto),
@@ -3007,7 +3007,7 @@ const TableValueResultApiKeyDto = z
     totalElements: z.number().int().nullish(),
     totalPages: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const TableValueResultAuditEventDto = z
   .object({
     data: z.array(AuditEventDto),
@@ -3016,7 +3016,7 @@ const TableValueResultAuditEventDto = z
     totalElements: z.number().int().nullish(),
     totalPages: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const TableValueResultCategoryDto = z
   .object({
     data: z.array(CategoryDto),
@@ -3025,7 +3025,7 @@ const TableValueResultCategoryDto = z
     totalElements: z.number().int().nullish(),
     totalPages: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const TableValueResultComponentUptimeDayDto = z
   .object({
     data: z.array(ComponentUptimeDayDto),
@@ -3034,7 +3034,7 @@ const TableValueResultComponentUptimeDayDto = z
     totalElements: z.number().int().nullish(),
     totalPages: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const TableValueResultDeliveryAttemptDto = z
   .object({
     data: z.array(DeliveryAttemptDto),
@@ -3043,7 +3043,7 @@ const TableValueResultDeliveryAttemptDto = z
     totalElements: z.number().int().nullish(),
     totalPages: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const TableValueResultEnvironmentDto = z
   .object({
     data: z.array(EnvironmentDto),
@@ -3052,7 +3052,7 @@ const TableValueResultEnvironmentDto = z
     totalElements: z.number().int().nullish(),
     totalPages: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const TableValueResultIncidentDto = z
   .object({
     data: z.array(IncidentDto),
@@ -3061,7 +3061,7 @@ const TableValueResultIncidentDto = z
     totalElements: z.number().int().nullish(),
     totalPages: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const TableValueResultIncidentStateTransitionDto = z
   .object({
     data: z.array(IncidentStateTransitionDto),
@@ -3070,7 +3070,7 @@ const TableValueResultIncidentStateTransitionDto = z
     totalElements: z.number().int().nullish(),
     totalPages: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const TableValueResultIntegrationDto = z
   .object({
     data: z.array(IntegrationDto),
@@ -3079,7 +3079,7 @@ const TableValueResultIntegrationDto = z
     totalElements: z.number().int().nullish(),
     totalPages: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const TableValueResultInviteDto = z
   .object({
     data: z.array(InviteDto),
@@ -3088,7 +3088,7 @@ const TableValueResultInviteDto = z
     totalElements: z.number().int().nullish(),
     totalPages: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const TableValueResultMaintenanceWindowDto = z
   .object({
     data: z.array(MaintenanceWindowDto),
@@ -3097,7 +3097,7 @@ const TableValueResultMaintenanceWindowDto = z
     totalElements: z.number().int().nullish(),
     totalPages: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const TableValueResultMemberDto = z
   .object({
     data: z.array(MemberDto),
@@ -3106,7 +3106,7 @@ const TableValueResultMemberDto = z
     totalElements: z.number().int().nullish(),
     totalPages: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const TableValueResultMonitorDto = z
   .object({
     data: z.array(MonitorDto),
@@ -3115,7 +3115,7 @@ const TableValueResultMonitorDto = z
     totalElements: z.number().int().nullish(),
     totalPages: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const TableValueResultMonitorVersionDto = z
   .object({
     data: z.array(MonitorVersionDto),
@@ -3124,7 +3124,7 @@ const TableValueResultMonitorVersionDto = z
     totalElements: z.number().int().nullish(),
     totalPages: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const TableValueResultNotificationDispatchDto = z
   .object({
     data: z.array(NotificationDispatchDto),
@@ -3133,7 +3133,7 @@ const TableValueResultNotificationDispatchDto = z
     totalElements: z.number().int().nullish(),
     totalPages: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const TableValueResultNotificationDto = z
   .object({
     data: z.array(NotificationDto),
@@ -3142,7 +3142,7 @@ const TableValueResultNotificationDto = z
     totalElements: z.number().int().nullish(),
     totalPages: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const TableValueResultNotificationPolicyDto = z
   .object({
     data: z.array(NotificationPolicyDto),
@@ -3151,7 +3151,7 @@ const TableValueResultNotificationPolicyDto = z
     totalElements: z.number().int().nullish(),
     totalPages: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const TableValueResultResourceGroupDto = z
   .object({
     data: z.array(ResourceGroupDto),
@@ -3160,7 +3160,7 @@ const TableValueResultResourceGroupDto = z
     totalElements: z.number().int().nullish(),
     totalPages: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const TableValueResultRuleEvaluationDto = z
   .object({
     data: z.array(RuleEvaluationDto),
@@ -3169,7 +3169,7 @@ const TableValueResultRuleEvaluationDto = z
     totalElements: z.number().int().nullish(),
     totalPages: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const TableValueResultScheduledMaintenanceDto = z
   .object({
     data: z.array(ScheduledMaintenanceDto),
@@ -3178,7 +3178,7 @@ const TableValueResultScheduledMaintenanceDto = z
     totalElements: z.number().int().nullish(),
     totalPages: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const TableValueResultSecretDto = z
   .object({
     data: z.array(SecretDto),
@@ -3187,7 +3187,7 @@ const TableValueResultSecretDto = z
     totalElements: z.number().int().nullish(),
     totalPages: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const TableValueResultServiceComponentDto = z
   .object({
     data: z.array(ServiceComponentDto),
@@ -3196,7 +3196,7 @@ const TableValueResultServiceComponentDto = z
     totalElements: z.number().int().nullish(),
     totalPages: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const TableValueResultServiceIncidentDto = z
   .object({
     data: z.array(ServiceIncidentDto),
@@ -3205,7 +3205,7 @@ const TableValueResultServiceIncidentDto = z
     totalElements: z.number().int().nullish(),
     totalPages: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const TableValueResultServiceSubscriptionDto = z
   .object({
     data: z.array(ServiceSubscriptionDto),
@@ -3214,7 +3214,7 @@ const TableValueResultServiceSubscriptionDto = z
     totalElements: z.number().int().nullish(),
     totalPages: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const TableValueResultStatusPageComponentDto = z
   .object({
     data: z.array(StatusPageComponentDto),
@@ -3223,7 +3223,7 @@ const TableValueResultStatusPageComponentDto = z
     totalElements: z.number().int().nullish(),
     totalPages: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const TableValueResultStatusPageComponentGroupDto = z
   .object({
     data: z.array(StatusPageComponentGroupDto),
@@ -3232,7 +3232,7 @@ const TableValueResultStatusPageComponentGroupDto = z
     totalElements: z.number().int().nullish(),
     totalPages: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const TableValueResultStatusPageCustomDomainDto = z
   .object({
     data: z.array(StatusPageCustomDomainDto),
@@ -3241,7 +3241,7 @@ const TableValueResultStatusPageCustomDomainDto = z
     totalElements: z.number().int().nullish(),
     totalPages: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const TableValueResultStatusPageDto = z
   .object({
     data: z.array(StatusPageDto),
@@ -3250,7 +3250,7 @@ const TableValueResultStatusPageDto = z
     totalElements: z.number().int().nullish(),
     totalPages: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const TableValueResultStatusPageIncidentDto = z
   .object({
     data: z.array(StatusPageIncidentDto),
@@ -3259,7 +3259,7 @@ const TableValueResultStatusPageIncidentDto = z
     totalElements: z.number().int().nullish(),
     totalPages: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const TableValueResultStatusPageSubscriberDto = z
   .object({
     data: z.array(StatusPageSubscriberDto),
@@ -3268,7 +3268,7 @@ const TableValueResultStatusPageSubscriberDto = z
     totalElements: z.number().int().nullish(),
     totalPages: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const TableValueResultTagDto = z
   .object({
     data: z.array(TagDto),
@@ -3277,7 +3277,7 @@ const TableValueResultTagDto = z
     totalElements: z.number().int().nullish(),
     totalPages: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const WebhookDeliveryDto = z
   .object({
     id: z.string().uuid(),
@@ -3295,7 +3295,7 @@ const WebhookDeliveryDto = z
     nextRetryAt: z.string().datetime({ offset: true }).nullish(),
     createdAt: z.string().datetime({ offset: true }),
   })
-  .strict();
+  .passthrough();
 const TableValueResultWebhookDeliveryDto = z
   .object({
     data: z.array(WebhookDeliveryDto),
@@ -3304,7 +3304,7 @@ const TableValueResultWebhookDeliveryDto = z
     totalElements: z.number().int().nullish(),
     totalPages: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const TableValueResultWebhookEndpointDto = z
   .object({
     data: z.array(WebhookEndpointDto),
@@ -3313,7 +3313,7 @@ const TableValueResultWebhookEndpointDto = z
     totalElements: z.number().int().nullish(),
     totalPages: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const TableValueResultWorkspaceDto = z
   .object({
     data: z.array(WorkspaceDto),
@@ -3322,13 +3322,13 @@ const TableValueResultWorkspaceDto = z
     totalElements: z.number().int().nullish(),
     totalPages: z.number().int().nullish(),
   })
-  .strict();
+  .passthrough();
 const WebhookEventCatalogEntry = z
   .object({ type: z.string(), surface: z.string(), description: z.string() })
   .strict();
 const WebhookEventCatalogResponse = z
   .object({ data: z.array(WebhookEventCatalogEntry) })
-  .strict();
+  .passthrough();
 
 export const schemas = {
   pageable,

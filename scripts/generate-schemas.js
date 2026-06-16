@@ -13,7 +13,7 @@
 import { readFileSync, writeFileSync, mkdirSync, unlinkSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { preprocessSpec, rewriteUnionsAsDiscriminated } from './lib/preprocess.mjs'
+import { preprocessSpec, rewriteUnionsAsDiscriminated, relaxResponseStrict } from './lib/preprocess.mjs'
 import { generateZodClientFromOpenAPI } from 'openapi-zod-client'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -164,6 +164,7 @@ async function main() {
   const raw = readFileSync(tempGenerated, 'utf8')
   let clean = extractSchemas(raw)
   clean = rewriteUnionsAsDiscriminated(clean, inlinedDiscriminators)
+  clean = relaxResponseStrict(clean)
   clean = fixZod4RecordCalls(clean)
 
   mkdirSync(dirname(OUTPUT_PATH), { recursive: true })
