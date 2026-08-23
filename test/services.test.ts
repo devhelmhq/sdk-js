@@ -27,6 +27,7 @@ const VALID_SERVICE: ServiceCatalogDto = {
   lifecycleStatus: 'ACTIVE',
   enabled: true,
   published: true,
+  slaPublished: true,
   overallStatus: 'OPERATIONAL',
   createdAt: '2026-01-01T00:00:00Z',
   updatedAt: '2026-06-01T00:00:00Z',

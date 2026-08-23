@@ -100,6 +100,7 @@ export type {
   CreateStatusPageComponentGroupRequest,
   UpdateStatusPageComponentGroupRequest,
   CreateStatusPageIncidentRequest,
+  CreateStatusPageMaintenanceRequest,
   UpdateStatusPageIncidentRequest,
   CreateStatusPageIncidentUpdateRequest,
   AddCustomDomainRequest,

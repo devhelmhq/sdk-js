@@ -81,6 +81,7 @@ describe('Devhelm client', () => {
     expect(client.statusPages.components).toBeDefined()
     expect(client.statusPages.groups).toBeDefined()
     expect(client.statusPages.incidents).toBeDefined()
+    expect(client.statusPages.maintenance).toBeDefined()
     expect(client.statusPages.subscribers).toBeDefined()
     expect(client.statusPages.domains).toBeDefined()
   })
@@ -112,6 +113,18 @@ describe('Devhelm client', () => {
     expect(typeof i.publish).toBe('function')
     expect(typeof i.dismiss).toBe('function')
     expect(typeof i.delete).toBe('function')
+  })
+
+  it('statusPages.maintenance have full lifecycle methods', () => {
+    const m = client.statusPages.maintenance
+    expect(typeof m.list).toBe('function')
+    expect(typeof m.get).toBe('function')
+    expect(typeof m.create).toBe('function')
+    expect(typeof m.update).toBe('function')
+    expect(typeof m.postUpdate).toBe('function')
+    expect(typeof m.publish).toBe('function')
+    expect(typeof m.dismiss).toBe('function')
+    expect(typeof m.delete).toBe('function')
   })
 
   it('statusPages.subscribers have add/list/remove methods', () => {

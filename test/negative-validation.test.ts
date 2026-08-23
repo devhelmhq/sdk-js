@@ -33,11 +33,13 @@ const validIncidentDto = {
   id: UUID, organizationId: 1,
   source: 'MANUAL', status: 'TRIGGERED', severity: 'DOWN',
   affectedRegions: [], reopenCount: 0, statusPageVisible: false,
+  suppressDispatch: false,
   createdAt: ISO, updatedAt: ISO,
 }
 
 const validAlertChannelDto = {
   id: UUID, name: 'Slack alerts', channelType: 'slack',
+  enabled: true,
   createdAt: ISO, updatedAt: ISO,
 }
 
@@ -127,7 +129,8 @@ const validStatusPageIncidentDto = {
 }
 
 const validStatusPageSubscriberDto = {
-  id: UUID, email: 'user@example.com', confirmed: true, createdAt: ISO,
+  id: UUID, email: 'user@example.com', channel: 'EMAIL',
+  destination: 'user@example.com', confirmed: true, createdAt: ISO,
 }
 
 const validStatusPageCustomDomainDto = {
@@ -1765,9 +1768,9 @@ describe('StatusPageSubscriberDto negative validation', () => {
 
   it('rejects non-UUID id', () => fail(s, {...validStatusPageSubscriberDto, id: 'sub-1'}))
 
-  it('rejects missing email', () => {
+  it('accepts missing email (nullish)', () => {
     const {email: _, ...rest} = validStatusPageSubscriberDto
-    fail(s, rest)
+    pass(s, rest)
   })
 
   it('rejects wrong type for email (number)', () =>
@@ -1937,15 +1940,6 @@ describe('CreateStatusPageIncidentRequest negative validation', () => {
   it('rejects invalid status enum', () =>
     fail(s, {...valid, status: 'PANICKING'}))
 
-  it('rejects wrong type for scheduled (string)', () =>
-    fail(s, {...valid, scheduled: 'yes'}))
-
-  it('rejects non-datetime scheduledFor', () =>
-    fail(s, {...valid, scheduledFor: 'tomorrow'}))
-
-  it('rejects wrong type for autoResolve (string)', () =>
-    fail(s, {...valid, autoResolve: 'yes'}))
-
   it('rejects wrong type for notifySubscribers (string)', () =>
     fail(s, {...valid, notifySubscribers: 'yes'}))
 
@@ -1954,6 +1948,26 @@ describe('CreateStatusPageIncidentRequest negative validation', () => {
 
   it('rejects affectedComponents with invalid status', () =>
     fail(s, {...valid, affectedComponents: [{componentId: UUID, status: 'BROKEN'}]}))
+})
+
+describe('CreateStatusPageMaintenanceRequest negative validation', () => {
+  const s = schemas.CreateStatusPageMaintenanceRequest
+  const valid = {
+    title: 'DB upgrade',
+    impact: 'MINOR',
+    body: 'Read-only for 30 minutes',
+    scheduledFor: '2026-09-01T02:00:00Z',
+  }
+
+  it('accepts valid request', () => pass(s, valid))
+
+  it('rejects missing title', () => fail(s, {impact: 'MINOR', body: 'text', scheduledFor: valid.scheduledFor}))
+  it('rejects missing impact', () => fail(s, {title: 'test', body: 'text', scheduledFor: valid.scheduledFor}))
+  it('rejects missing body', () => fail(s, {title: 'test', impact: 'MINOR', scheduledFor: valid.scheduledFor}))
+  it('rejects missing scheduledFor', () => fail(s, {title: 'test', impact: 'MINOR', body: 'text'}))
+  it('rejects non-datetime scheduledFor', () => fail(s, {...valid, scheduledFor: 'tomorrow'}))
+  it('rejects invalid impact enum', () => fail(s, {...valid, impact: 'APOCALYPTIC'}))
+  it('rejects wrong type for autoResolve (string)', () => fail(s, {...valid, autoResolve: 'yes'}))
 })
 
 describe('UpdateStatusPageIncidentRequest negative validation', () => {
@@ -1980,7 +1994,7 @@ describe('UpdateStatusPageIncidentRequest negative validation', () => {
 describe('AdminAddSubscriberRequest negative validation', () => {
   const s = schemas.AdminAddSubscriberRequest
 
-  it('rejects missing email', () => fail(s, {}))
+  it('accepts empty object (all fields optional via .partial())', () => pass(s, {}))
   it('rejects empty email', () => fail(s, {email: ''}))
   it('rejects invalid email format', () => fail(s, {email: 'not-an-email'}))
   it('rejects email without domain', () => fail(s, {email: 'user@'}))
@@ -2586,6 +2600,7 @@ describe('edge cases — completely invalid inputs', () => {
     ['CreateStatusPageRequest', schemas.CreateStatusPageRequest],
     ['CreateStatusPageComponentRequest', schemas.CreateStatusPageComponentRequest],
     ['CreateStatusPageIncidentRequest', schemas.CreateStatusPageIncidentRequest],
+    ['CreateStatusPageMaintenanceRequest', schemas.CreateStatusPageMaintenanceRequest],
     ['CreateStatusPageIncidentUpdateRequest', schemas.CreateStatusPageIncidentUpdateRequest],
     ['AdminAddSubscriberRequest', schemas.AdminAddSubscriberRequest],
     ['AddCustomDomainRequest', schemas.AddCustomDomainRequest],

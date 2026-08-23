@@ -123,6 +123,7 @@ export type UpdateStatusPageComponentRequest = z.infer<typeof S.UpdateStatusPage
 export type CreateStatusPageComponentGroupRequest = z.infer<typeof S.CreateStatusPageComponentGroupRequestSchema>
 export type UpdateStatusPageComponentGroupRequest = z.infer<typeof S.UpdateStatusPageComponentGroupRequestSchema>
 export type CreateStatusPageIncidentRequest = z.infer<typeof S.CreateStatusPageIncidentRequestSchema>
+export type CreateStatusPageMaintenanceRequest = z.infer<typeof S.CreateStatusPageMaintenanceRequestSchema>
 export type UpdateStatusPageIncidentRequest = z.infer<typeof S.UpdateStatusPageIncidentRequestSchema>
 export type CreateStatusPageIncidentUpdateRequest = z.infer<typeof S.CreateStatusPageIncidentUpdateRequestSchema>
 export type AddCustomDomainRequest = z.infer<typeof S.AddCustomDomainRequestSchema>
