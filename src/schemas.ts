@@ -204,9 +204,8 @@ export const CursorPageServiceCatalogDtoSchema = schemas.CursorPageServiceCatalo
 
 // Envelope factories for callers that want to compose response schemas
 // outside of the built-in `parseSingle`/`parsePage`/`parseCursorPage`
-// helpers. All envelopes are `.strict()` (P1): an unknown top-level
-// field on a successful response surfaces as a typed Zod error so spec
-// drift fails loud at the SDK boundary.
+// helpers. TableValueResult is `.passthrough()` so additive envelope
+// fields (nextCursor, …) cannot break list helpers.
 export function tableValueResultSchema<T extends z.ZodTypeAny>(itemSchema: T) {
   return z.object({
     data: z.array(itemSchema),
@@ -214,7 +213,8 @@ export function tableValueResultSchema<T extends z.ZodTypeAny>(itemSchema: T) {
     hasPrev: z.boolean(),
     totalElements: z.number().int().nullable(),
     totalPages: z.number().int().nullable(),
-  }).strict()
+    nextCursor: z.string().nullable().optional(),
+  }).passthrough()
 }
 
 export function singleValueResponseSchema<T extends z.ZodTypeAny>(itemSchema: T) {

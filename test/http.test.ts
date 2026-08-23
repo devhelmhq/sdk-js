@@ -84,6 +84,24 @@ describe('parsePage', () => {
     const raw = {data: [], hasPrev: false}
     expect(() => parsePage(ItemSchema, raw)).toThrow(DevhelmError)
   })
+
+  it('accepts additive nextCursor on the offset envelope', () => {
+    const raw = {
+      data: [],
+      hasNext: false,
+      hasPrev: false,
+      totalElements: 0,
+      totalPages: 0,
+      nextCursor: null,
+    }
+    const result = parsePage(ItemSchema, raw)
+    expect(result.nextCursor).toBeNull()
+  })
+
+  it('ignores unknown envelope fields', () => {
+    const raw = {data: [], hasNext: false, hasPrev: false, futureField: true}
+    expect(() => parsePage(ItemSchema, raw)).not.toThrow()
+  })
 })
 
 describe('parseCursorPage', () => {

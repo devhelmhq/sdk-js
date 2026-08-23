@@ -44,6 +44,9 @@ export function parseSingle<T>(schema: ZodType<T>, data: unknown, context?: stri
 
 /**
  * Parse a paginated (TableValueResult) response.
+ *
+ * `nextCursor` is additive on the server envelope. Unknown extra keys are
+ * ignored (Postel's Law) so a new response field cannot break `list()`.
  */
 export function parsePage<T>(schema: ZodType<T>, data: unknown, context?: string) {
   const pageSchema = z
@@ -53,8 +56,9 @@ export function parsePage<T>(schema: ZodType<T>, data: unknown, context?: string
       hasPrev: z.boolean(),
       totalElements: z.number().int().nullable().optional(),
       totalPages: z.number().int().nullable().optional(),
+      nextCursor: z.string().nullable().optional(),
     })
-    .strict()
+    .passthrough()
   return parse(pageSchema, data, context)
 }
 
