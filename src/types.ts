@@ -148,6 +148,7 @@ export interface Page<T> {
   hasPrev: boolean
   totalElements: number | null
   totalPages: number | null
+  nextCursor?: string | null
 }
 
 export interface CursorPage<T> {

@@ -2429,6 +2429,13 @@ describe('parsePage() validation layer', () => {
     expect(result.totalElements).toBeNull()
   })
 
+  it('accepts additive nextCursor on TableValueResult', () => {
+    const result = parsePage(schemas.MonitorDto, {
+      data: [], hasNext: false, hasPrev: false, nextCursor: null,
+    })
+    expect(result.nextCursor).toBeNull()
+  })
+
   it('error includes context', () => {
     try {
       parsePage(schemas.MonitorDto, {}, 'monitors.list')
