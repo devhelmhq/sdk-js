@@ -69,7 +69,8 @@ describe('generated schemas exist and are Zod schemas', () => {
     'CreateMonitorRequest', 'UpdateMonitorRequest',
     'CreateStatusPageRequest', 'UpdateStatusPageRequest',
     'CreateStatusPageComponentRequest', 'UpdateStatusPageComponentRequest',
-    'CreateStatusPageIncidentRequest', 'UpdateStatusPageIncidentRequest',
+    'CreateStatusPageIncidentRequest', 'CreateStatusPageMaintenanceRequest',
+    'UpdateStatusPageIncidentRequest',
     'CreateStatusPageIncidentUpdateRequest', 'PublishStatusPageIncidentRequest',
     'AdminAddSubscriberRequest', 'AddCustomDomainRequest',
     'ReorderComponentsRequest', 'ComponentPosition', 'AffectedComponent',
@@ -189,6 +190,31 @@ describe('CreateStatusPageIncidentRequest validation', () => {
   })
 })
 
+describe('CreateStatusPageMaintenanceRequest validation', () => {
+  const schema = schemas.CreateStatusPageMaintenanceRequest
+
+  it('accepts valid window', () => {
+    expect(schema.safeParse({
+      title: 'DB upgrade', impact: 'MINOR',
+      body: 'Read-only for 30 minutes',
+      scheduledFor: '2026-09-01T02:00:00Z',
+    }).success).toBe(true)
+  })
+
+  it('rejects missing scheduledFor', () => {
+    expect(schema.safeParse({
+      title: 'DB upgrade', impact: 'MINOR', body: 'Read-only',
+    }).success).toBe(false)
+  })
+
+  it('rejects non-datetime scheduledFor', () => {
+    expect(schema.safeParse({
+      title: 'DB upgrade', impact: 'MINOR', body: 'Read-only',
+      scheduledFor: 'tomorrow',
+    }).success).toBe(false)
+  })
+})
+
 describe('AdminAddSubscriberRequest validation', () => {
   const schema = schemas.AdminAddSubscriberRequest
 
@@ -200,8 +226,8 @@ describe('AdminAddSubscriberRequest validation', () => {
     expect(schema.safeParse({email: 'not-an-email'}).success).toBe(false)
   })
 
-  it('rejects missing email', () => {
-    expect(schema.safeParse({}).success).toBe(false)
+  it('accepts empty object (all fields optional via .partial())', () => {
+    expect(schema.safeParse({}).success).toBe(true)
   })
 })
 

@@ -176,6 +176,19 @@ async function run() {
     case 'status-pages.incidents.dismiss': return void await client.statusPages.incidents.dismiss(rest[0], rest[1])
     case 'status-pages.incidents.delete': return void await client.statusPages.incidents.delete(rest[0], rest[1])
 
+    // ── Status Page Maintenance ──
+    case 'status-pages.maintenance.list': {
+      const opts = rest[1] ? JSON.parse(rest[1]) : undefined
+      return client.statusPages.maintenance.list(rest[0], opts)
+    }
+    case 'status-pages.maintenance.get': return client.statusPages.maintenance.get(rest[0], rest[1])
+    case 'status-pages.maintenance.create': return client.statusPages.maintenance.create(rest[0], JSON.parse(rest[1]))
+    case 'status-pages.maintenance.update': return client.statusPages.maintenance.update(rest[0], rest[1], JSON.parse(rest[2]))
+    case 'status-pages.maintenance.post-update': return client.statusPages.maintenance.postUpdate(rest[0], rest[1], JSON.parse(rest[2]))
+    case 'status-pages.maintenance.publish': return client.statusPages.maintenance.publish(rest[0], rest[1], rest[2] ? JSON.parse(rest[2]) : undefined)
+    case 'status-pages.maintenance.dismiss': return void await client.statusPages.maintenance.dismiss(rest[0], rest[1])
+    case 'status-pages.maintenance.delete': return void await client.statusPages.maintenance.delete(rest[0], rest[1])
+
     // ── Status Page Subscribers ──
     case 'status-pages.subscribers.list': {
       const opts = rest[1] ? JSON.parse(rest[1]) : undefined

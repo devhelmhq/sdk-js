@@ -4,7 +4,7 @@ import type {
   StatusPageComponentDto, CreateStatusPageComponentRequest, UpdateStatusPageComponentRequest,
   StatusPageComponentGroupDto, CreateStatusPageComponentGroupRequest, UpdateStatusPageComponentGroupRequest,
   StatusPageIncidentDto, CreateStatusPageIncidentRequest, UpdateStatusPageIncidentRequest,
-  CreateStatusPageIncidentUpdateRequest, PublishStatusPageIncidentRequest,
+  CreateStatusPageIncidentUpdateRequest, CreateStatusPageMaintenanceRequest, PublishStatusPageIncidentRequest,
   StatusPageSubscriberDto, AdminAddSubscriberRequest,
   StatusPageCustomDomainDto, AddCustomDomainRequest,
   ReorderComponentsRequest, ReorderPageLayoutRequest,
@@ -17,7 +17,8 @@ import {
   CreateStatusPageComponentRequestSchema, UpdateStatusPageComponentRequestSchema,
   CreateStatusPageComponentGroupRequestSchema, UpdateStatusPageComponentGroupRequestSchema,
   CreateStatusPageIncidentRequestSchema, UpdateStatusPageIncidentRequestSchema,
-  CreateStatusPageIncidentUpdateRequestSchema, PublishStatusPageIncidentRequestSchema,
+  CreateStatusPageIncidentUpdateRequestSchema, CreateStatusPageMaintenanceRequestSchema,
+  PublishStatusPageIncidentRequestSchema,
   AdminAddSubscriberRequestSchema, AddCustomDomainRequestSchema,
   ReorderComponentsRequestSchema, ReorderPageLayoutRequestSchema,
 } from '../schemas.js'
@@ -132,6 +133,54 @@ class Incidents {
   }
 }
 
+class Maintenance {
+  constructor(private readonly client: ApiClient) {}
+
+  /** List maintenance windows on a status page (paginated). */
+  async list(pageId: string | number, options: {page?: number; size?: number} = {}): Promise<Page<StatusPageIncidentDto>> {
+    return fetchPage(this.client, `${BASE}/${pageId}/maintenance`, StatusPageIncidentDtoSchema, options.page ?? 0, options.size ?? 20)
+  }
+
+  /** Get a single maintenance window with timeline. */
+  async get(pageId: string | number, windowId: string | number): Promise<StatusPageIncidentDto> {
+    return fetchSingle(this.client, 'GET', `${BASE}/${pageId}/maintenance/${windowId}`, StatusPageIncidentDtoSchema)
+  }
+
+  /** Schedule a maintenance window on a status page. */
+  async create(pageId: string | number, body: CreateStatusPageMaintenanceRequest): Promise<StatusPageIncidentDto> {
+    validateRequest(CreateStatusPageMaintenanceRequestSchema, body, 'statusPages.maintenance.create')
+    return fetchSingle(this.client, 'POST', `${BASE}/${pageId}/maintenance`, StatusPageIncidentDtoSchema, body)
+  }
+
+  /** Update a maintenance window. */
+  async update(pageId: string | number, windowId: string | number, body: UpdateStatusPageIncidentRequest): Promise<StatusPageIncidentDto> {
+    validateRequest(UpdateStatusPageIncidentRequestSchema, body, 'statusPages.maintenance.update')
+    return fetchSingle(this.client, 'PUT', `${BASE}/${pageId}/maintenance/${windowId}`, StatusPageIncidentDtoSchema, body)
+  }
+
+  /** Post a timeline update on a maintenance window. */
+  async postUpdate(pageId: string | number, windowId: string | number, body: CreateStatusPageIncidentUpdateRequest): Promise<StatusPageIncidentDto> {
+    validateRequest(CreateStatusPageIncidentUpdateRequestSchema, body, 'statusPages.maintenance.postUpdate')
+    return fetchSingle(this.client, 'POST', `${BASE}/${pageId}/maintenance/${windowId}/updates`, StatusPageIncidentDtoSchema, body)
+  }
+
+  /** Publish a draft maintenance window. */
+  async publish(pageId: string | number, windowId: string | number, body?: PublishStatusPageIncidentRequest): Promise<StatusPageIncidentDto> {
+    if (body) validateRequest(PublishStatusPageIncidentRequestSchema, body, 'statusPages.maintenance.publish')
+    return fetchSingle(this.client, 'POST', `${BASE}/${pageId}/maintenance/${windowId}/publish`, StatusPageIncidentDtoSchema, body)
+  }
+
+  /** Dismiss a draft maintenance window. */
+  async dismiss(pageId: string | number, windowId: string | number): Promise<void> {
+    await fetchSingle(this.client, 'POST', `${BASE}/${pageId}/maintenance/${windowId}/dismiss`, StatusPageIncidentDtoSchema)
+  }
+
+  /** Delete a maintenance window. */
+  async delete(pageId: string | number, windowId: string | number): Promise<void> {
+    return fetchVoid(this.client, `${BASE}/${pageId}/maintenance/${windowId}`)
+  }
+}
+
 class Subscribers {
   constructor(private readonly client: ApiClient) {}
 
@@ -181,6 +230,7 @@ export class StatusPages {
   readonly components: Components
   readonly groups: Groups
   readonly incidents: Incidents
+  readonly maintenance: Maintenance
   readonly subscribers: Subscribers
   readonly domains: Domains
 
@@ -188,6 +238,7 @@ export class StatusPages {
     this.components = new Components(client)
     this.groups = new Groups(client)
     this.incidents = new Incidents(client)
+    this.maintenance = new Maintenance(client)
     this.subscribers = new Subscribers(client)
     this.domains = new Domains(client)
   }
