@@ -10,6 +10,8 @@ import {Secrets} from './resources/secrets.js'
 import {Tags} from './resources/tags.js'
 import {ResourceGroups} from './resources/resource-groups.js'
 import {Webhooks} from './resources/webhooks.js'
+import {Inboxes} from './resources/inboxes.js'
+import {Email} from './resources/email.js'
 import {ApiKeys} from './resources/api-keys.js'
 import {Dependencies} from './resources/dependencies.js'
 import {Services} from './resources/services.js'
@@ -47,6 +49,8 @@ export class Devhelm {
   readonly tags: Tags
   readonly resourceGroups: ResourceGroups
   readonly webhooks: Webhooks
+  readonly inboxes: Inboxes
+  readonly email: Email
   readonly apiKeys: ApiKeys
   readonly dependencies: Dependencies
   readonly services: Services
@@ -67,6 +71,8 @@ export class Devhelm {
     this.tags = new Tags(client)
     this.resourceGroups = new ResourceGroups(client)
     this.webhooks = new Webhooks(client)
+    this.inboxes = new Inboxes(client)
+    this.email = new Email(client)
     this.apiKeys = new ApiKeys(client)
     this.dependencies = new Dependencies(client)
     this.services = new Services(client)

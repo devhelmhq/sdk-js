@@ -36,6 +36,13 @@ export function parse<T>(schema: ZodType<T>, data: unknown, context?: string): T
  * like `{data: ..., wat: 1}` raises locally rather than being silently
  * discarded.
  */
+/** Unwrap `{ event }` or `{ message }`. Those bodies are not `{ data }`. */
+export function parseEnvelopeKey<T>(key: 'event' | 'message', schema: ZodType<T>, data: unknown, context?: string): T {
+  const envelope = z.object({[key]: schema}).strict()
+  const parsed = parse(envelope, data, context) as Record<'event' | 'message', T>
+  return parsed[key]
+}
+
 export function parseSingle<T>(schema: ZodType<T>, data: unknown, context?: string): T {
   const envelope = z.object({data: schema}).strict()
   const parsed = parse(envelope, data, context)

@@ -51,6 +51,25 @@ await client.monitors.resume(monitor.id)
 await client.monitors.delete(monitor.id)
 ```
 
+## Inbound testing
+
+`inboxes` captures HTTP. `email` captures mail. `webhooks` is still outbound alert delivery.
+
+```ts
+const inbox = await client.inboxes.create({name: 'stripe'})
+// point the other product at inbox.httpUrl
+const event = await inbox.wait({timeoutMs: 30_000, http: {method: 'POST'}})
+const payment = event.json()
+const raw = await event.raw()
+
+const to = await client.email.address({label: 'signup'})
+const message = await to.wait({timeoutMs: 60_000, subjectContains: 'code'})
+const code = message.otp?.[0]?.value
+const file = await message.attachments?.[0]?.file()
+```
+
+`wait` throws `DevhelmApiError` with `code === 'WAIT_TIMEOUT'` when nothing arrives. `json()` parses the captured body. `raw()` and `file()` download a short-lived signed URL.
+
 ## Configuration
 
 ```ts
