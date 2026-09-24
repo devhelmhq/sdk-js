@@ -1,3 +1,4 @@
+import {DevhelmValidationError} from '../errors.js'
 import type {ApiClient} from '../http.js'
 import {apiPost, fetchAllPages, fetchCursorPage, fetchPage, fetchSingle, fetchVoid} from '../http.js'
 import type {CursorPage, Page} from '../types.js'
@@ -31,13 +32,18 @@ export interface Inbox extends WebhookInboxDto {
   events: InboxEvents
 }
 
-export interface Event extends WebhookEventDto {
+export interface ListedEvent extends WebhookEventDto {
   raw(): Promise<File>
   delete(): Promise<void>
 }
 
+export interface Event extends ListedEvent {
+  text(): string
+  json(): unknown
+}
+
 export interface InboxEvents {
-  list(opts?: {cursor?: string; limit?: number}): Promise<CursorPage<Event>>
+  list(opts?: {cursor?: string; limit?: number}): Promise<CursorPage<ListedEvent>>
   get(eventId: string): Promise<Event>
   delete(eventId: string): Promise<void>
   clear(): Promise<void>
@@ -90,7 +96,7 @@ export class Inboxes {
       undefined,
       waitSignal(timeoutMs),
     )
-    return this.bindEvent(id, parseEnvelopeKey('event', WebhookEventDtoSchema, raw, `${BASE}/${id}/wait`))
+    return this.bindDetail(id, parseEnvelopeKey('event', WebhookEventDtoSchema, raw, `${BASE}/${id}/wait`))
   }
 
   private bind(dto: WebhookInboxDto): Inbox {
@@ -108,7 +114,7 @@ export class Inboxes {
     return {
       list: async (opts) => {
         const page = await fetchCursorPage(this.client, `${BASE}/${inboxId}/events`, WebhookEventDtoSchema, opts)
-        return {...page, data: page.data.map((row) => this.bindEvent(inboxId, row))}
+        return {...page, data: page.data.map((row) => this.bindListed(inboxId, row))}
       },
       get: async (eventId) => {
         const row = await fetchSingle(
@@ -117,18 +123,38 @@ export class Inboxes {
           `${BASE}/${inboxId}/events/${eventId}`,
           WebhookEventDtoSchema,
         )
-        return this.bindEvent(inboxId, row)
+        return this.bindDetail(inboxId, row)
       },
       delete: (eventId) => fetchVoid(this.client, `${BASE}/${inboxId}/events/${eventId}`),
       clear: () => fetchVoid(this.client, `${BASE}/${inboxId}/events`),
     }
   }
 
-  private bindEvent(inboxId: string, dto: WebhookEventDto): Event {
+  private bindListed(inboxId: string, dto: WebhookEventDto): ListedEvent {
     return {
       ...dto,
       raw: () => downloadSigned(this.client, `${BASE}/${inboxId}/events/${dto.id}/raw`),
       delete: () => fetchVoid(this.client, `${BASE}/${inboxId}/events/${dto.id}`),
     }
   }
+
+  private bindDetail(inboxId: string, dto: WebhookEventDto): Event {
+    return {
+      ...this.bindListed(inboxId, dto),
+      text: () => eventText(dto.body),
+      json: () => {
+        try {
+          return JSON.parse(eventText(dto.body)) as unknown
+        } catch (err) {
+          if (err instanceof DevhelmValidationError) throw err
+          throw new DevhelmValidationError('Event body is not JSON')
+        }
+      },
+    }
+  }
+}
+
+function eventText(body: string | null | undefined): string {
+  if (body == null) throw new DevhelmValidationError('Event body is not on this response')
+  return body
 }

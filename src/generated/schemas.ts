@@ -4338,6 +4338,7 @@ const WebhookEventDto = z
     url: z.string().nullish(),
     host: z.string().nullish(),
     bodyPreview: z.string().nullish(),
+    body: z.string().nullish(),
     sha256: z.string(),
   })
   .passthrough();

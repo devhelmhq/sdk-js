@@ -21,6 +21,7 @@ const event = {
   method: 'POST',
   path: '/',
   sha256: 'abc',
+  body: '{"ok":true}',
 }
 
 describe('inbound helpers', () => {
@@ -59,6 +60,8 @@ describe('inbound helpers', () => {
     const client = new Devhelm({token: 't', baseUrl: 'http://api.test'})
     const captured = await client.inboxes.wait(INBOX_ID, {timeoutMs: 30_000, http: {method: 'POST'}})
     expect(captured.method).toBe('POST')
+    expect(captured.text()).toBe('{"ok":true}')
+    expect(captured.json()).toEqual({ok: true})
     const file = await captured.raw()
     expect(file.name).toBe('event.bin')
     expect(new Uint8Array(await file.arrayBuffer())).toEqual(new Uint8Array([9, 9]))
