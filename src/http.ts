@@ -120,7 +120,11 @@ export async function checkedFetch(
 // `ApiClient` into it at a single boundary, instead of scattering `as any`
 // across every helper.
 type FetchEnvelope = {data?: unknown; error?: unknown; response: Response}
-type FetchInit = {body?: unknown; params?: {path?: Record<string, unknown>; query?: Record<string, unknown>}}
+type FetchInit = {
+  body?: unknown
+  params?: {path?: Record<string, unknown>; query?: Record<string, unknown>}
+  signal?: AbortSignal
+}
 
 interface DynamicClient {
   GET(path: string, init?: FetchInit): Promise<FetchEnvelope>
@@ -141,9 +145,16 @@ export async function apiGet(client: ApiClient, path: string, query?: Record<str
   return checkedFetch(asDynamic(client).GET(path, query ? {params: {query}} : undefined))
 }
 
-export async function apiPost(client: ApiClient, path: string, body?: unknown, pathParams?: Record<string, unknown>): Promise<unknown> {
+export async function apiPost(
+  client: ApiClient,
+  path: string,
+  body?: unknown,
+  pathParams?: Record<string, unknown>,
+  signal?: AbortSignal,
+): Promise<unknown> {
   const init: FetchInit = {body}
   if (pathParams) init.params = {path: pathParams}
+  if (signal) init.signal = signal
   return checkedFetch(asDynamic(client).POST(path, init))
 }
 

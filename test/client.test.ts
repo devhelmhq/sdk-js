@@ -14,6 +14,8 @@ describe('Devhelm client', () => {
     expect(client.tags).toBeDefined()
     expect(client.resourceGroups).toBeDefined()
     expect(client.webhooks).toBeDefined()
+    expect(client.inboxes).toBeDefined()
+    expect(client.email).toBeDefined()
     expect(client.apiKeys).toBeDefined()
     expect(client.dependencies).toBeDefined()
     expect(client.deployLock).toBeDefined()
