@@ -231,12 +231,13 @@ export async function fetchAllPages<T>(
   path: string,
   schema: ZodType<T>,
   pageSize = DEFAULT_PAGE_SIZE,
+  extraQuery?: Record<string, unknown>,
 ): Promise<T[]> {
   const all: T[] = []
   let page = 0
 
   while (true) {
-    const raw = await apiGet(client, path, {page, size: pageSize})
+    const raw = await apiGet(client, path, {...extraQuery, page, size: pageSize})
     const validated = parsePage(schema, raw, path)
     all.push(...validated.data)
     if (!validated.hasNext) break
@@ -255,8 +256,9 @@ export async function fetchPage<T>(
   schema: ZodType<T>,
   page: number,
   size: number,
+  extraQuery?: Record<string, unknown>,
 ): Promise<Page<T>> {
-  const raw = await apiGet(client, path, {page, size})
+  const raw = await apiGet(client, path, {...extraQuery, page, size})
   const validated = parsePage(schema, raw, path)
   return {
     data: validated.data,
@@ -274,9 +276,9 @@ export async function fetchCursorPage<T>(
   client: ApiClient,
   path: string,
   schema: ZodType<T>,
-  options: {cursor?: string; limit?: number} = {},
+  options: {cursor?: string; limit?: number; query?: Record<string, unknown>} = {},
 ): Promise<CursorPage<T>> {
-  const query: Record<string, unknown> = {}
+  const query: Record<string, unknown> = {...options.query}
   if (options.limit) query['limit'] = options.limit
   if (options.cursor) query['cursor'] = options.cursor
 

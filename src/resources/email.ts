@@ -1,3 +1,4 @@
+import {z} from 'zod'
 import type {ApiClient} from '../http.js'
 import {apiGet, apiPost, fetchAllPages, fetchPage, fetchSingle, fetchVoid} from '../http.js'
 import type {CursorPage, Page} from '../types.js'
@@ -20,10 +21,50 @@ import {
   InjectEmailMessageResponseSchema,
   UpdateEmailDomainRequestSchema,
 } from '../schemas.js'
-import {parseCursorPage, parseEnvelopeKey, validateRequest} from '../validation.js'
+import {parseCursorPage, parseEnvelopeKey, parseSingle, validateRequest} from '../validation.js'
 import {DEFAULT_WAIT_MS, downloadSigned, waitSignal} from './signed-download.js'
 
 const DOMAINS = '/api/v1/email/domains'
+
+const DomainActivitySchema = z
+  .object({
+    domainId: z.string().uuid(),
+    buckets: z.array(
+      z
+        .object({
+          hour: z.string(),
+          messageCount: z.number().int(),
+        })
+        .passthrough(),
+    ),
+  })
+  .passthrough()
+
+const MessageSourceSchema = z
+  .object({
+    source: z.string(),
+    truncated: z.boolean(),
+  })
+  .passthrough()
+
+export interface DomainActivityBucket {
+  hour: string
+  messageCount: number
+}
+
+export interface DomainActivity {
+  domainId: string
+  buckets: DomainActivityBucket[]
+}
+
+export interface MessageSource {
+  source: string
+  truncated: boolean
+}
+
+function nameSearch(search?: string): Record<string, unknown> | undefined {
+  return search == null ? undefined : {search}
+}
 
 export interface WaitEmailOptions {
   timeoutMs?: number
@@ -50,13 +91,14 @@ export interface Address {
 }
 
 export interface AddressMessages {
-  list(opts?: {cursor?: string; limit?: number}): Promise<CursorPage<Message>>
+  list(opts?: {cursor?: string; limit?: number; q?: string}): Promise<CursorPage<Message>>
   get(messageId: string): Promise<Message>
 }
 
 export type Message = Omit<EmailMessageDto, 'attachments'> & {
   attachments: Attachment[]
   raw(): Promise<File>
+  source(): Promise<MessageSource>
   delete(): Promise<void>
   listOtp(): Promise<InboundOtpCode[]>
   listLinks(): Promise<InboundEmailLink[]>
@@ -75,14 +117,34 @@ export interface Domain extends EmailDomainDto {
 export class EmailDomains {
   constructor(private readonly email: Email) {}
 
-  async list(): Promise<Domain[]> {
-    const rows = await fetchAllPages(this.email.client, DOMAINS, EmailDomainDtoSchema)
+  async list(opts?: {search?: string}): Promise<Domain[]> {
+    const rows = await fetchAllPages(
+      this.email.client,
+      DOMAINS,
+      EmailDomainDtoSchema,
+      undefined,
+      nameSearch(opts?.search),
+    )
     return rows.map((row) => this.email.bindDomain(row))
   }
 
-  async listPage(page: number, size: number): Promise<Page<Domain>> {
-    const result = await fetchPage(this.email.client, DOMAINS, EmailDomainDtoSchema, page, size)
+  async listPage(page: number, size: number, opts?: {search?: string}): Promise<Page<Domain>> {
+    const result = await fetchPage(
+      this.email.client,
+      DOMAINS,
+      EmailDomainDtoSchema,
+      page,
+      size,
+      nameSearch(opts?.search),
+    )
     return {...result, data: result.data.map((row) => this.email.bindDomain(row))}
+  }
+
+  /** Last-24h message counts. An empty id list does not call the API. */
+  async activity(domainIds: string[]): Promise<DomainActivity[]> {
+    if (domainIds.length === 0) return []
+    const raw = await apiGet(this.email.client, `${DOMAINS}/activity`, {domainIds: domainIds.join(',')})
+    return parseSingle(z.array(DomainActivitySchema), raw, `${DOMAINS}/activity`)
   }
 
   async get(name: string): Promise<Domain> {
@@ -196,6 +258,7 @@ export class Email {
           const query: Record<string, unknown> = {inbox: fields.localPart}
           if (opts?.limit) query['limit'] = opts.limit
           if (opts?.cursor) query['cursor'] = opts.cursor
+          if (opts?.q != null) query['q'] = opts.q
           const raw = await apiGet(this.client, path, query)
           const page = parseCursorPage(EmailMessageDtoSchema, raw, path)
           return {
@@ -238,6 +301,13 @@ export class Email {
       ...dto,
       attachments,
       raw: () => downloadSigned(this.client, `${DOMAINS}/${domain}/messages/${dto.id}/raw`),
+      source: () =>
+        fetchSingle(
+          this.client,
+          'GET',
+          `${DOMAINS}/${domain}/messages/${dto.id}/source`,
+          MessageSourceSchema,
+        ),
       delete: () => fetchVoid(this.client, `${DOMAINS}/${domain}/messages/${dto.id}`),
       listOtp: () =>
         fetchAllPages(this.client, `${DOMAINS}/${domain}/messages/${dto.id}/otp`, InboundOtpCodeSchema),
