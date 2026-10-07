@@ -179,7 +179,7 @@ export interface DevhelmConfig {
   baseUrl?: string
   /** Organization ID header. Defaults to env DEVHELM_ORG_ID or "1". */
   orgId?: string
-  /** Workspace ID header. Defaults to env DEVHELM_WORKSPACE_ID or "1". */
+  /** Workspace ID header. Set this, or DEVHELM_WORKSPACE_ID, when the organization has more than one workspace. */
   workspaceId?: string
   /**
    * Devtool surface identifier reported to the API for adoption / version

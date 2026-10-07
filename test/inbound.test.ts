@@ -37,7 +37,7 @@ describe('inbound helpers', () => {
         expect(request?.method ?? init?.method).toBe('POST')
         const body = JSON.parse(request ? await request.clone().text() : String(init?.body))
         expect(body.timeoutMs).toBe(30_000)
-        expect(body.receivedAfter).toEqual(expect.any(String))
+        expect(body.receivedAfter).toBeUndefined()
         return json({event})
       }
       if (url.endsWith('/raw')) {
