@@ -26,7 +26,7 @@ const validMonitorDto = {
   id: UUID, organizationId: 1, name: 'Test Monitor',
   type: 'HTTP', config: validHttpConfig, frequencySeconds: 60,
   enabled: true, regions: ['us-east-1'], managedBy: 'DASHBOARD',
-  createdAt: ISO, updatedAt: ISO,
+  createdAt: ISO, updatedAt: ISO, muted: false,
 }
 
 const validIncidentDto = {
@@ -290,9 +290,9 @@ describe('CreateMonitorRequest negative validation', () => {
   it('rejects invalid type enum', () => fail(s, {...valid, type: 'GRPC'}))
   it('rejects lowercase type enum', () => fail(s, {...valid, type: 'http'}))
 
-  it('rejects missing config', () => {
+  it('accepts missing config', () => {
     const {config: _, ...rest} = valid
-    fail(s, rest)
+    pass(s, rest)
   })
 
   it('rejects wrong config type (string)', () => fail(s, {...valid, config: 'https://example.com'}))

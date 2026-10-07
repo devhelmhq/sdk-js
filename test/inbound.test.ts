@@ -176,6 +176,7 @@ describe('inbound helpers', () => {
             status: 'active',
             mxVerified: true,
             dnsRecords: [],
+            retentionDays: 3,
             createdAt: WHEN,
             updatedAt: WHEN,
           },
