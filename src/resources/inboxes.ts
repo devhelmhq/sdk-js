@@ -126,7 +126,7 @@ export class Inboxes {
       `${BASE}/${id}/wait`,
       {
         timeoutMs,
-        receivedAfter: opts.receivedAfter ?? new Date().toISOString(),
+        ...(opts.receivedAfter ? {receivedAfter: opts.receivedAfter} : {}),
         http: opts.http,
       },
       undefined,

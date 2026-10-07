@@ -78,7 +78,7 @@ import {Devhelm} from '@devhelm/sdk'
 const client = new Devhelm({
   token: 'your-api-token',           // required (or DEVHELM_API_TOKEN env var)
   orgId: '1',                        // optional (or DEVHELM_ORG_ID; defaults to '1')
-  workspaceId: '1',                  // optional (or DEVHELM_WORKSPACE_ID; defaults to '1')
+  workspaceId: '1',                  // optional (or DEVHELM_WORKSPACE_ID; omit when the org has one workspace)
   baseUrl: 'https://api.devhelm.io', // optional, defaults to production
 })
 ```
@@ -90,6 +90,8 @@ Environment variables are used as fallbacks when constructor arguments are not p
 | `token`       | `DEVHELM_API_TOKEN`    |
 | `orgId`       | `DEVHELM_ORG_ID`       |
 | `workspaceId` | `DEVHELM_WORKSPACE_ID` |
+
+Leave `workspaceId` unset when the organization has one workspace. Set it when the organization has several.
 
 ## Resources
 

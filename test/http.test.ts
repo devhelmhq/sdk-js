@@ -204,4 +204,28 @@ describe('surface telemetry headers', () => {
       delete process.env['DEVHELM_TELEMETRY']
     }
   })
+
+  it('omits the workspace header when neither config nor env sets one', async () => {
+    const saved = process.env['DEVHELM_WORKSPACE_ID']
+    delete process.env['DEVHELM_WORKSPACE_ID']
+    try {
+      const headers = await captureRequest({token: 't'})
+      expect(headers.get('x-phelm-workspace-id')).toBeNull()
+    } finally {
+      if (saved === undefined) delete process.env['DEVHELM_WORKSPACE_ID']
+      else process.env['DEVHELM_WORKSPACE_ID'] = saved
+    }
+  })
+
+  it('sends the workspace header from the env when set', async () => {
+    const saved = process.env['DEVHELM_WORKSPACE_ID']
+    process.env['DEVHELM_WORKSPACE_ID'] = '7'
+    try {
+      const headers = await captureRequest({token: 't'})
+      expect(headers.get('x-phelm-workspace-id')).toBe('7')
+    } finally {
+      if (saved === undefined) delete process.env['DEVHELM_WORKSPACE_ID']
+      else process.env['DEVHELM_WORKSPACE_ID'] = saved
+    }
+  })
 })

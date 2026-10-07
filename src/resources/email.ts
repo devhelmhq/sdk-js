@@ -220,7 +220,7 @@ export class Email {
       {
         to: opts.to,
         timeoutMs,
-        receivedAfter: opts.receivedAfter ?? new Date().toISOString(),
+        ...(opts.receivedAfter ? {receivedAfter: opts.receivedAfter} : {}),
         subjectContains: opts.subjectContains,
       },
       undefined,
@@ -239,7 +239,7 @@ export class Email {
       {
         domain: opts.domain,
         timeoutMs,
-        receivedAfter: opts.receivedAfter ?? new Date().toISOString(),
+        ...(opts.receivedAfter ? {receivedAfter: opts.receivedAfter} : {}),
         subjectContains: opts.subjectContains,
       },
       undefined,

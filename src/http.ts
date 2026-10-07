@@ -44,17 +44,18 @@ function buildTelemetryHeaders(config: DevhelmConfig): Record<string, string> {
 export function buildClient(config: DevhelmConfig): ApiClient {
   const baseUrl = (config.baseUrl ?? DEFAULT_BASE_URL).replace(/\/+$/, '')
   const orgId = config.orgId ?? process.env['DEVHELM_ORG_ID'] ?? '1'
-  const workspaceId = config.workspaceId ?? process.env['DEVHELM_WORKSPACE_ID'] ?? '1'
+  const workspaceId = config.workspaceId ?? process.env['DEVHELM_WORKSPACE_ID']
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${config.token}`,
+    'Content-Type': 'application/json',
+    'x-phelm-org-id': orgId,
+    ...buildTelemetryHeaders(config),
+  }
+  if (workspaceId) headers['x-phelm-workspace-id'] = workspaceId
 
   return createClient<paths>({
     baseUrl,
-    headers: {
-      Authorization: `Bearer ${config.token}`,
-      'Content-Type': 'application/json',
-      'x-phelm-org-id': orgId,
-      'x-phelm-workspace-id': workspaceId,
-      ...buildTelemetryHeaders(config),
-    },
+    headers,
   })
 }
 
