@@ -1,6 +1,7 @@
+import {z} from 'zod'
 import {DevhelmValidationError} from '../errors.js'
 import type {ApiClient} from '../http.js'
-import {apiPost, fetchAllPages, fetchCursorPage, fetchPage, fetchSingle, fetchVoid} from '../http.js'
+import {apiGet, apiPost, fetchAllPages, fetchCursorPage, fetchPage, fetchSingle, fetchVoid} from '../http.js'
 import type {CursorPage, Page} from '../types.js'
 import type {
   CreateWebhookInboxRequest,
@@ -14,10 +15,38 @@ import {
   WebhookEventDtoSchema,
   WebhookInboxDtoSchema,
 } from '../schemas.js'
-import {parseEnvelopeKey, validateRequest} from '../validation.js'
+import {parseEnvelopeKey, parseSingle, validateRequest} from '../validation.js'
 import {DEFAULT_WAIT_MS, downloadSigned, waitSignal} from './signed-download.js'
 
 const BASE = '/api/v1/webhook/inboxes'
+
+const InboxActivitySchema = z
+  .object({
+    inboxId: z.string().uuid(),
+    buckets: z.array(
+      z
+        .object({
+          hour: z.string(),
+          eventCount: z.number().int(),
+        })
+        .passthrough(),
+    ),
+  })
+  .passthrough()
+
+export interface InboxActivityBucket {
+  hour: string
+  eventCount: number
+}
+
+export interface InboxActivity {
+  inboxId: string
+  buckets: InboxActivityBucket[]
+}
+
+function nameSearch(search?: string): Record<string, unknown> | undefined {
+  return search == null ? undefined : {search}
+}
 
 export interface WaitInboxOptions {
   timeoutMs?: number
@@ -43,7 +72,7 @@ export interface Event extends ListedEvent {
 }
 
 export interface InboxEvents {
-  list(opts?: {cursor?: string; limit?: number}): Promise<CursorPage<ListedEvent>>
+  list(opts?: {cursor?: string; limit?: number; method?: string; path?: string}): Promise<CursorPage<ListedEvent>>
   get(eventId: string): Promise<Event>
   delete(eventId: string): Promise<void>
   clear(): Promise<void>
@@ -52,14 +81,21 @@ export interface InboxEvents {
 export class Inboxes {
   constructor(private readonly client: ApiClient) {}
 
-  async list(): Promise<Inbox[]> {
-    const rows = await fetchAllPages(this.client, BASE, WebhookInboxDtoSchema)
+  async list(opts?: {search?: string}): Promise<Inbox[]> {
+    const rows = await fetchAllPages(this.client, BASE, WebhookInboxDtoSchema, undefined, nameSearch(opts?.search))
     return rows.map((row) => this.bind(row))
   }
 
-  async listPage(page: number, size: number): Promise<Page<Inbox>> {
-    const result = await fetchPage(this.client, BASE, WebhookInboxDtoSchema, page, size)
+  async listPage(page: number, size: number, opts?: {search?: string}): Promise<Page<Inbox>> {
+    const result = await fetchPage(this.client, BASE, WebhookInboxDtoSchema, page, size, nameSearch(opts?.search))
     return {...result, data: result.data.map((row) => this.bind(row))}
+  }
+
+  /** Last-24h request counts. An empty id list does not call the API. */
+  async activity(inboxIds: string[]): Promise<InboxActivity[]> {
+    if (inboxIds.length === 0) return []
+    const raw = await apiGet(this.client, `${BASE}/activity`, {inboxIds: inboxIds.join(',')})
+    return parseSingle(z.array(InboxActivitySchema), raw, `${BASE}/activity`)
   }
 
   async get(id: string): Promise<Inbox> {
@@ -113,7 +149,14 @@ export class Inboxes {
   private eventsFor(inboxId: string): InboxEvents {
     return {
       list: async (opts) => {
-        const page = await fetchCursorPage(this.client, `${BASE}/${inboxId}/events`, WebhookEventDtoSchema, opts)
+        const query: Record<string, unknown> = {}
+        if (opts?.method != null) query['method'] = opts.method
+        if (opts?.path != null) query['path'] = opts.path
+        const page = await fetchCursorPage(this.client, `${BASE}/${inboxId}/events`, WebhookEventDtoSchema, {
+          cursor: opts?.cursor,
+          limit: opts?.limit,
+          query,
+        })
         return {...page, data: page.data.map((row) => this.bindListed(inboxId, row))}
       },
       get: async (eventId) => {

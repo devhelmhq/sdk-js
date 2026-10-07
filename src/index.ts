@@ -136,9 +136,17 @@ export {Tags} from './resources/tags.js'
 export {ResourceGroups} from './resources/resource-groups.js'
 export {Webhooks} from './resources/webhooks.js'
 export {Inboxes} from './resources/inboxes.js'
-export type {Inbox, Event, ListedEvent, WaitInboxOptions} from './resources/inboxes.js'
+export type {Inbox, Event, ListedEvent, InboxActivity, WaitInboxOptions} from './resources/inboxes.js'
 export {Email} from './resources/email.js'
-export type {Address, Message, Attachment, Domain, WaitEmailOptions} from './resources/email.js'
+export type {
+  Address,
+  Message,
+  Attachment,
+  Domain,
+  DomainActivity,
+  MessageSource,
+  WaitEmailOptions,
+} from './resources/email.js'
 export {ApiKeys} from './resources/api-keys.js'
 export {Dependencies} from './resources/dependencies.js'
 export {Services} from './resources/services.js'

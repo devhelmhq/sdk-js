@@ -67,6 +67,135 @@ describe('inbound helpers', () => {
     expect(new Uint8Array(await file.arrayBuffer())).toEqual(new Uint8Array([9, 9]))
   })
 
+  it('searches inboxes, filters events, and reads 24h activity', async () => {
+    const seen: string[] = []
+    vi.stubGlobal('fetch', async (input: RequestInfo | URL) => {
+      const url = input instanceof Request ? input.url : String(input)
+      seen.push(url)
+      if (url.includes('/activity')) {
+        return json({data: [{inboxId: INBOX_ID, buckets: [{hour: WHEN, eventCount: 3}]}]})
+      }
+      if (url.includes('/events')) {
+        return json({data: [event], nextCursor: null, hasMore: false})
+      }
+      return json({
+        data: [
+          {
+            id: INBOX_ID,
+            workspaceId: 2,
+            name: 'stripe',
+            status: 'active',
+            publicToken: 'tok',
+            httpUrl: 'https://api.test/api/v1/ingest/tok',
+            httpResponse: {status: 200, headers: {}, body: '', contentType: 'text/plain', delayMs: 0},
+            cors: true,
+            retentionDays: 3,
+            maxEvents: 10000,
+            createdAt: WHEN,
+            updatedAt: WHEN,
+          },
+        ],
+        hasNext: false,
+        hasPrev: false,
+        totalElements: 1,
+        totalPages: 1,
+      })
+    })
+
+    const client = new Devhelm({token: 't', baseUrl: 'http://api.test'})
+    const beforeEmpty = seen.length
+    expect(await client.inboxes.activity([])).toEqual([])
+    expect(seen.length).toBe(beforeEmpty)
+
+    const rows = await client.inboxes.list({search: 'stripe'})
+    expect(rows).toHaveLength(1)
+    expect(new URL(seen[0]).searchParams.get('search')).toBe('stripe')
+
+    await rows[0].events.list({method: 'POST', path: '/hooks'})
+    const eventsUrl = new URL(seen.find((url) => url.includes('/events')) ?? '')
+    expect(eventsUrl.searchParams.get('method')).toBe('POST')
+    expect(eventsUrl.searchParams.get('path')).toBe('/hooks')
+
+    const activity = await client.inboxes.activity([INBOX_ID])
+    expect(activity[0]?.buckets[0]?.eventCount).toBe(3)
+    const activityUrl = new URL(seen.find((url) => url.includes('/activity')) ?? '')
+    expect(activityUrl.searchParams.get('inboxIds')).toBe(INBOX_ID)
+  })
+
+  it('filters messages by q and reads the source text', async () => {
+    const messageId = '550e8400-e29b-41d4-a716-446655440003'
+    const seen: string[] = []
+    vi.stubGlobal('fetch', async (input: RequestInfo | URL) => {
+      const url = input instanceof Request ? input.url : String(input)
+      seen.push(url)
+      if (url.endsWith('/source')) {
+        return json({data: {source: 'Subject: code', truncated: false}})
+      }
+      return json({
+        data: [
+          {
+            id: messageId,
+            domainId: '550e8400-e29b-41d4-a716-446655440002',
+            receivedAt: WHEN,
+            sizeBytes: 4,
+            headers: {},
+            sha256: 'abc',
+          },
+        ],
+        nextCursor: null,
+        hasMore: false,
+      })
+    })
+
+    const client = new Devhelm({token: 't', baseUrl: 'http://api.test'})
+    const address = await client.email.address({domain: 'ws.devhelmmail.com', label: 'signup'})
+    const page = await address.messages.list({q: 'code'})
+    const listUrl = new URL(seen.find((url) => url.includes('/messages?') || url.includes('/messages')) ?? '')
+    expect(listUrl.searchParams.get('q')).toBe('code')
+    expect(listUrl.searchParams.get('inbox')).toBe(address.localPart)
+    const text = await page.data[0].source()
+    expect(text).toEqual({source: 'Subject: code', truncated: false})
+  })
+
+  it('searches domains and reads 24h message activity', async () => {
+    const domainId = '550e8400-e29b-41d4-a716-446655440002'
+    const seen: string[] = []
+    vi.stubGlobal('fetch', async (input: RequestInfo | URL) => {
+      const url = input instanceof Request ? input.url : String(input)
+      seen.push(url)
+      if (url.includes('/activity')) {
+        return json({data: [{domainId, buckets: [{hour: WHEN, messageCount: 4}]}]})
+      }
+      return json({
+        data: [
+          {
+            id: domainId,
+            name: 'ws.devhelmmail.com',
+            workspaceId: 2,
+            kind: 'assigned',
+            status: 'active',
+            mxVerified: true,
+            dnsRecords: [],
+            createdAt: WHEN,
+            updatedAt: WHEN,
+          },
+        ],
+        hasNext: false,
+        hasPrev: false,
+        totalElements: 1,
+        totalPages: 1,
+      })
+    })
+
+    const client = new Devhelm({token: 't', baseUrl: 'http://api.test'})
+    const domains = await client.email.domains.list({search: 'ws'})
+    expect(domains).toHaveLength(1)
+    expect(new URL(seen[0]).searchParams.get('search')).toBe('ws')
+    const activity = await client.email.domains.activity([domainId])
+    expect(activity[0]?.buckets[0]?.messageCount).toBe(4)
+    expect(new URL(seen.find((url) => url.includes('/activity')) ?? '').searchParams.get('domainIds')).toBe(domainId)
+  })
+
   it('throws WAIT_TIMEOUT when email wait finds nothing', async () => {
     vi.stubGlobal('fetch', async () => json({code: 'WAIT_TIMEOUT', message: 'timed out'}, 408))
     const client = new Devhelm({token: 't', baseUrl: 'http://api.test'})
