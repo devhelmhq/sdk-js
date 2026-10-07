@@ -95,7 +95,13 @@ export interface AddressMessages {
   get(messageId: string): Promise<Message>
 }
 
-export type Message = Omit<EmailMessageDto, 'attachments'> & {
+// The generated schema is `.passthrough()`, so its inferred type carries
+// `[key: string]: unknown`. Intersecting that index signature with the
+// methods below widens every field, including text and html, to `unknown`.
+// `z.object(shape)` keeps the generated field types and drops the index.
+type EmailMessageFields = z.infer<z.ZodObject<typeof EmailMessageDtoSchema.shape>>
+
+export type Message = Omit<EmailMessageFields, 'attachments'> & {
   attachments: Attachment[]
   raw(): Promise<File>
   source(): Promise<MessageSource>
@@ -103,6 +109,20 @@ export type Message = Omit<EmailMessageDto, 'attachments'> & {
   listOtp(): Promise<InboundOtpCode[]>
   listLinks(): Promise<InboundEmailLink[]>
 }
+
+type Assert<T extends true> = T
+type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- fails the build if these fields widen to unknown
+type MessageBodyFieldsAreTyped = Assert<
+  [
+    Same<Message['text'], string | null | undefined>,
+    Same<Message['html'], string | null | undefined>,
+    Same<Message['bodyTruncated'], boolean | null | undefined>,
+    Same<Message['rawUrl'], string | null | undefined>,
+  ] extends [true, true, true, true]
+    ? true
+    : false
+>
 
 export interface Attachment extends InboundEmailAttachment {
   file(): Promise<File>
