@@ -250,7 +250,7 @@ export interface paths {
             cookie?: never;
         };
         /** List audit events for the current organization */
-        get: operations["list_22"];
+        get: operations["list_23"];
         put?: never;
         post?: never;
         delete?: never;
@@ -324,7 +324,7 @@ export interface paths {
             cookie?: never;
         };
         /** List definitions */
-        get: operations["list_21"];
+        get: operations["list_22"];
         put?: never;
         post?: never;
         delete?: never;
@@ -341,7 +341,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get definition with Heads */
-        get: operations["get_13"];
+        get: operations["get_14"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1059,7 +1059,7 @@ export interface paths {
          * List all supported integration types
          * @description Returns the full static catalog of supported alert channel integration types with their metadata and config field schemas. Used by the frontend to dynamically render the 'Add Alert Channel' form.
          */
-        get: operations["list_20"];
+        get: operations["list_21"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1191,7 +1191,7 @@ export interface paths {
             cookie?: never;
         };
         /** List organization members */
-        get: operations["list_19"];
+        get: operations["list_20"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1260,7 +1260,7 @@ export interface paths {
         };
         /**
          * List monitors for the authenticated org
-         * @description Supports filtering by `enabled`, `status` (alias active|paused for enabled), `type`, `managedBy`, `tag` / `tags`, `search`, `environmentId`, `displayHealth`, `needsAttention`, and `region`. Unrecognised query parameters are silently ignored (Spring's default binding behaviour) — pin to the documented set above.
+         * @description Supports filtering by `enabled`, `status` (alias active|paused for enabled), `type` or `types`, `managedBy`, `tag` / `tags`, `search`, `environmentId`, `displayHealth`, `needsAttention`, and `region`. Unrecognised query parameters are silently ignored (Spring's default binding behaviour) — pin to the documented set above.
          */
         get: operations["list_8"];
         put?: never;
@@ -1507,7 +1507,7 @@ export interface paths {
         put?: never;
         /**
          * Run remote validation against a revision without moving Head
-         * @description Creates a Run with source=remote_validation. Does not signal.
+         * @description Admits a queued Run with source=remote_validation. Does not vote on health. Optional environmentId defaults to the monitor's environment; optional region defaults to the monitor's first region.
          */
         post: operations["testRevision"];
         delete?: never;
@@ -1597,6 +1597,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/monitors/{id}/runs/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Summarize one monitor's execution durations
+         * @description Exact median of finished run durations enqueued in the rolling 30-day window.
+         */
+        get: operations["summarizeMonitorRuns"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/monitors/{id}/secret-requests": {
         parameters: {
             query?: never;
@@ -1605,7 +1625,7 @@ export interface paths {
             cookie?: never;
         };
         /** List secret requests for a monitor */
-        get: operations["list_18"];
+        get: operations["list_19"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1784,7 +1804,7 @@ export interface paths {
         put?: never;
         /**
          * Test an existing monitor
-         * @description Runs the saved config and assertions of an existing monitor once, without persisting any result. Runs synchronously and returns the same shape as the ad-hoc test. MULTI_STEP_API and BROWSER are rejected with MONITOR_CODE_CHECK_TEST_UNAVAILABLE until fleet dry-run is available.
+         * @description Uptime monitors run their saved config and assertions once through the probe and return the probe result (200) without persisting it. Browser and multi-step API monitors admit a queued validation run (202) that does not vote on health; poll the run for its outcome. Optional environmentId defaults to the monitor's environment; optional region defaults to the monitor's first region.
          */
         post: operations["testExisting"];
         delete?: never;
@@ -1844,6 +1864,23 @@ export interface paths {
         get: operations["getUptime"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/monitors/{id}/usage-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Project monthly usage for an update payload */
+        post: operations["previewUsage"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2033,9 +2070,26 @@ export interface paths {
         put?: never;
         /**
          * Ad-hoc monitor test
-         * @description Executes a one-off check from an inline config without saving the monitor. Runs synchronously and returns status code, response time, assertion results, body preview, and headers. MULTI_STEP_API and BROWSER are rejected with MONITOR_CODE_CHECK_TEST_UNAVAILABLE until fleet dry-run is available.
+         * @description Executes a one-off check from an inline config without saving the monitor. Runs synchronously and returns status code, response time, assertion results, body preview, and headers. Inline browser and multi-step API code is refused with MONITOR_TEST_BUNDLE_UNAVAILABLE until a bundle can be uploaded.
          */
         post: operations["testAdHoc"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/monitors/usage-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Project monthly usage for a create payload */
+        post: operations["previewUsage_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2204,7 +2258,7 @@ export interface paths {
             cookie?: never;
         };
         /** List notifications for the current user */
-        get: operations["list_17"];
+        get: operations["list_18"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2407,7 +2461,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get revision package */
-        get: operations["get_12"];
+        get: operations["get_13"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2428,6 +2482,26 @@ export interface paths {
          * @description Returns 302 Location with a signed GET URL. 404 after downloadUntil.
          */
         get: operations["bundle"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/revisions/{id}/bundle/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download revision archive
+         * @description Streams package bytes after access checks. Returns 404 when the package is unavailable.
+         */
+        get: operations["bundleContent"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2724,6 +2798,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/runs/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Summarize the filtered Runs population
+         * @description Uses the same enqueue-time window and filters as the Runs list; independent of pagination.
+         */
+        get: operations["summarizeRuns"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/secrets": {
         parameters: {
             query?: never;
@@ -2819,7 +2913,7 @@ export interface paths {
             cookie?: never;
         };
         /** List all service subscriptions for the organization */
-        get: operations["list_16"];
+        get: operations["list_17"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2836,7 +2930,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get a subscription by its ID */
-        get: operations["get_11"];
+        get: operations["get_12"];
         put?: never;
         post?: never;
         /**
@@ -2974,8 +3068,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Batch daily uptime data for all leaf components
-         * @description Returns daily uptime for every active non-group component with uptime data, keyed by component ID. Replaces N individual per-component uptime calls with a single request. Supports either a preset ``period`` or an explicit ``from``/``to`` window (ISO yyyy-MM-dd, max 730 days). The explicit window wins when both are supplied — this is what powers the sliding 90-day navigator on the public uptime history page.
+         * Batch daily uptime data for leaf components
+         * @description Returns daily uptime keyed by component ID. Pass ``componentIds`` to limit the batch to those components (max 100); omit it for every active component with uptime data. Supports either a preset ``period`` or an explicit ``from``/``to`` window (ISO yyyy-MM-dd, max 730 days). The explicit window wins when both are supplied — this is what powers the sliding 90-day navigator on the public uptime history page.
          */
         get: operations["getBatchComponentUptime"];
         put?: never;
@@ -3766,6 +3860,78 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/synthetics/metrics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get whole-family Synthetics metrics
+         * @description Returns measured target availability for 30 days and distinct recovered monitors for 7 days.
+         */
+        get: operations["getSyntheticsFamilyMetrics"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/synthetics/metrics/run-durations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get code-monitor duration percentiles
+         * @description Returns exact per-monitor p50 execution durations for the rolling 30-day window.
+         */
+        get: operations["getSyntheticsRunDurations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/synthetics/runtime-profiles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_16"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/synthetics/runtime-profiles/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_11"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/tags": {
         parameters: {
             query?: never;
@@ -4104,6 +4270,23 @@ export interface paths {
         post?: never;
         /** Delete workspace */
         delete: operations["delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{workspaceId}/runtime-profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set workspace execution environment */
+        put: operations["updateRuntime"];
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -4560,6 +4743,25 @@ export interface components {
             /** @description Substring that must appear in the response body */
             substring: string;
         };
+        /** @description Browser capability envelope for this runtime */
+        BrowserCapabilityEnvelope: {
+            /** @description Cross-origin iframes are enabled */
+            iframes: boolean;
+            /** @description Stripe Elements iframes are enabled */
+            stripeElements: boolean;
+            /** @description Popup windows are enabled */
+            popups: boolean;
+            /** @description File downloads are enabled */
+            downloads: boolean;
+            /** @description Viewport emulation is enabled */
+            viewport: boolean;
+            /** @description Geolocation emulation is enabled */
+            geolocation: boolean;
+            /** @description Clipboard access is enabled */
+            clipboard: boolean;
+            /** @description File upload is enabled */
+            upload: boolean;
+        };
         /** @description Request body for performing a bulk action on multiple monitors */
         BulkMonitorActionRequest: {
             /** @description IDs of monitors to act on (max 200) */
@@ -4806,6 +5008,15 @@ export interface components {
             durationMs?: number | null;
             /** @description Error message if the step failed */
             error?: string | null;
+        };
+        CodeTestTargetRequest: {
+            /**
+             * Format: uuid
+             * @description Environment to test against; null uses the monitor's environment
+             */
+            environmentId?: string | null;
+            /** @description Region for this test; null uses the monitor's first region */
+            region?: string | null;
         };
         /** @description One component's uptime contribution for the day */
         ComponentImpact: {
@@ -5263,6 +5474,11 @@ export interface components {
             key: string;
             /** @description Secret value, stored encrypted (max 32KB) */
             value: string;
+            /**
+             * Format: uuid
+             * @description Environment to receive this value when creating the secret
+             */
+            environmentId?: string | null;
         };
         CreateStatusPageComponentGroupRequest: {
             /** @description Group display name */
@@ -6161,6 +6377,11 @@ export interface components {
             /** @description Whether this is the default environment for new monitors */
             isDefault: boolean;
         };
+        /**
+         * @description Machine class clients use to choose the next action
+         * @enum {string}
+         */
+        ErrorCategory: "validation" | "blocked" | "auth" | "permission" | "ownership" | "plan" | "quota" | "rate_limit" | "conflict" | "confirmation_required" | "not_found" | "gone" | "platform";
         /** @description One structured validation rejection */
         ErrorEntry: {
             /**
@@ -6176,11 +6397,26 @@ export interface components {
             /** @description Human-readable message; safe to surface to end users */
             message: string;
         };
+        /** @description Command and documentation that fix this error */
+        ErrorNext: {
+            /**
+             * @description Command that fixes this error
+             * @example devhelm account usage
+             */
+            command?: string | null;
+            /**
+             * @description Documentation page for this error
+             * @example https://docs.devhelm.io/errors/SYNTHETICS_USAGE_CAPPED
+             */
+            docs?: string | null;
+        };
         /**
          * @description Uniform error envelope returned for every non-2xx response
          * @example {
          *       "status": 404,
          *       "code": "NOT_FOUND",
+         *       "category": "not_found",
+         *       "retryable": false,
          *       "message": "Monitor not found",
          *       "timestamp": 1737302400000,
          *       "requestId": "5b6f7a8c-1234-4d5e-9f0a-1b2c3d4e5f6a"
@@ -6194,10 +6430,16 @@ export interface components {
              */
             status: number;
             /**
-             * @description Coarse machine-readable error category (e.g. NOT_FOUND, RATE_LIMITED); stable per status
+             * @description Stable machine code for this error, such as NOT_FOUND or SYNTHETICS_USAGE_CAPPED
              * @example NOT_FOUND
              */
             code: string;
+            category: components["schemas"]["ErrorCategory"];
+            /**
+             * @description Whether a later attempt can succeed without changing the request
+             * @example false
+             */
+            retryable: boolean;
             /**
              * @description Human-readable error message; safe to surface to end users
              * @example Monitor not found
@@ -6216,6 +6458,77 @@ export interface components {
             requestId?: string | null;
             /** @description Structured per-field rejections; populated for validation errors, null otherwise */
             errors?: (components["schemas"]["ErrorEntry"] | null)[] | null;
+            /**
+             * Format: int64
+             * @description Seconds to wait before retrying a rate limit
+             * @example 30
+             */
+            retryAfterSeconds?: number | null;
+            /**
+             * @description Meter or resource this limit applies to
+             * @example browser_runs
+             */
+            resource?: string | null;
+            /**
+             * Format: int64
+             * @description Amount used in the current period
+             * @example 1000
+             */
+            used?: number | null;
+            /**
+             * Format: int64
+             * @description Maximum allowed for this period or plan
+             * @example 1000
+             */
+            limit?: number | null;
+            /**
+             * @description When this quota window resumes (ISO-8601)
+             * @example 2026-11-01T00:00:00Z
+             */
+            resetsAt?: string | null;
+            /**
+             * @description Plan this refusal was evaluated against
+             * @example FREE
+             */
+            plan?: string | null;
+            /**
+             * @description Page where an admin can change the plan
+             * @example https://app.devhelm.io/settings/billing
+             */
+            upgradeUrl?: string | null;
+            /**
+             * @description Role that can raise this limit
+             * @example org admin
+             */
+            canRaise?: string | null;
+            /** @description Who owns the resource when a write is refused */
+            owner?: string | null;
+            /** @description Missing scope, secret key, or other required value */
+            required?: string | null;
+            /**
+             * Format: int64
+             * @description Current amount compared with the plan limit
+             * @example 10
+             */
+            have?: number | null;
+            /**
+             * @description Why permission was refused: scope or role
+             * @example role
+             */
+            reason?: string | null;
+            /** @description Command and docs that fix this error */
+            next?: components["schemas"]["ErrorNext"] | null;
+            /** @description Extra fields for this error, such as a missing secret key and environment */
+            details?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Format: date-time
+             * @description When this evidence expired
+             */
+            expiredAt?: string | null;
+            /** @description Retention written when the artifact was saved, such as P7D */
+            policy?: string | null;
         };
         /** @description Escalation chain defining which channels to notify; null preserves current */
         EscalationChain: {
@@ -6321,6 +6634,27 @@ export interface components {
             groupId: string;
             /** @description Ordered component IDs with their within-group display order */
             positions: components["schemas"]["ComponentPosition"][];
+        };
+        /** @description Supervisor release used for this attempt */
+        HarnessReleaseDto: {
+            /** @description Supervisor harness release identifier */
+            id: string;
+            /** @description Source commit for this release */
+            sourceSha?: string | null;
+            /** @description Release provenance */
+            provenance: string;
+            /**
+             * Format: int32
+             * @description Harness protocol major version
+             */
+            protocolMajor: number;
+            /** @description Compatibility manifest hash */
+            compatibilityManifestSha256?: string | null;
+            /**
+             * Format: date-time
+             * @description When the release was registered
+             */
+            createdAt: string;
         };
         HeaderAuthConfig: {
             /**
@@ -7733,6 +8067,7 @@ export interface components {
             /** @description Quarantine reason */
             quarantineReason?: string | null;
             upload?: components["schemas"]["PackageUploadDto"] | null;
+            usageProjection?: components["schemas"]["MonitorUsageProjectionDto"] | null;
         };
         MonitorOverlayRequest: {
             /** @description Optional human-readable reason (max 280) */
@@ -7774,10 +8109,66 @@ export interface components {
             /** @description Monitor name */
             name: string;
         };
+        /** @description Run-duration percentiles for a batch of monitors */
+        MonitorRunDurationBatchDto: {
+            /**
+             * Format: date-time
+             * @description Inclusive start of the enqueue-time window
+             */
+            from: string;
+            /**
+             * Format: date-time
+             * @description Exclusive end of the enqueue-time window
+             */
+            to: string;
+            /** @description Measured duration results for requested code monitors */
+            monitors: components["schemas"]["MonitorRunDurationMetricDto"][];
+        };
+        /** @description One monitor's measured run durations */
+        MonitorRunDurationMetricDto: {
+            /**
+             * Format: uuid
+             * @description Monitor identifier
+             */
+            monitorId: string;
+            /**
+             * Format: int64
+             * @description Finished runs with a measured duration
+             */
+            sampleCount: number;
+            /**
+             * Format: double
+             * @description Median execution duration in milliseconds
+             */
+            p50DurationMs?: number | null;
+        };
+        /** @description Per-monitor execution duration summary */
+        MonitorRunDurationSummaryDto: {
+            /**
+             * Format: date-time
+             * @description Inclusive start of the enqueue-time window
+             */
+            from: string;
+            /**
+             * Format: date-time
+             * @description Exclusive end of the enqueue-time window
+             */
+            to: string;
+            /**
+             * Format: int64
+             * @description Number of finished runs with a measured execution duration
+             */
+            sampleCount: number;
+            /**
+             * Format: double
+             * @description Median execution duration in milliseconds; null when no durations were measured
+             */
+            p50DurationMs?: number | null;
+        };
         MonitorRunListParams: {
-            /** @description Filter by run phase; omit to return every phase */
+            /** @description Filter by run phase; not_finished excludes finished runs */
             phase?: string | null;
-            /** @description Filter by outcome; passed is first-try only; passed_on_retry is a pass after retry */
+            /** @description Filter by outcome; not_passed also includes passed-on-retry runs */
             outcome?: string | null;
             /** @description Filter by probe region */
             region?: string | null;
@@ -7913,6 +8304,11 @@ export interface components {
             config: components["schemas"]["DnsMonitorConfig"] | components["schemas"]["HeartbeatMonitorConfig"] | components["schemas"]["HttpMonitorConfig"] | components["schemas"]["IcmpMonitorConfig"] | components["schemas"]["McpServerMonitorConfig"] | components["schemas"]["ScriptMonitorConfig"] | components["schemas"]["TcpMonitorConfig"];
             /** @description Optional assertions to evaluate against the test result */
             assertions?: components["schemas"]["CreateAssertionRequest"][] | null;
+            /**
+             * Format: uuid
+             * @description Environment to test against; null uses the monitor environment
+             */
+            environmentId?: string | null;
         };
         MonitorTestResultDto: {
             passed: boolean;
@@ -7932,6 +8328,42 @@ export interface components {
             finalUrl?: string | null;
             assertionResults: components["schemas"]["AssertionTestResultDto"][];
             warnings?: string[] | null;
+        };
+        /** @description Projected monthly usage for a browser or multi-step API schedule */
+        MonitorUsageProjectionDto: {
+            /** @description Usage meter this schedule bills */
+            meter?: string | null;
+            /**
+             * Format: int64
+             * @description Projected runs this month from interval and locations
+             */
+            projectedMonthlyRuns: number;
+            /**
+             * Format: int64
+             * @description Included runs left this period; null when unlimited
+             */
+            includedRunsLeft?: number | null;
+            /**
+             * Format: int64
+             * @description Runs held back for validation and triggers
+             */
+            reserveRuns: number;
+            /** @description True when this schedule would use the validation reserve */
+            scheduledUsageEatsReserve: boolean;
+            /** @description True when this schedule would hit the included-run stop */
+            wouldHitHardStop: boolean;
+            /** @description True when this schedule would pass the spend cap */
+            wouldHitSpendCap: boolean;
+            /**
+             * Format: int64
+             * @description Runs past the included pool if this schedule runs all month
+             */
+            projectedOverageRuns: number;
+            /**
+             * Format: int64
+             * @description Projected overage in cents; null when overage is off
+             */
+            projectedOverageCents?: number | null;
         };
         /** @description A point-in-time version snapshot of a monitor configuration */
         MonitorVersionDto: {
@@ -9463,6 +9895,8 @@ export interface components {
             region: string;
             /** @description What triggered this run */
             source: string;
+            /** @description Whether this run votes on monitor health */
+            countsTowardHealth: boolean;
             /**
              * Format: date-time
              * @description When this run was enqueued
@@ -9575,6 +10009,9 @@ export interface components {
              * @description Open incident for this monitor
              */
             incidentId?: string | null;
+            execution?: components["schemas"]["RunExecutionDto"] | null;
+            /** @description Persisted worker execution attempts */
+            executionAttempts: components["schemas"]["RunExecutionAttemptDto"][];
         };
         /** @description Run control event */
         RunEventDto: {
@@ -9639,10 +10076,56 @@ export interface components {
             /** @description Whether the artifact is usable */
             state: string;
         };
+        /** @description Persisted worker execution attempts */
+        RunExecutionAttemptDto: {
+            /**
+             * Format: int32
+             * @description Claim generation for this execution attempt
+             */
+            runGeneration: number;
+            supervisor: components["schemas"]["HarnessReleaseDto"];
+            /**
+             * Format: int32
+             * @description Negotiated execution protocol major
+             */
+            protocolMajor: number;
+            /** @description Negotiated execution capabilities */
+            capabilities: string[];
+            /**
+             * Format: date-time
+             * @description When execution attempt metadata was recorded
+             */
+            recordedAt: string;
+        };
+        /** @description Frozen execution identity; null when historical identity is unknown */
+        RunExecutionDto: {
+            /**
+             * Format: uuid
+             * @description Immutable execution image identifier
+             */
+            id: string;
+            runtime: components["schemas"]["RuntimeProfileDto"];
+            harness: components["schemas"]["HarnessReleaseDto"];
+            /** @description Monitor type supported by this image */
+            monitorType: string;
+            /** @description Immutable image digest */
+            imageDigest: string;
+            /** @description Measured customer environment manifest hash */
+            customerManifestSha256?: string | null;
+            /** @description Measured image build manifest hash */
+            buildManifestSha256?: string | null;
+            /** @description Capabilities required by this image */
+            requiredCapabilities: string[];
+            /**
+             * Format: date-time
+             * @description When the image identity was registered
+             */
+            createdAt: string;
+        };
         RunListParams: {
-            /** @description Filter by run phase; omit to return every phase */
+            /** @description Filter by run phase; not_finished excludes finished runs */
             phase?: string | null;
-            /** @description Filter by outcome; passed is first-try only; passed_on_retry is a pass after retry */
+            /** @description Filter by outcome; not_passed also includes passed-on-retry runs */
             outcome?: string | null;
             /** @description Filter by probe region */
             region?: string | null;
@@ -9650,7 +10133,7 @@ export interface components {
             source?: string | null;
             /**
              * Format: uuid
-             * @description Only return runs whose monitor lives in this environment
+             * @description Only return runs executed in this environment
              */
             environmentId?: string | null;
             /**
@@ -9700,6 +10183,94 @@ export interface components {
              * @description Artifacts expected for this run
              */
             artifactsExpected?: number | null;
+        };
+        /** @description Duration and evidence metrics for the filtered Runs population */
+        RunMetricsSummaryDto: {
+            /**
+             * Format: date-time
+             * @description Inclusive start of the enqueue-time window
+             */
+            from: string;
+            /**
+             * Format: date-time
+             * @description Inclusive end of the enqueue-time window
+             */
+            to: string;
+            /**
+             * Format: int64
+             * @description Runs matching the complete list filter
+             */
+            matchingRunCount: number;
+            /**
+             * Format: int64
+             * @description Finished matching runs with a measured execution duration
+             */
+            durationSampleCount: number;
+            /**
+             * Format: double
+             * @description 95th percentile execution duration in milliseconds; null when no durations were measured
+             */
+            p95DurationMs?: number | null;
+            /**
+             * Format: int64
+             * @description Runs with a known capture policy
+             */
+            evidenceEligibleRunCount: number;
+            /**
+             * Format: int64
+             * @description Runs with a missing or incomplete capture policy
+             */
+            evidenceUnknownPolicyRunCount: number;
+            /**
+             * Format: int64
+             * @description Eligible runs with required evidence missing, processing, failed, or expired
+             */
+            evidenceIncompleteRunCount?: number | null;
+            /**
+             * Format: int64
+             * @description Eligible runs with required evidence still processing
+             */
+            evidenceProcessingRunCount?: number | null;
+            /**
+             * Format: int64
+             * @description Eligible runs with no evidence required by their recorded policy
+             */
+            evidenceNoEvidencePolicyRunCount?: number | null;
+            /**
+             * Format: int64
+             * @description Eligible runs with all required evidence available
+             */
+            evidenceCompleteRunCount?: number | null;
+            /**
+             * Format: int64
+             * @description Required artifact records with an available unexpired object key
+             */
+            availableArtifactCount?: number | null;
+            /**
+             * Format: int64
+             * @description Required artifact records still processing
+             */
+            processingArtifactCount?: number | null;
+            /**
+             * Format: int64
+             * @description Required artifact records with a failed upload
+             */
+            failedArtifactCount?: number | null;
+            /**
+             * Format: int64
+             * @description Required artifact records marked expired or past their expiry
+             */
+            expiredArtifactCount?: number | null;
+            /**
+             * Format: int64
+             * @description Required evidence kinds with no artifact record after the run finished
+             */
+            missingArtifactKindCount?: number | null;
+            /**
+             * Format: int64
+             * @description Required artifact records explicitly suppressed, not reached, or not captured
+             */
+            intentionalNoEvidenceArtifactCount?: number | null;
         };
         /** @description Live runner-log line */
         RunnerLogLiveEvent: {
@@ -9819,6 +10390,41 @@ export interface components {
              */
             diff: number;
         };
+        /** @description Default execution environment; null uses the catalog default */
+        RuntimeProfileDto: {
+            /** @description Runtime environment identifier */
+            id: string;
+            /** @description Node version available to checks */
+            nodeVersion: string;
+            /** @description Playwright version available to checks */
+            playwrightVersion: string;
+            /** @description Runtime support status */
+            status: string;
+            /**
+             * Format: date-time
+             * @description When runtime support ends
+             */
+            eolAt?: string | null;
+            /**
+             * Format: date-time
+             * @description When this runtime became available
+             */
+            availableAt?: string | null;
+            /**
+             * Format: date-time
+             * @description When this runtime was deprecated; null while current
+             */
+            deprecatedAt?: string | null;
+            /** @description Pinned npm packages available to checks */
+            packages?: {
+                [key: string]: string | null;
+            } | null;
+            /** @description Node built-in modules available to checks */
+            nodeBuiltins?: string[] | null;
+            /** @description Environment bindings this runtime reads */
+            reservedBindings?: string[] | null;
+            browser?: components["schemas"]["BrowserCapabilityEnvelope"] | null;
+        };
         /** @description A scheduled maintenance window from a vendor status page */
         ScheduledMaintenanceDto: {
             /**
@@ -9869,7 +10475,7 @@ export interface components {
              * @description Maximum execution time in seconds (5–240)
              */
             timeoutSeconds?: number | null;
-            /** @description Runtime pin YYYY.MM; omit uses workspace default then sole available */
+            /** @description Runtime pin such as 2026.11; omit to pin the current runtime at create */
             runtimeId?: string | null;
         };
         /** @description Last update time and author for a secret */
@@ -10486,6 +11092,12 @@ export interface components {
         SingleValueResponseMonitorDto: {
             data: components["schemas"]["MonitorDto"];
         };
+        SingleValueResponseMonitorRunDurationBatchDto: {
+            data: components["schemas"]["MonitorRunDurationBatchDto"];
+        };
+        SingleValueResponseMonitorRunDurationSummaryDto: {
+            data: components["schemas"]["MonitorRunDurationSummaryDto"];
+        };
         SingleValueResponseMonitorSecretRequestsDto: {
             data: components["schemas"]["MonitorSecretRequestsDto"];
         };
@@ -10497,6 +11109,9 @@ export interface components {
         };
         SingleValueResponseMonitorTestResultDto: {
             data: components["schemas"]["MonitorTestResultDto"];
+        };
+        SingleValueResponseMonitorUsageProjectionDto: {
+            data: components["schemas"]["MonitorUsageProjectionDto"];
         };
         SingleValueResponseMonitorVersionDto: {
             data: components["schemas"]["MonitorVersionDto"];
@@ -10551,6 +11166,12 @@ export interface components {
         };
         SingleValueResponseRunDto: {
             data: components["schemas"]["RunDto"];
+        };
+        SingleValueResponseRunMetricsSummaryDto: {
+            data: components["schemas"]["RunMetricsSummaryDto"];
+        };
+        SingleValueResponseRuntimeProfileDto: {
+            data: components["schemas"]["RuntimeProfileDto"];
         };
         SingleValueResponseSecretAuditDto: {
             data: components["schemas"]["SecretAuditDto"];
@@ -10614,6 +11235,9 @@ export interface components {
         };
         SingleValueResponseString: {
             data: string;
+        };
+        SingleValueResponseSyntheticsFamilyMetricsDto: {
+            data: components["schemas"]["SyntheticsFamilyMetricsDto"];
         };
         SingleValueResponseTagDto: {
             data: components["schemas"]["TagDto"];
@@ -11149,6 +11773,59 @@ export interface components {
             name: string;
             slug: string;
         };
+        /** @description Measured availability and recovery metrics for code monitors */
+        SyntheticsFamilyMetricsDto: {
+            /**
+             * Format: date-time
+             * @description Inclusive start of the availability window
+             */
+            availabilityFrom: string;
+            /**
+             * Format: date-time
+             * @description Exclusive end of the availability window
+             */
+            availabilityTo: string;
+            /**
+             * Format: int64
+             * @description Number of non-deleted BROWSER and MULTI_STEP_API monitors
+             */
+            monitorCount: number;
+            /**
+             * Format: int64
+             * @description Number of family monitors with measured target checks
+             */
+            measuredMonitorCount: number;
+            /**
+             * Format: int64
+             * @description Number of measured PASSED or FAILED target checks
+             */
+            checkCount: number;
+            /**
+             * Format: int64
+             * @description Number of measured PASSED target checks
+             */
+            passedCheckCount: number;
+            /**
+             * Format: double
+             * @description Measured passed checks divided by all measured target checks; null when none were measured
+             */
+            availabilityPercent?: number | null;
+            /**
+             * Format: date-time
+             * @description Inclusive start of the recovery window
+             */
+            flakyFrom: string;
+            /**
+             * Format: date-time
+             * @description Exclusive end of the recovery window
+             */
+            flakyTo: string;
+            /**
+             * Format: int64
+             * @description Distinct family monitors with a failed target recovered by a retry in the same cycle and region
+             */
+            flakyMonitorCount: number;
+        };
         TableValueResultAlertChannelDto: {
             data: components["schemas"]["AlertChannelDto"][];
             hasNext: boolean;
@@ -11403,6 +12080,15 @@ export interface components {
         };
         TableValueResultRunDto: {
             data: components["schemas"]["RunDto"][];
+            hasNext: boolean;
+            hasPrev: boolean;
+            /** Format: int64 */
+            totalElements?: number | null;
+            /** Format: int32 */
+            totalPages?: number | null;
+        };
+        TableValueResultRuntimeProfileDto: {
+            data: components["schemas"]["RuntimeProfileDto"][];
             hasNext: boolean;
             hasPrev: boolean;
             /** Format: int64 */
@@ -12459,6 +13145,11 @@ export interface components {
             /** @description New workspace name */
             name: string;
         };
+        /** @description Workspace execution environment selection */
+        UpdateWorkspaceRuntimeRequest: {
+            /** @description Runtime environment identifier; null uses the catalog default */
+            runtimeId?: string | null;
+        };
         UpdateZapierChannelConfig: {
             /** @enum {string} */
             channelType: "zapier";
@@ -12890,6 +13581,7 @@ export interface components {
              * @description Organization this workspace belongs to
              */
             orgId: number;
+            runtimeProfile?: components["schemas"]["RuntimeProfileDto"] | null;
         };
         WriteSecretEnvironmentValueRequest: {
             /** @description Plaintext value to encrypt for this environment */
@@ -14627,7 +15319,7 @@ export interface operations {
             };
         };
     };
-    list_22: {
+    list_23: {
         parameters: {
             query?: {
                 action?: string;
@@ -15006,7 +15698,7 @@ export interface operations {
             };
         };
     };
-    list_21: {
+    list_22: {
         parameters: {
             query?: never;
             header?: never;
@@ -15098,7 +15790,7 @@ export interface operations {
             };
         };
     };
-    get_13: {
+    get_14: {
         parameters: {
             query?: never;
             header?: never;
@@ -20264,7 +20956,7 @@ export interface operations {
             };
         };
     };
-    list_20: {
+    list_21: {
         parameters: {
             query?: never;
             header?: never;
@@ -21299,7 +21991,7 @@ export interface operations {
             };
         };
     };
-    list_19: {
+    list_20: {
         parameters: {
             query: {
                 pageable: components["schemas"]["Pageable"];
@@ -21686,6 +22378,8 @@ export interface operations {
                 status?: string;
                 /** @description Filter by monitor type */
                 type?: "HTTP" | "DNS" | "MCP_SERVER" | "TCP" | "ICMP" | "HEARTBEAT" | "BROWSER" | "MULTI_STEP_API";
+                /** @description Filter by monitor types, comma-separated; matches any listed type */
+                types?: ("HTTP" | "DNS" | "MCP_SERVER" | "TCP" | "ICMP" | "HEARTBEAT" | "BROWSER" | "MULTI_STEP_API")[];
                 /** @description Filter by managed-by source */
                 managedBy?: "DASHBOARD" | "CLI" | "TERRAFORM" | "MCP" | "API";
                 /** @description Filter by tag names, comma-separated (e.g. prod,critical); OR semantics */
@@ -23257,7 +23951,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["CodeTestTargetRequest"];
+            };
+        };
         responses: {
             /** @description Accepted */
             202: {
@@ -23820,7 +24518,101 @@ export interface operations {
             };
         };
     };
-    list_18: {
+    summarizeMonitorRuns: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SingleValueResponseMonitorRunDurationSummaryDto"];
+                };
+            };
+            /** @description Bad request — the payload failed validation */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized — missing or invalid credentials */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden — the actor lacks permission for this resource */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not found — the requested resource does not exist */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict — the request collides with current resource state */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal server error — see the message field for details */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Bad gateway — an upstream provider returned an error */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service unavailable — try again shortly */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_19: {
         parameters: {
             query?: never;
             header?: never;
@@ -25070,15 +25862,28 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["CodeTestTargetRequest"];
+            };
+        };
         responses: {
-            /** @description OK */
+            /** @description Probe result for an uptime monitor */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "*/*": components["schemas"]["SingleValueResponseMonitorTestResultDto"];
+                };
+            };
+            /** @description Queued validation run for a browser or multi-step API monitor */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SingleValueResponseRunDto"];
                 };
             };
             /** @description Bad request — the payload failed validation */
@@ -25404,6 +26209,104 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["SingleValueResponseUptimeDto"];
+                };
+            };
+            /** @description Conflict — the request collides with current resource state */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal server error — see the message field for details */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Bad gateway — an upstream provider returned an error */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service unavailable — try again shortly */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    previewUsage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateMonitorRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SingleValueResponseMonitorUsageProjectionDto"];
+                };
+            };
+            /** @description Bad request — the payload failed validation */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized — missing or invalid credentials */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden — the actor lacks permission for this resource */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not found — the requested resource does not exist */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Conflict — the request collides with current resource state */
@@ -26793,6 +27696,102 @@ export interface operations {
             };
         };
     };
+    previewUsage_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateMonitorRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SingleValueResponseMonitorUsageProjectionDto"];
+                };
+            };
+            /** @description Bad request — the payload failed validation */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized — missing or invalid credentials */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden — the actor lacks permission for this resource */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not found — the requested resource does not exist */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict — the request collides with current resource state */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal server error — see the message field for details */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Bad gateway — an upstream provider returned an error */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service unavailable — try again shortly */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     listByIncident: {
         parameters: {
             query: {
@@ -27843,7 +28842,7 @@ export interface operations {
             };
         };
     };
-    list_17: {
+    list_18: {
         parameters: {
             query?: {
                 unreadOnly?: boolean;
@@ -29254,7 +30253,7 @@ export interface operations {
             };
         };
     };
-    get_12: {
+    get_13: {
         parameters: {
             query?: never;
             header?: never;
@@ -29365,6 +30364,100 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Bad request — the payload failed validation */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized — missing or invalid credentials */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden — the actor lacks permission for this resource */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not found — the requested resource does not exist */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict — the request collides with current resource state */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal server error — see the message field for details */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Bad gateway — an upstream provider returned an error */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service unavailable — try again shortly */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    bundleContent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/zip": string;
+                };
             };
             /** @description Bad request — the payload failed validation */
             400: {
@@ -30867,6 +31960,100 @@ export interface operations {
             };
         };
     };
+    summarizeRuns: {
+        parameters: {
+            query: {
+                params: components["schemas"]["RunListParams"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SingleValueResponseRunMetricsSummaryDto"];
+                };
+            };
+            /** @description Bad request — the payload failed validation */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized — missing or invalid credentials */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden — the actor lacks permission for this resource */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not found — the requested resource does not exist */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict — the request collides with current resource state */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal server error — see the message field for details */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Bad gateway — an upstream provider returned an error */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service unavailable — try again shortly */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     list_5: {
         parameters: {
             query?: never;
@@ -31530,7 +32717,7 @@ export interface operations {
             };
         };
     };
-    list_16: {
+    list_17: {
         parameters: {
             query?: never;
             header?: never;
@@ -31622,7 +32809,7 @@ export interface operations {
             };
         };
     };
-    get_11: {
+    get_12: {
         parameters: {
             query?: never;
             header?: never;
@@ -32426,6 +33613,8 @@ export interface operations {
                 from?: string;
                 /** @description Explicit window end (ISO date); defaults to today */
                 to?: string;
+                /** @description Component ids to include (max 100); omit for every component */
+                componentIds?: string[];
             };
             header?: never;
             path: {
@@ -38212,6 +39401,378 @@ export interface operations {
             };
         };
     };
+    getSyntheticsFamilyMetrics: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SingleValueResponseSyntheticsFamilyMetricsDto"];
+                };
+            };
+            /** @description Bad request — the payload failed validation */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized — missing or invalid credentials */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden — the actor lacks permission for this resource */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not found — the requested resource does not exist */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict — the request collides with current resource state */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal server error — see the message field for details */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Bad gateway — an upstream provider returned an error */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service unavailable — try again shortly */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getSyntheticsRunDurations: {
+        parameters: {
+            query: {
+                monitorIds: string[];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SingleValueResponseMonitorRunDurationBatchDto"];
+                };
+            };
+            /** @description Bad request — the payload failed validation */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized — missing or invalid credentials */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden — the actor lacks permission for this resource */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not found — the requested resource does not exist */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict — the request collides with current resource state */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal server error — see the message field for details */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Bad gateway — an upstream provider returned an error */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service unavailable — try again shortly */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_16: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TableValueResultRuntimeProfileDto"];
+                };
+            };
+            /** @description Bad request — the payload failed validation */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized — missing or invalid credentials */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden — the actor lacks permission for this resource */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not found — the requested resource does not exist */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict — the request collides with current resource state */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal server error — see the message field for details */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Bad gateway — an upstream provider returned an error */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service unavailable — try again shortly */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_11: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SingleValueResponseRuntimeProfileDto"];
+                };
+            };
+            /** @description Bad request — the payload failed validation */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized — missing or invalid credentials */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden — the actor lacks permission for this resource */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not found — the requested resource does not exist */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict — the request collides with current resource state */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal server error — see the message field for details */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Bad gateway — an upstream provider returned an error */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service unavailable — try again shortly */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     list_3: {
         parameters: {
             query: {
@@ -41274,6 +42835,104 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Bad request — the payload failed validation */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized — missing or invalid credentials */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden — the actor lacks permission for this resource */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not found — the requested resource does not exist */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict — the request collides with current resource state */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal server error — see the message field for details */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Bad gateway — an upstream provider returned an error */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service unavailable — try again shortly */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    updateRuntime: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspaceId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateWorkspaceRuntimeRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SingleValueResponseWorkspaceDto"];
+                };
             };
             /** @description Bad request — the payload failed validation */
             400: {

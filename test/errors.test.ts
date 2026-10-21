@@ -129,6 +129,8 @@ describe('errorFromResponse', () => {
       JSON.stringify({
         status: 404,
         code: 'NOT_FOUND',
+        category: 'not_found',
+        retryable: false,
         message: 'Monitor not found',
         timestamp: 1700000000000,
         requestId: '5b6f7a8c-1234-4d5e-9f0a-1b2c3d4e5f6a',
@@ -137,10 +139,58 @@ describe('errorFromResponse', () => {
     expect(err.body).toBeDefined()
     expect(err.body?.status).toBe(404)
     expect(err.body?.code).toBe('NOT_FOUND')
+    expect(err.body?.category).toBe('not_found')
+    expect(err.body?.retryable).toBe(false)
     expect(err.body?.message).toBe('Monitor not found')
     expect(err.body?.timestamp).toBe(1700000000000)
     expect(err.code).toBe('NOT_FOUND')
     expect(err.requestId).toBe('5b6f7a8c-1234-4d5e-9f0a-1b2c3d4e5f6a')
+  })
+
+  it('exposes quota fields from a canonical 402 ErrorResponse body', () => {
+    const err = errorFromResponse(
+      402,
+      JSON.stringify({
+        status: 402,
+        code: 'QUOTA_EXCEEDED',
+        category: 'quota',
+        retryable: false,
+        message: 'Monitor limit reached',
+        timestamp: 1700000000000,
+        resource: 'monitors',
+        used: 10,
+        limit: 10,
+        plan: 'free',
+        upgradeUrl: 'https://app.devhelm.io/settings/billing',
+        next: {command: null, docs: 'https://docs.devhelm.io/billing'},
+      }),
+    )
+    expect(err).toBeInstanceOf(DevhelmApiError)
+    expect(err.status).toBe(402)
+    expect(err.body?.category).toBe('quota')
+    expect(err.body?.used).toBe(10)
+    expect(err.body?.limit).toBe(10)
+    expect(err.body?.next?.docs).toBe('https://docs.devhelm.io/billing')
+    expect(err.code).toBe('QUOTA_EXCEEDED')
+  })
+
+  it('keeps message and code from older bodies without category/retryable', () => {
+    // Deployments predating the category/retryable fields still emit the
+    // previous canonical shape; the SDK must keep message + code.
+    const err = errorFromResponse(
+      404,
+      JSON.stringify({
+        status: 404,
+        code: 'NOT_FOUND',
+        message: 'Monitor not found',
+        timestamp: 1700000000000,
+        requestId: 'req-1',
+      }),
+    )
+    expect(err).toBeInstanceOf(DevhelmNotFoundError)
+    expect(err.message).toBe('Monitor not found')
+    expect(err.code).toBe('NOT_FOUND')
+    expect(err.requestId).toBe('req-1')
   })
 
   it('leaves `.body` undefined for non-conforming error envelopes (lenient fallback)', () => {
