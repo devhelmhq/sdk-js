@@ -40,6 +40,7 @@ export const DashboardOverviewDtoSchema = schemas.DashboardOverviewDto
 export const DeployLockDtoSchema = schemas.DeployLockDto
 export const AssertionTestResultDtoSchema = schemas.AssertionTestResultDto
 export const MonitorTestResultDtoSchema = schemas.MonitorTestResultDto
+export const RunDtoSchema = schemas.RunDto
 export const MaintenanceWindowDtoSchema = schemas.MaintenanceWindowDto
 
 // ── Forensic DTO schemas ────────────────────────────────────────────
@@ -88,6 +89,7 @@ export const StatusPageBrandingSchema = schemas.StatusPageBranding
 
 export const CreateMonitorRequestSchema = schemas.CreateMonitorRequest
 export const UpdateMonitorRequestSchema = schemas.UpdateMonitorRequest
+export const CodeTestTargetRequestSchema = schemas.CodeTestTargetRequest
 export const CreateManualIncidentRequestSchema = schemas.CreateManualIncidentRequest
 export const ResolveIncidentRequestSchema = schemas.ResolveIncidentRequest
 export const CreateAlertChannelRequestSchema = schemas.CreateAlertChannelRequest

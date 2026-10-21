@@ -6,14 +6,20 @@
  *   1. Read docs/openapi/monitoring-api.json
  *   2. Preprocess via @devhelm/openapi-tools (shared with all surfaces)
  *   3. Run openapi-zod-client → temp generated file
- *   4. Post-process: strip Zodios/API client parts, keep only Zod schemas
+ *   4. Post-process: strip Zodios/API client parts, keep only Zod schemas;
+ *      relax response-only schemas (`.passthrough()`, `z.string()` enums)
  *   5. Write src/generated/schemas.ts
  */
 
 import { readFileSync, writeFileSync, mkdirSync, unlinkSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { preprocessSpec, rewriteUnionsAsDiscriminated, relaxResponseStrict } from './lib/preprocess.mjs'
+import {
+  preprocessSpec,
+  rewriteUnionsAsDiscriminated,
+  relaxResponseEnums,
+  relaxResponseStrict,
+} from './lib/preprocess.mjs'
 import { generateZodClientFromOpenAPI } from 'openapi-zod-client'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -118,6 +124,7 @@ async function main() {
     inlinedDiscriminators,
     inlinedNullableDeductions,
     relaxedEnums,
+    tolerantSchemas,
   } = preprocessSpec(spec)
   if (flattened.length > 0) {
     console.log(`  Flattened circular oneOf: ${flattened.join(', ')}`)
@@ -164,7 +171,11 @@ async function main() {
   const raw = readFileSync(tempGenerated, 'utf8')
   let clean = extractSchemas(raw)
   clean = rewriteUnionsAsDiscriminated(clean, inlinedDiscriminators)
-  clean = relaxResponseStrict(clean)
+  // Postel's Law: every schema reachable only from responses (not just
+  // `*Dto`-named ones — e.g. ErrorResponse → ErrorNext / ErrorCategory)
+  // decodes tolerantly. Request-reachable schemas stay `.strict()`.
+  clean = relaxResponseEnums(clean, tolerantSchemas)
+  clean = relaxResponseStrict(clean, tolerantSchemas)
   clean = fixZod4RecordCalls(clean)
 
   mkdirSync(dirname(OUTPUT_PATH), { recursive: true })

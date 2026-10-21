@@ -5818,16 +5818,10 @@ export interface components {
             id: string;
             /** @description Incident title */
             title: string;
-            /**
-             * @description Lifecycle status (investigating, identified, monitoring, resolved, …)
-             * @enum {string}
-             */
-            status: "INVESTIGATING" | "IDENTIFIED" | "MONITORING" | "RESOLVED";
-            /**
-             * @description Severity bucket (none, minor, major, critical)
-             * @enum {string}
-             */
-            impact: "NONE" | "MINOR" | "MAJOR" | "CRITICAL";
+            /** @description Lifecycle status (investigating, identified, monitoring, resolved, …) */
+            status: string;
+            /** @description Severity bucket (none, minor, major, critical) */
+            impact: string;
             /** @description True for a maintenance window; false for an incident */
             scheduled: boolean;
             /**
@@ -6377,11 +6371,8 @@ export interface components {
             /** @description Whether this is the default environment for new monitors */
             isDefault: boolean;
         };
-        /**
-         * @description Machine class clients use to choose the next action
-         * @enum {string}
-         */
-        ErrorCategory: "validation" | "blocked" | "auth" | "permission" | "ownership" | "plan" | "quota" | "rate_limit" | "conflict" | "confirmation_required" | "not_found" | "gone" | "platform";
+        /** @description Machine class clients use to choose the next action */
+        ErrorCategory: string;
         /** @description One structured validation rejection */
         ErrorEntry: {
             /**
@@ -6887,11 +6878,8 @@ export interface components {
         InboundOtpCode: {
             /** @description Extracted one-time code digits */
             value: string;
-            /**
-             * @description MIME part the code was found in (text or html)
-             * @enum {string}
-             */
-            source: "text" | "html";
+            /** @description MIME part the code was found in (text or html) */
+            source: string;
         };
         /** @description Mock reply returned to the sender after ingest is stored */
         InboundWebhookHttpResponse: {
@@ -7906,16 +7894,10 @@ export interface components {
              * @enum {string}
              */
             kind: "member_role_changed";
-            /**
-             * @description Role the member held before the change
-             * @enum {string}
-             */
-            oldRole: "OWNER" | "ADMIN" | "MEMBER";
-            /**
-             * @description Role the member holds after the change
-             * @enum {string}
-             */
-            newRole: "OWNER" | "ADMIN" | "MEMBER";
+            /** @description Role the member held before the change */
+            oldRole: string;
+            /** @description Role the member holds after the change */
+            newRole: string;
         };
         MonitorAssertionDto: {
             /** Format: uuid */
@@ -8942,11 +8924,8 @@ export interface components {
         };
         /** @description Billing plan and entitlement state */
         PlanInfo: {
-            /**
-             * @description Resolved plan tier
-             * @enum {string}
-             */
-            tier: "FREE" | "STARTER" | "PRO" | "TEAM" | "BUSINESS" | "ENTERPRISE";
+            /** @description Resolved plan tier */
+            tier: string;
             /** @description Subscription status (null if no subscription) */
             subscriptionStatus?: string | null;
             /** @description Whether the org is on a trial */
@@ -9618,11 +9597,8 @@ export interface components {
              * @description thisDurationMs minus baselineDurationMs
              */
             deltaMs?: number | null;
-            /**
-             * @description unchanged, much_slower, now_failing, or not_reached
-             * @enum {string}
-             */
-            verdict: "unchanged" | "much_slower" | "now_failing" | "not_reached";
+            /** @description unchanged, much_slower, now_failing, or not_reached */
+            verdict: string;
         };
         /** @description All rule evaluations that ran for this check */
         RuleEvaluationDto: {
@@ -11276,11 +11252,8 @@ export interface components {
              * @description Dispatch identifier
              */
             id: string;
-            /**
-             * @description Current dispatch status
-             * @enum {string}
-             */
-            status: "PENDING" | "DISPATCHING" | "DELIVERED" | "ESCALATING" | "ACKNOWLEDGED" | "COMPLETED";
+            /** @description Current dispatch status */
+            status: string;
             /** @description Why this dispatch was skipped */
             reason: string;
         };
@@ -11356,11 +11329,8 @@ export interface components {
         };
         /** @description Typed metadata about this transition (currently: actor source) */
         StateTransitionDetails: {
-            /**
-             * @description Actor that produced this transition (pipeline | public-api)
-             * @enum {string}
-             */
-            source: "pipeline" | "public-api";
+            /** @description Actor that produced this transition (pipeline | public-api) */
+            source: string;
         };
         StatusCodeAssertion: {
             /** @enum {string} */
@@ -12499,11 +12469,8 @@ export interface components {
         };
         /** @description Four doorways into the downloaded file */
         TraceEntryPoint: {
-            /**
-             * @description Doorway id
-             * @enum {string}
-             */
-            id: "failing_action" | "failing_step" | "first_failed_request" | "case_start";
+            /** @description Doorway id */
+            id: string;
             /**
              * Format: int32
              * @description Action index this doorway opens

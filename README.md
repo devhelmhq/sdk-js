@@ -51,6 +51,23 @@ await client.monitors.resume(monitor.id)
 await client.monitors.delete(monitor.id)
 ```
 
+## Testing a monitor
+
+Neither method records the result against the monitor's health.
+
+```typescript
+// HTTP, TCP, DNS, ICMP, MCP: run once through the probe and return the result
+const result = await client.monitors.test(monitor.id)
+console.log(result.passed, result.statusCode)
+
+// Browser and multi-step API: queue a validation run and poll it by id.
+// environmentId and region are optional (each defaults to the monitor's own).
+const run = await client.monitors.testRun(monitor.id, {environmentId, region: 'eu-west'})
+console.log(run.id, run.phase)
+```
+
+`monitors.test()` on a browser or multi-step API monitor throws `DevhelmMonitorTestQueuedError` (a `DevhelmValidationError`). The run the API queued is on `err.run`.
+
 ## Inbound testing
 
 `inboxes` captures HTTP. `email` captures mail. `webhooks` is still outbound alert delivery.

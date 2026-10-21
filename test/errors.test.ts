@@ -174,6 +174,29 @@ describe('errorFromResponse', () => {
     expect(err.code).toBe('QUOTA_EXCEEDED')
   })
 
+  it('keeps `.body` for a category value and `next` keys this SDK has never seen', () => {
+    // Postel's Law: ErrorCategory and ErrorNext are reached only from
+    // ErrorResponse, so they decode tolerantly. A new server-side category
+    // or a new key under `next` must not drop the whole body.
+    const err = errorFromResponse(
+      429,
+      JSON.stringify({
+        status: 429,
+        code: 'SOMETHING_NEW',
+        category: 'future_category',
+        retryable: true,
+        message: 'Slow down',
+        timestamp: 1700000000000,
+        next: {command: 'devhelm account usage', docs: null, video: 'https://x'},
+        errors: [{field: 'name', code: 'NEW_CODE', message: 'bad', hint: 'added later'}],
+      }),
+    )
+    expect(err.body).toBeDefined()
+    expect(err.body?.category).toBe('future_category')
+    expect(err.body?.next?.command).toBe('devhelm account usage')
+    expect(err.code).toBe('SOMETHING_NEW')
+  })
+
   it('keeps message and code from older bodies without category/retryable', () => {
     // Deployments predating the category/retryable fields still emit the
     // previous canonical shape; the SDK must keep message + code.
