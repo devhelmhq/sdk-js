@@ -7,6 +7,7 @@
  * Prints JSON to stdout on success, exits non-zero with error JSON on failure.
  * This mirrors the CLI's `--output json` behavior so pytest tests can parse results uniformly.
  */
+import {createHash} from 'node:crypto'
 import {Devhelm} from '../dist/index.js'
 
 const argv = process.argv.slice(2)
@@ -27,6 +28,23 @@ const workspaceId = extractFlag('workspace-id') || process.env.DEVHELM_WORKSPACE
 
 const client = new Devhelm({token, baseUrl: apiUrl, orgId, workspaceId})
 const [resource, action, ...rest] = argv
+
+// Downloads are reported as size + sha256 so the output stays JSON.
+async function digest(file) {
+  const bytes = Buffer.from(await file.arrayBuffer())
+  return {size: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex')}
+}
+
+// Rebinds a known mailbox. `client.email.address()` always mints a fresh
+// local part, and the harness must reach mail already sent to an address.
+function address(full) {
+  const at = full.lastIndexOf('@')
+  return client.email.bindAddress({email: full, domain: full.slice(at + 1), localPart: full.slice(0, at)})
+}
+
+async function message(full, messageId) {
+  return address(full).messages.get(messageId)
+}
 
 async function run() {
   switch (`${resource}.${action}`) {
@@ -209,6 +227,49 @@ async function run() {
     case 'status-pages.domains.add': return client.statusPages.domains.add(rest[0], JSON.parse(rest[1]))
     case 'status-pages.domains.verify': return client.statusPages.domains.verify(rest[0], rest[1])
     case 'status-pages.domains.remove': return void await client.statusPages.domains.remove(rest[0], rest[1])
+
+    // ── Email Testing ──
+    case 'email.address': return client.email.address({
+      ...(rest[0] ? {label: rest[0]} : {}),
+      ...(rest[1] ? {domain: rest[1]} : {}),
+    })
+    case 'email.wait': return client.email.wait({to: rest[0], ...(rest[1] ? {timeoutMs: Number(rest[1])} : {})})
+    case 'email.wait-local-part': return client.email.waitLocalPart(rest[0], {domain: rest[1], ...(rest[2] ? {timeoutMs: Number(rest[2])} : {})})
+    case 'email.receive': return address(rest[0]).receive(JSON.parse(rest[1]))
+    case 'email.clear': return void await address(rest[0]).clear()
+    case 'email.messages.list': return address(rest[0]).messages.list()
+    case 'email.messages.get': return message(rest[0], rest[1])
+    case 'email.messages.delete': return void await (await message(rest[0], rest[1])).delete()
+    case 'email.messages.raw': return digest(await (await message(rest[0], rest[1])).raw())
+    case 'email.messages.source': return (await message(rest[0], rest[1])).source()
+    case 'email.messages.otp': return (await message(rest[0], rest[1])).listOtp()
+    case 'email.messages.links': return (await message(rest[0], rest[1])).listLinks()
+    case 'email.attachments.get': {
+      const found = (await message(rest[0], rest[1])).attachments.find(a => String(a.id) === rest[2])
+      if (!found) throw new Error(`Attachment ${rest[2]} not on message ${rest[1]}`)
+      return digest(await found.file())
+    }
+    case 'email.domains.list': return client.email.domains.list()
+    case 'email.domains.get': return client.email.domains.get(rest[0])
+    case 'email.domains.create': return client.email.domains.create(rest[0] ? {name: rest[0]} : {})
+    case 'email.domains.update': return client.email.domains.update(rest[0], JSON.parse(rest[1]))
+    case 'email.domains.verify': return client.email.domains.verify(rest[0])
+    case 'email.domains.delete': return void await client.email.domains.delete(rest[0])
+    case 'email.domains.activity': return client.email.domains.activity(rest)
+
+    // ── Webhook Testing ──
+    case 'inboxes.list': return client.inboxes.list()
+    case 'inboxes.get': return client.inboxes.get(rest[0])
+    case 'inboxes.create': return client.inboxes.create(JSON.parse(rest[0]))
+    case 'inboxes.update': return client.inboxes.update(rest[0], JSON.parse(rest[1]))
+    case 'inboxes.delete': return void await client.inboxes.delete(rest[0])
+    case 'inboxes.activity': return client.inboxes.activity(rest)
+    case 'inboxes.wait': return client.inboxes.wait(rest[0], rest[1] ? {timeoutMs: Number(rest[1])} : {})
+    case 'inboxes.events.list': return (await client.inboxes.get(rest[0])).events.list()
+    case 'inboxes.events.get': return (await client.inboxes.get(rest[0])).events.get(rest[1])
+    case 'inboxes.events.delete': return void await (await client.inboxes.get(rest[0])).events.delete(rest[1])
+    case 'inboxes.events.clear': return void await (await client.inboxes.get(rest[0])).events.clear()
+    case 'inboxes.events.raw': return digest(await (await (await client.inboxes.get(rest[0])).events.get(rest[1])).raw())
 
     default:
       process.stderr.write(JSON.stringify({error: `Unknown operation: ${resource}.${action}`}))
