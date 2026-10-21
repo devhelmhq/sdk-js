@@ -42,6 +42,9 @@ export type DashboardOverviewDto = z.infer<typeof S.DashboardOverviewDtoSchema>
 export type DeployLockDto = z.infer<typeof S.DeployLockDtoSchema>
 export type AssertionTestResultDto = z.infer<typeof S.AssertionTestResultDtoSchema>
 export type MonitorTestResultDto = z.infer<typeof S.MonitorTestResultDtoSchema>
+/** A monitor run (queued, running, or finished). */
+export type RunDto = z.infer<typeof S.RunDtoSchema>
+
 export type MaintenanceWindowDto = z.infer<typeof S.MaintenanceWindowDtoSchema>
 
 // ── Status Data catalog DTOs ──────────────────────────────────────────
@@ -90,6 +93,8 @@ export type StatusPageBranding = z.infer<typeof S.StatusPageBrandingSchema>
 
 export type CreateMonitorRequest = z.infer<typeof S.CreateMonitorRequestSchema>
 export type UpdateMonitorRequest = z.infer<typeof S.UpdateMonitorRequestSchema>
+/** Optional target for `monitors.testRun()`: environment and region of the validation run. */
+export type CodeTestTargetRequest = z.infer<typeof S.CodeTestTargetRequestSchema>
 export type CreateManualIncidentRequest = z.infer<typeof S.CreateManualIncidentRequestSchema>
 export type ResolveIncidentRequest = z.infer<typeof S.ResolveIncidentRequestSchema>
 export type CreateAlertChannelRequest = z.infer<typeof S.CreateAlertChannelRequestSchema>

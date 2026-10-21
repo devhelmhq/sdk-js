@@ -1,6 +1,6 @@
 import {z} from 'zod'
 import {ErrorResponseSchema} from './schemas.js'
-import type {ErrorResponse} from './types.js'
+import type {ErrorResponse, RunDto} from './types.js'
 
 /**
  * Error taxonomy for the DevHelm SDK (P4 — see
@@ -57,6 +57,29 @@ export class DevhelmValidationError extends DevhelmError {
       .map((i) => `${i.path.join('.') || '<root>'}: ${i.message}`)
       .join('; ')
     return new DevhelmValidationError(`${prefix}: ${summary}`, issues)
+  }
+}
+
+/**
+ * Thrown by `monitors.test()` when the API answers 202: the monitor is a
+ * browser or multi-step API monitor, so the API queued a validation run
+ * instead of returning a probe result. Call `monitors.testRun()` for these
+ * monitors. The run the API already queued is on `run`.
+ *
+ * Extends `DevhelmValidationError`, which is what `test()` threw for these
+ * monitors before the API started queuing runs, so existing catch sites
+ * keep working.
+ */
+export class DevhelmMonitorTestQueuedError extends DevhelmValidationError {
+  readonly run: RunDto
+
+  constructor(run: RunDto) {
+    super(
+      `monitors.test() got a queued validation run (${run.id}) instead of a probe result: ` +
+        'this is a browser or multi-step API monitor. Use monitors.testRun() for these monitors.',
+    )
+    this.name = 'DevhelmMonitorTestQueuedError'
+    this.run = run
   }
 }
 

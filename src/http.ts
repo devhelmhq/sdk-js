@@ -69,6 +69,16 @@ export function buildClient(config: DevhelmConfig): ApiClient {
 export async function checkedFetch(
   promise: Promise<{data?: unknown; error?: unknown; response: Response}>,
 ): Promise<unknown> {
+  return (await checkedFetchWithStatus(promise)).data
+}
+
+/**
+ * Same as {@link checkedFetch}, but also returns the 2xx status code for
+ * endpoints whose success body depends on it (e.g. 200 vs 202).
+ */
+export async function checkedFetchWithStatus(
+  promise: Promise<{data?: unknown; error?: unknown; response: Response}>,
+): Promise<{status: number; data: unknown}> {
   let resolved: {data?: unknown; error?: unknown; response: Response}
   try {
     resolved = await promise
@@ -106,7 +116,7 @@ export async function checkedFetch(
       retryAfter: retryAfterHeader ?? undefined,
     })
   }
-  return data
+  return {status: response.status, data}
 }
 
 // ── Typed dynamic-path helpers ─────────────────────────────────────────
@@ -157,6 +167,15 @@ export async function apiPost(
   if (pathParams) init.params = {path: pathParams}
   if (signal) init.signal = signal
   return checkedFetch(asDynamic(client).POST(path, init))
+}
+
+/** POST that also returns the success status code. */
+export async function apiPostWithStatus(
+  client: ApiClient,
+  path: string,
+  body?: unknown,
+): Promise<{status: number; data: unknown}> {
+  return checkedFetchWithStatus(asDynamic(client).POST(path, {body}))
 }
 
 export async function apiPut(client: ApiClient, path: string, body: unknown, pathParams?: Record<string, unknown>): Promise<unknown> {

@@ -1,16 +1,19 @@
 import type {ApiClient} from '../http.js'
 import type {
   MonitorDto, CreateMonitorRequest, UpdateMonitorRequest,
-  MonitorVersionDto, CheckResultDto, MonitorTestResultDto,
-  Page, CursorPage,
+  MonitorVersionDto, CheckResultDto, MonitorTestResultDto, RunDto,
+  CodeTestTargetRequest, Page, CursorPage,
 } from '../types.js'
 import {
   MonitorDtoSchema, MonitorVersionDtoSchema,
-  CheckResultDtoSchema, MonitorTestResultDtoSchema,
-  CreateMonitorRequestSchema, UpdateMonitorRequestSchema,
+  CheckResultDtoSchema, MonitorTestResultDtoSchema, RunDtoSchema,
+  CreateMonitorRequestSchema, UpdateMonitorRequestSchema, CodeTestTargetRequestSchema,
 } from '../schemas.js'
-import {fetchAllPages, fetchPage, fetchCursorPage, fetchSingle, fetchVoid} from '../http.js'
-import {validateRequest} from '../validation.js'
+import {
+  apiPostWithStatus, fetchAllPages, fetchPage, fetchCursorPage, fetchSingle, fetchVoid,
+} from '../http.js'
+import {parseSingle, validateRequest} from '../validation.js'
+import {DevhelmMonitorTestQueuedError, DevhelmValidationError} from '../errors.js'
 
 export class Monitors {
   constructor(private readonly client: ApiClient) {}
@@ -57,9 +60,46 @@ export class Monitors {
     return fetchSingle(this.client, 'POST', `/api/v1/monitors/${id}/resume`, MonitorDtoSchema)
   }
 
-  /** Trigger an ad-hoc test run for a monitor. */
+  /**
+   * Test an uptime monitor (HTTP, TCP, DNS, ICMP, MCP) once and return the
+   * probe result. Nothing is stored.
+   *
+   * Browser and multi-step API monitors do not return a probe result: the
+   * API queues a validation run instead, and this method throws
+   * {@link DevhelmMonitorTestQueuedError} (carrying that run). Use
+   * {@link Monitors.testRun} for those monitors.
+   */
   async test(id: string | number): Promise<MonitorTestResultDto> {
-    return fetchSingle(this.client, 'POST', `/api/v1/monitors/${id}/test`, MonitorTestResultDtoSchema)
+    const path = `/api/v1/monitors/${id}/test`
+    const {status, data} = await apiPostWithStatus(this.client, path)
+    if (status === 202) {
+      throw new DevhelmMonitorTestQueuedError(parseSingle(RunDtoSchema, data, path))
+    }
+    return parseSingle(MonitorTestResultDtoSchema, data, path)
+  }
+
+  /**
+   * Queue a validation run for a browser or multi-step API monitor and
+   * return it. The run does not vote on health; poll it by `run.id` for its
+   * outcome. `target` picks the environment and region; each defaults to the
+   * monitor's own.
+   *
+   * Uptime monitors answer with a probe result instead; this method then
+   * throws `DevhelmValidationError`. Use {@link Monitors.test} for those.
+   */
+  async testRun(id: string | number, target?: CodeTestTargetRequest): Promise<RunDto> {
+    const path = `/api/v1/monitors/${id}/test`
+    const body = target === undefined
+      ? undefined
+      : validateRequest(CodeTestTargetRequestSchema, target, 'monitors.testRun')
+    const {status, data} = await apiPostWithStatus(this.client, path, body)
+    if (status !== 202) {
+      throw new DevhelmValidationError(
+        `Response validation failed (${path}): expected a queued validation run (202), got ${status}. ` +
+          'This is an uptime monitor; use monitors.test() for it.',
+      )
+    }
+    return parseSingle(RunDtoSchema, data, path)
   }
 
   /** List check results (cursor-paginated). */
