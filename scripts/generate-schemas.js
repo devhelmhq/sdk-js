@@ -114,6 +114,22 @@ function fixZod4RecordCalls(source) {
   throw new Error('fixZod4RecordCalls did not converge after 16 passes')
 }
 
+/**
+ * Export each schema const on its own. The aggregate `schemas` object is
+ * too large for TypeScript to serialize as one inferred declaration
+ * (TS7056) once the spec grows. Named exports keep `z.infer` precise.
+ */
+function exportSchemaConsts(source) {
+  return source.replace(/^const ([A-Za-z0-9_]+) = /gm, 'export const $1 = ')
+}
+
+function loosenSchemasAggregate(source) {
+  return source.replace(
+    'export const schemas = {',
+    'export const schemas: Record<string, z.ZodTypeAny> = {',
+  )
+}
+
 async function main() {
   console.log('Reading OpenAPI spec...')
   const spec = JSON.parse(readFileSync(SPEC_PATH, 'utf8'))
@@ -177,6 +193,8 @@ async function main() {
   clean = relaxResponseEnums(clean, tolerantSchemas)
   clean = relaxResponseStrict(clean, tolerantSchemas)
   clean = fixZod4RecordCalls(clean)
+  clean = exportSchemaConsts(clean)
+  clean = loosenSchemasAggregate(clean)
 
   mkdirSync(dirname(OUTPUT_PATH), { recursive: true })
   writeFileSync(OUTPUT_PATH, clean, 'utf8')
@@ -184,7 +202,7 @@ async function main() {
   try { unlinkSync(tempSpec) } catch {}
   try { unlinkSync(tempGenerated) } catch {}
 
-  const schemaCount = (clean.match(/^const /gm) || []).length
+  const schemaCount = (clean.match(/^export const /gm) || []).length
   console.log(`Done: ${schemaCount} schemas → ${OUTPUT_PATH}`)
 }
 
