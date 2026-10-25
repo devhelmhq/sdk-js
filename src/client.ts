@@ -1,84 +1,32 @@
 import type {DevhelmConfig} from './types.js'
-import {buildClient} from './http.js'
-import {Monitors} from './resources/monitors.js'
-import {Incidents} from './resources/incidents.js'
-import {Forensics} from './resources/forensics.js'
-import {AlertChannels} from './resources/alert-channels.js'
-import {NotificationPolicies} from './resources/notification-policies.js'
-import {Environments} from './resources/environments.js'
-import {Secrets} from './resources/secrets.js'
-import {Tags} from './resources/tags.js'
-import {ResourceGroups} from './resources/resource-groups.js'
-import {Webhooks} from './resources/webhooks.js'
-import {Inboxes} from './resources/inboxes.js'
-import {Email} from './resources/email.js'
-import {ApiKeys} from './resources/api-keys.js'
-import {Dependencies} from './resources/dependencies.js'
-import {Services} from './resources/services.js'
-import {DeployLock} from './resources/deploy-lock.js'
-import {Status} from './resources/status.js'
-import {StatusPages} from './resources/status-pages.js'
-import {MaintenanceWindows} from './resources/maintenance-windows.js'
+import {DevhelmClient} from './base-client.js'
+import {nodeCodeResolver, nodePlatform} from './node/platform.js'
 
 /**
- * DevHelm API client.
+ * DevHelm API client for Node.js.
+ *
+ * The token comes from `{token}`, else `DEVHELM_API_TOKEN`, else the current
+ * `devhelm auth login` context. `code` inputs are read from disk and bundled
+ * (`@devhelm/sdk/bundler`).
  *
  * @example
  * ```ts
  * import {Devhelm} from '@devhelm/sdk'
  *
- * const client = new Devhelm({token: 'your-api-token'})
+ * const devhelm = new Devhelm({token: process.env.DEVHELM_API_TOKEN})
  *
- * const monitors = await client.monitors.list()
- * const monitor = await client.monitors.create({
- *   name: 'My API',
- *   type: 'HTTP',
- *   config: {url: 'https://api.example.com/health', method: 'GET'},
- *   frequencySeconds: 60,
+ * const run = await devhelm.monitors.testAdhoc(
+ *   {type: 'BROWSER', environment: 'staging', code: './checkout.spec.ts'},
+ *   {wait: true},
+ * )
+ * const m = await devhelm.monitors.create({
+ *   name: 'Checkout', type: 'BROWSER', environment: 'production',
+ *   code: './checkout.spec.ts', frequencySeconds: 600, regions: ['us-east'],
  * })
  * ```
  */
-export class Devhelm {
-  readonly monitors: Monitors
-  readonly incidents: Incidents
-  readonly forensics: Forensics
-  readonly alertChannels: AlertChannels
-  readonly notificationPolicies: NotificationPolicies
-  readonly environments: Environments
-  readonly secrets: Secrets
-  readonly tags: Tags
-  readonly resourceGroups: ResourceGroups
-  readonly webhooks: Webhooks
-  readonly inboxes: Inboxes
-  readonly email: Email
-  readonly apiKeys: ApiKeys
-  readonly dependencies: Dependencies
-  readonly services: Services
-  readonly deployLock: DeployLock
-  readonly status: Status
-  readonly statusPages: StatusPages
-  readonly maintenanceWindows: MaintenanceWindows
-
-  constructor(config: DevhelmConfig) {
-    const client = buildClient(config)
-    this.monitors = new Monitors(client)
-    this.incidents = new Incidents(client)
-    this.forensics = new Forensics(client)
-    this.alertChannels = new AlertChannels(client)
-    this.notificationPolicies = new NotificationPolicies(client)
-    this.environments = new Environments(client)
-    this.secrets = new Secrets(client)
-    this.tags = new Tags(client)
-    this.resourceGroups = new ResourceGroups(client)
-    this.webhooks = new Webhooks(client)
-    this.inboxes = new Inboxes(client)
-    this.email = new Email(client)
-    this.apiKeys = new ApiKeys(client)
-    this.dependencies = new Dependencies(client)
-    this.services = new Services(client)
-    this.deployLock = new DeployLock(client)
-    this.status = new Status(client)
-    this.statusPages = new StatusPages(client)
-    this.maintenanceWindows = new MaintenanceWindows(client)
+export class Devhelm extends DevhelmClient {
+  constructor(config: DevhelmConfig = {}) {
+    super(config, nodePlatform, nodeCodeResolver)
   }
 }

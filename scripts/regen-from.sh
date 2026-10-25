@@ -10,6 +10,7 @@
 #
 # Behavior:
 #   - copies <path-to-spec.json> over docs/openapi/monitoring-api.json
+#   - copies ../contracts/bundle-vectors.json (next to the spec) into docs/contracts/
 #   - runs typegen + schemagen
 #   - prints absolute path to src/generated/api.ts on stdout
 #
@@ -37,6 +38,15 @@ INPUT_ABS="$(cd "$(dirname "$INPUT_SPEC")" && pwd)/$(basename "$INPUT_SPEC")"
 TARGET_ABS="$(cd "$(dirname "$TARGET_SPEC")" && pwd)/$(basename "$TARGET_SPEC")"
 if [[ "$INPUT_ABS" != "$TARGET_ABS" ]]; then
   cp "$INPUT_SPEC" "$TARGET_SPEC"
+fi
+
+# Vendor the bundle conformance vectors that sit next to the spec in mono
+# (docs/openapi/monitoring-api.json → docs/contracts/bundle-vectors.json).
+VECTORS_IN="$(cd "$(dirname "$INPUT_SPEC")" && pwd)/../contracts/bundle-vectors.json"
+VECTORS_OUT="$ROOT_DIR/docs/contracts/bundle-vectors.json"
+if [[ -f "$VECTORS_IN" && "$(cd "$(dirname "$VECTORS_IN")" && pwd)" != "$(cd "$(dirname "$VECTORS_OUT")" 2>/dev/null && pwd)" ]]; then
+  mkdir -p "$(dirname "$VECTORS_OUT")"
+  cp "$VECTORS_IN" "$VECTORS_OUT"
 fi
 
 cd "$ROOT_DIR"

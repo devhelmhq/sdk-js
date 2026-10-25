@@ -1,6 +1,6 @@
 import type {ApiClient} from '../http.js'
 import {fetchSingle} from '../http.js'
-import {DevhelmTransportError} from '../errors.js'
+import {TransportError} from '../errors.js'
 import type {SignedDownload} from '../types.js'
 import {SignedDownloadSchema} from '../schemas.js'
 
@@ -22,10 +22,10 @@ export async function fileFromSignedUrl(signed: SignedDownload): Promise<File> {
     response = await fetch(signed.url)
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
-    throw new DevhelmTransportError(message, {cause: error})
+    throw new TransportError(message, {cause: error instanceof Error ? error : undefined})
   }
   if (!response.ok) {
-    throw new DevhelmTransportError(`Download failed with status ${response.status}`)
+    throw new TransportError(`Download failed with status ${response.status}`)
   }
   const bytes = await response.arrayBuffer()
   return new File([bytes], signed.filename, {type: signed.contentType})

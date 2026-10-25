@@ -1,5 +1,6 @@
 import {z, type ZodType} from 'zod'
-import {DevhelmValidationError} from './errors.js'
+import {ValidationError} from './errors.js'
+import type {Wire} from './json.js'
 
 /**
  * Validate a request body against its Zod schema before sending to the API.
@@ -13,7 +14,7 @@ export function validateRequest<T>(schema: ZodType<T>, data: unknown, context?: 
   const result = schema.safeParse(data)
   if (result.success) return result.data
   const ctx = context ? ` (${context})` : ''
-  throw DevhelmValidationError.fromZodError(result.error, `Request validation failed${ctx}`)
+  throw ValidationError.fromZodError(result.error, `Request validation failed${ctx}`)
 }
 
 /**
@@ -22,11 +23,21 @@ export function validateRequest<T>(schema: ZodType<T>, data: unknown, context?: 
  * Used for runtime validation of API responses — catches shape mismatches
  * before they propagate as silent bugs.
  */
-export function parse<T>(schema: ZodType<T>, data: unknown, context?: string): T {
+/**
+ * The single decode boundary. A value decoded from JSON is JSON, so the
+ * `unknown` slots a tolerant schema leaves are JsonValue (see `Wire<T>`).
+ * Sound because the generated schemas have no transforms, defaults or
+ * coercions: their output type is their input type.
+ */
+export function decoded<T>(value: T): Wire<T> {
+  return value as Wire<T>
+}
+
+export function parse<T>(schema: ZodType<T>, data: unknown, context?: string): Wire<T> {
   const result = schema.safeParse(data)
-  if (result.success) return result.data
+  if (result.success) return decoded(result.data)
   const ctx = context ? ` (${context})` : ''
-  throw DevhelmValidationError.fromZodError(result.error, `Response validation failed${ctx}`)
+  throw ValidationError.fromZodError(result.error, `Response validation failed${ctx}`)
 }
 
 /**
@@ -37,23 +48,32 @@ export function parse<T>(schema: ZodType<T>, data: unknown, context?: string): T
  * discarded.
  */
 /** Unwrap `{ event }` or `{ message }`. Those bodies are not `{ data }`. */
-export function parseEnvelopeKey<T>(key: 'event' | 'message', schema: ZodType<T>, data: unknown, context?: string): T {
+export function parseEnvelopeKey<T>(key: 'event' | 'message', schema: ZodType<T>, data: unknown, context?: string): Wire<T> {
   const envelope = z.object({[key]: schema}).strict()
-  const parsed = parse(envelope, data, context) as Record<'event' | 'message', T>
-  return parsed[key]
+  const parsed = envelope.safeParse(data)
+  if (!parsed.success) {
+    const ctx = context ? ` (${context})` : ''
+    throw ValidationError.fromZodError(parsed.error, `Response validation failed${ctx}`)
+  }
+  return decoded((parsed.data as Record<'event' | 'message', T>)[key])
 }
 
-export function parseSingle<T>(schema: ZodType<T>, data: unknown, context?: string): T {
+export function parseSingle<T>(schema: ZodType<T>, data: unknown, context?: string): Wire<T> {
   const envelope = z.object({data: schema}).strict()
-  const parsed = parse(envelope, data, context)
-  return parsed.data
+  const parsed = envelope.safeParse(data)
+  if (!parsed.success) {
+    const ctx = context ? ` (${context})` : ''
+    throw ValidationError.fromZodError(parsed.error, `Response validation failed${ctx}`)
+  }
+  return decoded(parsed.data.data)
 }
 
 /**
  * Parse a paginated (TableValueResult) response.
  *
- * `nextCursor` is additive on the server envelope. Unknown extra keys are
- * ignored (Postel's Law) so a new response field cannot break `list()`.
+ * The envelope is sealed (AGENTS.md "SDK Safety"): `data`, `hasNext`,
+ * `hasPrev`, `totalElements`, `totalPages`. `nextCursor` is tolerated because
+ * 1.6 shipped accepting it. Items decode tolerantly.
  */
 export function parsePage<T>(schema: ZodType<T>, data: unknown, context?: string) {
   const pageSchema = z
@@ -65,7 +85,7 @@ export function parsePage<T>(schema: ZodType<T>, data: unknown, context?: string
       totalPages: z.number().int().nullable().optional(),
       nextCursor: z.string().nullable().optional(),
     })
-    .passthrough()
+    .strict()
   return parse(pageSchema, data, context)
 }
 

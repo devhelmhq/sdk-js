@@ -98,9 +98,9 @@ describe('parsePage', () => {
     expect(result.nextCursor).toBeNull()
   })
 
-  it('ignores unknown envelope fields', () => {
+  it('rejects unknown envelope fields (the envelope is sealed)', () => {
     const raw = {data: [], hasNext: false, hasPrev: false, futureField: true}
-    expect(() => parsePage(ItemSchema, raw)).not.toThrow()
+    expect(() => parsePage(ItemSchema, raw)).toThrow(DevhelmError)
   })
 })
 

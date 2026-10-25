@@ -4,8 +4,28 @@ import {EnvironmentDtoSchema, CreateEnvironmentRequestSchema, UpdateEnvironmentR
 import {fetchAllPages, fetchPage, fetchSingle, fetchVoid} from '../http.js'
 import {validateRequest} from '../validation.js'
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 export class Environments {
+  private readonly ids = new Map<string, Promise<string>>()
+
   constructor(private readonly client: ApiClient) {}
+
+  /**
+   * An environment id from a slug or id. Slugs resolve through
+   * `GET /environments/{slug}` once per client; an unknown slug throws
+   * `NotFoundError`.
+   */
+  async resolveId(slugOrId: string): Promise<string> {
+    if (UUID.test(slugOrId)) return slugOrId
+    let id = this.ids.get(slugOrId)
+    if (!id) {
+      id = this.get(slugOrId).then((env) => env.id)
+      id.catch(() => this.ids.delete(slugOrId))
+      this.ids.set(slugOrId, id)
+    }
+    return id
+  }
 
   /** List all environments (auto-paginates). */
   async list(): Promise<EnvironmentDto[]> {

@@ -1,12 +1,12 @@
 /**
- * `monitors.test()` keeps returning the probe result (200) for uptime
- * monitors and throws `DevhelmMonitorTestQueuedError` on 202.
- * `monitors.testRun()` returns the queued validation run for browser /
- * multi-step API monitors; its optional target body is validated locally
- * and sent only when given.
+ * `monitors.test()` returns the queued validation run (202) for browser /
+ * multi-step API monitors. On uptime monitors it keeps returning the probe
+ * result with a deprecation warning until 2027-01-31, then throws
+ * `USE_PROBE`; `monitors.probe()` is the uptime call (doc 42 R16).
  */
-import {describe, it, expect, beforeEach, afterEach} from 'vitest'
-import {Devhelm, DevhelmMonitorTestQueuedError, DevhelmValidationError} from '../src/index.js'
+import {describe, it, expect, beforeEach, afterEach, vi} from 'vitest'
+import {Devhelm, DevhelmValidationError, ValidationError, isRun} from '../src/index.js'
+import {resetDeprecationWarnings} from '../src/deprecation.js'
 import type {MonitorTestResultDto, RunDto} from '../src/index.js'
 
 interface CapturedRequest {
@@ -55,6 +55,7 @@ const QUEUED_RUN: RunDto = {
   attempts: [],
   executionAttempts: [],
   billable: false,
+  flaky: false,
 }
 
 function json(status: number, body: unknown): Response {
@@ -70,6 +71,7 @@ describe('monitors.test', () => {
   let nextResponse: () => Response
 
   beforeEach(() => {
+    resetDeprecationWarnings()
     captured = []
     nextResponse = () => json(200, {data: PROBE_RESULT})
     globalThis.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -86,29 +88,63 @@ describe('monitors.test', () => {
 
   const client = () => new Devhelm({token: 't', baseUrl: 'http://localhost:0'})
 
-  it('test() returns the probe result on 200, unchanged', async () => {
-    const out = await client().monitors.test(MONITOR_ID)
-    expect(out).toEqual(PROBE_RESULT)
+  it('test() returns the queued validation run on 202', async () => {
+    nextResponse = () => json(202, {data: QUEUED_RUN})
+    const run = await client().monitors.test(MONITOR_ID)
+    expect(isRun(run) && run.id).toBe(QUEUED_RUN.id)
     expect(captured).toHaveLength(1)
     expect(captured[0]!.method).toBe('POST')
     expect(captured[0]!.url.pathname).toBe(`/api/v1/monitors/${MONITOR_ID}/test`)
-    expect(captured[0]!.body).toBeNull()
+    expect(JSON.parse(captured[0]!.body ?? 'null')).toEqual({})
   })
 
-  it('test() throws DevhelmMonitorTestQueuedError on 202, carrying the run', async () => {
+  it('test() on an uptime monitor returns the probe result and warns once until 2027-01-31', async () => {
+    const warn = vi.spyOn(process, 'emitWarning').mockImplementation(() => undefined)
+    const out = await client().monitors.test(MONITOR_ID)
+    await client().monitors.test(MONITOR_ID)
+    expect(out).toEqual(PROBE_RESULT)
+    expect(isRun(out)).toBe(false)
+    expect(warn).toHaveBeenCalledTimes(1)
+    expect(String(warn.mock.calls[0]![0])).toContain('monitors.probe(id)')
+    warn.mockRestore()
+  })
+
+  it('test() on an uptime monitor throws ValidationError USE_PROBE after 2027-01-31', async () => {
+    vi.useFakeTimers({toFake: ['Date']})
+    vi.setSystemTime(new Date('2027-02-01T00:00:00Z'))
+    try {
+      const err = await client().monitors.test(MONITOR_ID).catch((e: unknown) => e)
+      expect(err).toBeInstanceOf(ValidationError)
+      expect((err as ValidationError).code).toBe('USE_PROBE')
+      expect((err as ValidationError).next?.command).toBe('monitors.probe(id)')
+      expect((err as ValidationError).exitCode).toBe(4)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('test() sends region and session, never an environment override', async () => {
     nextResponse = () => json(202, {data: QUEUED_RUN})
-    const err = await client().monitors.test(MONITOR_ID).catch((e: unknown) => e)
-    expect(err).toBeInstanceOf(DevhelmMonitorTestQueuedError)
-    // Same base class code monitors got before the API queued runs.
-    expect(err).toBeInstanceOf(DevhelmValidationError)
-    if (!(err instanceof DevhelmMonitorTestQueuedError)) throw new Error('unreachable')
-    expect(err.run.id).toBe(QUEUED_RUN.id)
-    expect(err.message).toContain('monitors.testRun()')
+    await client().monitors.test(MONITOR_ID, {region: 'eu-west', session: {id: 'ci-1'}})
+    expect(JSON.parse(captured[0]!.body ?? '')).toEqual({region: 'eu-west', session: {id: 'ci-1'}})
   })
 
-  it('test() still rejects a 200 body that is not a probe result', async () => {
+  it('probe() returns the probe result on 200, unchanged', async () => {
+    const out = await client().monitors.probe(MONITOR_ID)
+    expect(out).toEqual(PROBE_RESULT)
+  })
+
+  it('probe() on a code monitor throws ValidationError USE_TEST with the queued run id', async () => {
+    nextResponse = () => json(202, {data: QUEUED_RUN})
+    const err = await client().monitors.probe(MONITOR_ID).catch((e: unknown) => e)
+    expect(err).toBeInstanceOf(ValidationError)
+    expect((err as ValidationError).code).toBe('USE_TEST')
+    expect((err as ValidationError).details['runId']).toBe(QUEUED_RUN.id)
+  })
+
+  it('probe() still rejects a 200 body that is not a probe result', async () => {
     nextResponse = () => json(200, {data: QUEUED_RUN})
-    await expect(client().monitors.test(MONITOR_ID)).rejects.toBeInstanceOf(DevhelmValidationError)
+    await expect(client().monitors.probe(MONITOR_ID)).rejects.toBeInstanceOf(DevhelmValidationError)
   })
 
   it('testRun() returns the queued run on 202 and sends no body by default', async () => {
@@ -135,8 +171,8 @@ describe('monitors.test', () => {
     expect(captured).toHaveLength(0)
   })
 
-  it('testRun() rejects a probe result (uptime monitor) and names test()', async () => {
-    await expect(client().monitors.testRun(MONITOR_ID)).rejects.toThrow(/use monitors\.test\(\)/)
+  it('testRun() rejects a probe result (uptime monitor) and names probe()', async () => {
+    await expect(client().monitors.testRun(MONITOR_ID)).rejects.toThrow(/use monitors\.probe\(\)/)
   })
 
   it('testRun() decodes additive fields on the run', async () => {
