@@ -26,7 +26,7 @@ const validMonitorDto = {
   id: UUID, organizationId: 1, name: 'Test Monitor',
   type: 'HTTP', config: validHttpConfig, frequencySeconds: 60,
   enabled: true, regions: ['us-east-1'], managedBy: 'DASHBOARD',
-  createdAt: ISO, updatedAt: ISO, muted: false,
+  ownerEnforced: false, createdAt: ISO, updatedAt: ISO, muted: false,
 }
 
 const validIncidentDto = {
@@ -80,7 +80,7 @@ const validWebhookEndpointDto = {
 
 const validApiKeyDto = {
   id: 1, name: 'My Key', key: 'dh_xxxx',
-  createdAt: ISO, updatedAt: ISO,
+  createdAt: ISO, updatedAt: ISO, scopes: ['full'],
 }
 
 const validDeployLockDto = {
@@ -2222,7 +2222,7 @@ describe('ServiceSubscriptionDto negative validation', () => {
 
 describe('ApiKeyCreateResponse negative validation', () => {
   const s = schemas.ApiKeyCreateResponse
-  const valid = {id: 1, name: 'My Key', key: 'dh_xxxx', createdAt: ISO}
+  const valid = {id: 1, name: 'My Key', key: 'dh_xxxx', createdAt: ISO, scopes: ['full']}
 
   it('accepts valid response', () => pass(s, valid))
 
