@@ -59,10 +59,12 @@ export class DevhelmClient {
   readonly config: Readonly<Omit<ResolvedConfig, 'token' | 'headers' | 'fetch' | 'idempotencyKey'>>
   /** The underlying openapi-fetch client (typed against the generated `paths`). */
   readonly api: ApiClient
+  readonly #transport: Transport
 
   protected constructor(config: DevhelmConfig, platform: Platform, resolver: CodeResolver) {
     const resolved = resolveConfig(config, platform)
     const transport = new Transport(resolved)
+    this.#transport = transport
     const client = transport.api
     this.api = client
     this.config = {
@@ -99,4 +101,15 @@ export class DevhelmClient {
     this.statusPages = new StatusPages(client)
     this.maintenanceWindows = new MaintenanceWindows(client)
   }
+  /**
+   * Send a prepared request through this client's transport: an
+   * `Idempotency-Key` on POST (from `idempotencyKey`, else a UUID), and the
+   * retry policy (429, 503, retryable 409, `Retry-After`). Non-2xx
+   * responses are returned, not thrown. For wrappers that keep their own
+   * typed client (the CLI) and need the same wire behaviour.
+   */
+  send(request: Request): Promise<Response> {
+    return this.#transport.send(request)
+  }
+
 }
