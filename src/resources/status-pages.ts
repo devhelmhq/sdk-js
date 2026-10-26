@@ -8,6 +8,7 @@ import type {
   StatusPageSubscriberDto, AdminAddSubscriberRequest,
   StatusPageCustomDomainDto, AddCustomDomainRequest,
   ReorderComponentsRequest, ReorderPageLayoutRequest,
+  SetStatusPageComponentOverrideRequest, UpdateStatusPageIncidentUpdateRequest, StatusPageIncidentUpdateDto,
   Page,
 } from '../types.js'
 import {
@@ -21,8 +22,9 @@ import {
   PublishStatusPageIncidentRequestSchema,
   AdminAddSubscriberRequestSchema, AddCustomDomainRequestSchema,
   ReorderComponentsRequestSchema, ReorderPageLayoutRequestSchema,
+  SetStatusPageComponentOverrideRequestSchema, UpdateStatusPageIncidentUpdateRequestSchema, StatusPageIncidentUpdateDtoSchema,
 } from '../schemas.js'
-import {apiPut, fetchAllPages, fetchPage, fetchSingle, fetchVoid} from '../http.js'
+import {apiPost, apiPut, fetchAllPages, fetchPage, fetchSingle, fetchVoid} from '../http.js'
 import {validateRequest} from '../validation.js'
 
 const BASE = '/api/v1/status-pages'
@@ -56,6 +58,17 @@ class Components {
   async reorder(pageId: string | number, body: ReorderComponentsRequest): Promise<void> {
     validateRequest(ReorderComponentsRequestSchema, body, 'statusPages.components.reorder')
     await apiPut(this.client, `${BASE}/${pageId}/components/reorder`, body)
+  }
+
+  /** Pin a component's displayed status (`PUT …/components/{componentId}/override`). */
+  async setOverride(pageId: string | number, componentId: string | number, body: SetStatusPageComponentOverrideRequest): Promise<StatusPageComponentDto> {
+    validateRequest(SetStatusPageComponentOverrideRequestSchema, body, 'statusPages.components.setOverride')
+    return fetchSingle(this.client, 'PUT', `${BASE}/${pageId}/components/${componentId}/override`, StatusPageComponentDtoSchema, body)
+  }
+
+  /** Return a component to its measured status (`DELETE …/components/{componentId}/override`). */
+  async clearOverride(pageId: string | number, componentId: string | number): Promise<StatusPageComponentDto> {
+    return fetchSingle(this.client, 'DELETE', `${BASE}/${pageId}/components/${componentId}/override`, StatusPageComponentDtoSchema)
   }
 }
 
@@ -123,8 +136,14 @@ class Incidents {
   }
 
   /** Dismiss a draft incident. */
+  /** Edit a posted update (`PATCH …/incidents/{incidentId}/updates/{updateId}`). */
+  async editUpdate(pageId: string | number, incidentId: string | number, updateId: string | number, body: UpdateStatusPageIncidentUpdateRequest): Promise<StatusPageIncidentUpdateDto> {
+    validateRequest(UpdateStatusPageIncidentUpdateRequestSchema, body, 'statusPages.incidents.editUpdate')
+    return fetchSingle(this.client, 'PATCH', `${BASE}/${pageId}/incidents/${incidentId}/updates/${updateId}`, StatusPageIncidentUpdateDtoSchema, body)
+  }
+
   async dismiss(pageId: string | number, incidentId: string | number): Promise<void> {
-    await fetchSingle(this.client, 'POST', `${BASE}/${pageId}/incidents/${incidentId}/dismiss`, StatusPageIncidentDtoSchema)
+    await apiPost(this.client, `${BASE}/${pageId}/incidents/${incidentId}/dismiss`)
   }
 
   /** Delete an incident. */
@@ -171,8 +190,14 @@ class Maintenance {
   }
 
   /** Dismiss a draft maintenance window. */
+  /** Edit a posted maintenance update (`PATCH …/maintenance/{windowId}/updates/{updateId}`). */
+  async editUpdate(pageId: string | number, windowId: string | number, updateId: string | number, body: UpdateStatusPageIncidentUpdateRequest): Promise<StatusPageIncidentUpdateDto> {
+    validateRequest(UpdateStatusPageIncidentUpdateRequestSchema, body, 'statusPages.maintenance.editUpdate')
+    return fetchSingle(this.client, 'PATCH', `${BASE}/${pageId}/maintenance/${windowId}/updates/${updateId}`, StatusPageIncidentUpdateDtoSchema, body)
+  }
+
   async dismiss(pageId: string | number, windowId: string | number): Promise<void> {
-    await fetchSingle(this.client, 'POST', `${BASE}/${pageId}/maintenance/${windowId}/dismiss`, StatusPageIncidentDtoSchema)
+    await apiPost(this.client, `${BASE}/${pageId}/maintenance/${windowId}/dismiss`)
   }
 
   /** Delete a maintenance window. */

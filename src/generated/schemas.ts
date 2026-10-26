@@ -1,13 +1,6 @@
 // Auto-generated Zod schemas from OpenAPI spec. DO NOT EDIT.
 import { z } from "zod";
 
-export const pageable = z
-  .object({
-    page: z.number().int().gte(0),
-    size: z.number().int().gte(1),
-    sort: z.array(z.string()),
-  })
-  .strict();
 export const ErrorCategory = z.string();
 export const ErrorEntry = z
   .object({
@@ -235,7 +228,7 @@ export const CreateAlertChannelRequest = z
       ZapierChannelConfig,
     ]),
     managedBy: z
-      .enum(["DASHBOARD", "CLI", "TERRAFORM", "MCP", "API"])
+      .enum(["DASHBOARD", "CLI", "TERRAFORM", "MCP", "API", "GIT"])
       .nullish(),
   })
   .strict();
@@ -429,7 +422,7 @@ export const UpdateAlertChannelRequest = z
       UpdateZapierChannelConfig,
     ]),
     managedBy: z
-      .enum(["DASHBOARD", "CLI", "TERRAFORM", "MCP", "API"])
+      .enum(["DASHBOARD", "CLI", "TERRAFORM", "MCP", "API", "GIT"])
       .nullish(),
     enabled: z.boolean().nullish(),
   })
@@ -469,7 +462,9 @@ export const CreateApiKeyRequest = z
     expiresAt: z.string().datetime({ offset: true }).nullish(),
     preset: z.string().nullish(),
     scopes: z.array(z.string()).nullish(),
-    tool: z.enum(["DASHBOARD", "CLI", "TERRAFORM", "MCP", "API"]).nullish(),
+    tool: z
+      .enum(["DASHBOARD", "CLI", "TERRAFORM", "MCP", "API", "GIT"])
+      .nullish(),
   })
   .strict();
 export const UpdateApiKeyRequest = z
@@ -486,6 +481,7 @@ export const CreateBundleRequest = z
     files: z.record(z.string(), z.string()),
     entrypoint: z.string().min(0).max(512).nullish(),
     runtimeId: z.string().min(0).max(32).nullish(),
+    include: z.array(z.string().min(0).max(512)).max(256).nullish(),
   })
   .strict();
 export const CreateDemoBookingRequest = z
@@ -568,34 +564,6 @@ export const UpdateEnvironmentRequest = z
   })
   .partial()
   .strict();
-export const params = z
-  .object({
-    status: z
-      .enum(["WATCHING", "TRIGGERED", "CONFIRMED", "RESOLVED"])
-      .nullish(),
-    severity: z.enum(["DOWN", "DEGRADED", "MAINTENANCE"]).nullish(),
-    source: z
-      .enum([
-        "AUTOMATIC",
-        "MANUAL",
-        "MONITORS",
-        "STATUS_DATA",
-        "RESOURCE_GROUP",
-      ])
-      .nullish(),
-    monitorId: z.string().uuid().nullish(),
-    serviceId: z.string().uuid().nullish(),
-    resourceGroupId: z.string().uuid().nullish(),
-    tagId: z.string().uuid().nullish(),
-    environmentId: z.string().uuid().nullish(),
-    excludeId: z.string().uuid().nullish(),
-    startedFrom: z.string().datetime({ offset: true }).nullish(),
-    startedTo: z.string().datetime({ offset: true }).nullish(),
-    search: z.string().min(0).max(200).nullish(),
-    page: z.number().int().gte(0),
-    size: z.number().int().gte(1).lte(200),
-  })
-  .strict();
 export const CreateManualIncidentRequest = z
   .object({
     title: z.string().min(1),
@@ -666,20 +634,6 @@ export const ChangeStatusRequest = z
       "DECLINED",
     ]),
   })
-  .strict();
-export const triage = z
-  .object({
-    name: z.string().nullable(),
-    openIncident: z.boolean().nullable(),
-    muted: z.boolean().nullable(),
-    quarantined: z.boolean().nullable(),
-    pausedBefore: z.string().datetime({ offset: true }).nullable(),
-    flaky: z.boolean().nullable(),
-    group: z.string().nullable(),
-    ownerProject: z.string().nullable(),
-    sort: z.string().nullable(),
-  })
-  .partial()
   .strict();
 export const DnsMonitorConfig = z
   .object({
@@ -1187,7 +1141,7 @@ export const CreateMonitorRequest = z
     enabled: z.boolean().nullish(),
     regions: z.array(z.string()).nullish(),
     managedBy: z
-      .enum(["DASHBOARD", "CLI", "TERRAFORM", "MCP", "API"])
+      .enum(["DASHBOARD", "CLI", "TERRAFORM", "MCP", "API", "GIT"])
       .nullish(),
     ownerEnforced: z.boolean().nullish(),
     ownerProject: z.string().min(0).max(255).nullish(),
@@ -1224,7 +1178,7 @@ export const UpdateMonitorRequest = z
     enabled: z.boolean().nullable(),
     regions: z.array(z.string()).nullable(),
     managedBy: z
-      .enum(["DASHBOARD", "CLI", "TERRAFORM", "MCP", "API"])
+      .enum(["DASHBOARD", "CLI", "TERRAFORM", "MCP", "API", "GIT"])
       .nullable(),
     ownerEnforced: z.boolean().nullable(),
     ownerProject: z.string().min(0).max(255).nullable(),
@@ -1307,30 +1261,6 @@ export const RollbackRevisionRequest = z
     expectedLiveRevisionId: z.string().uuid().nullish(),
   })
   .strict();
-export const params__2 = z
-  .object({
-    phase: z.string().nullish(),
-    outcome: z.string().nullish(),
-    region: z.string().nullish(),
-    source: z.string().nullish(),
-    q: z.string().nullish(),
-    revisionId: z.string().uuid().nullish(),
-    from: z.string().datetime({ offset: true }).nullish(),
-    to: z.string().datetime({ offset: true }).nullish(),
-    cursor: z.string().nullish(),
-    limit: z.number().int().gte(1).lte(100),
-    monitorType: z.string().nullish(),
-    incidentId: z.string().uuid().nullish(),
-    branch: z.string().nullish(),
-    flaky: z.boolean().nullish(),
-    sessionId: z.string().nullish(),
-    evaluationCycleId: z.string().uuid().nullish(),
-    excludeSource: z.string().nullish(),
-    sort: z.string().nullish(),
-    step: z.number().int().gte(0).nullish(),
-    caseIndex: z.number().int().gte(0).nullish(),
-  })
-  .strict();
 export const RemapSecretRequest = z
   .object({ secretId: z.string().uuid().nullable() })
   .partial()
@@ -1354,7 +1284,7 @@ export const TestMonitorNotificationsRequest = z
   .strict();
 export const TransferMonitorRequest = z
   .object({
-    to: z.enum(["DASHBOARD", "CLI", "TERRAFORM", "MCP", "API"]),
+    to: z.enum(["DASHBOARD", "CLI", "TERRAFORM", "MCP", "API", "GIT"]),
     reason: z.string().min(0).max(280),
     project: z.string().min(0).max(255).nullish(),
     ownerDeclaration: OwnerDeclaration.nullish(),
@@ -1463,19 +1393,22 @@ export const MonitorTestRequest = z
       "BROWSER",
       "MULTI_STEP_API",
     ]),
-    config: z.union([
-      DnsMonitorConfig,
-      HeartbeatMonitorConfig,
-      HttpMonitorConfig,
-      IcmpMonitorConfig,
-      McpServerMonitorConfig,
-      ScriptMonitorConfig,
-      TcpMonitorConfig,
-    ]),
+    config: z
+      .union([
+        DnsMonitorConfig,
+        HeartbeatMonitorConfig,
+        HttpMonitorConfig,
+        IcmpMonitorConfig,
+        McpServerMonitorConfig,
+        ScriptMonitorConfig,
+        TcpMonitorConfig,
+      ])
+      .nullish(),
     assertions: z.array(CreateAssertionRequest).nullish(),
     environmentId: z.string().uuid().nullish(),
     code: MonitorCodeSpec.nullish(),
     session: RunSessionContext.nullish(),
+    region: z.string().min(0).max(64).nullish(),
   })
   .strict();
 export const ValidateMonitorsRequest = z
@@ -1581,7 +1514,7 @@ export const CreateResourceGroupRequest = z
     confirmationDelaySeconds: z.number().int().gte(0).lte(600).nullish(),
     recoveryCooldownMinutes: z.number().int().gte(0).lte(60).nullish(),
     managedBy: z
-      .enum(["DASHBOARD", "CLI", "TERRAFORM", "MCP", "API"])
+      .enum(["DASHBOARD", "CLI", "TERRAFORM", "MCP", "API", "GIT"])
       .nullish(),
   })
   .strict();
@@ -1601,7 +1534,7 @@ export const UpdateResourceGroupRequest = z
     confirmationDelaySeconds: z.number().int().gte(0).lte(600).nullish(),
     recoveryCooldownMinutes: z.number().int().gte(0).lte(60).nullish(),
     managedBy: z
-      .enum(["DASHBOARD", "CLI", "TERRAFORM", "MCP", "API"])
+      .enum(["DASHBOARD", "CLI", "TERRAFORM", "MCP", "API", "GIT"])
       .nullish(),
   })
   .strict();
@@ -1616,33 +1549,6 @@ export const AddResourceGroupMemberRequest = z
   .strict();
 export const EvidencePurgeRequest = z
   .object({ reason: z.string().min(0).max(500) })
-  .strict();
-export const params__3 = z
-  .object({
-    phase: z.string().nullish(),
-    outcome: z.string().nullish(),
-    region: z.string().nullish(),
-    source: z.string().nullish(),
-    environmentId: z.string().uuid().nullish(),
-    from: z.string().datetime({ offset: true }).nullish(),
-    to: z.string().datetime({ offset: true }).nullish(),
-    q: z.string().nullish(),
-    cursor: z.string().nullish(),
-    limit: z.number().int().gte(1).lte(100),
-    monitorId: z.string().uuid().nullish(),
-    revisionId: z.string().uuid().nullish(),
-    monitorType: z.string().nullish(),
-    incidentId: z.string().uuid().nullish(),
-    branch: z.string().nullish(),
-    flaky: z.boolean().nullish(),
-    sessionId: z.string().nullish(),
-    evaluationCycleId: z.string().uuid().nullish(),
-    excludeSource: z.string().nullish(),
-    sort: z.string().nullish(),
-    step: z.number().int().gte(0).nullish(),
-    caseIndex: z.number().int().gte(0).nullish(),
-    bucket: z.string().nullish(),
-  })
   .strict();
 export const NearestOtherRegion = z
   .object({
@@ -1664,15 +1570,6 @@ export const CaptureCompareDto = z
 export const SingleValueResponseCaptureCompareDto = z
   .object({ data: CaptureCompareDto })
   .passthrough();
-export const params__4 = z
-  .object({
-    attempt: z.number().int().nullable(),
-    ungrouped: z.boolean().nullable(),
-    level: z.string().nullable(),
-    format: z.string().nullable(),
-  })
-  .partial()
-  .strict();
 export const ConsoleGroupDto = z
   .object({
     level: z.string().min(1),
@@ -1769,38 +1666,6 @@ export const RunDiffDto = z
   })
   .passthrough();
 export const SingleValueResponseRunDiffDto = z.object({ data: RunDiffDto }).passthrough();
-export const params__5 = z
-  .object({
-    attempt: z.number().int().nullable(),
-    failed: z.boolean().nullable(),
-    slow: z.boolean().nullable(),
-    stepId: z.string().nullable(),
-    xhr: z.boolean().nullable(),
-    source: z.string().nullable(),
-    cursor: z.string().nullable(),
-  })
-  .partial()
-  .strict();
-export const params__6 = z
-  .object({
-    from: z.string().datetime({ offset: true }).nullish(),
-    to: z.string().datetime({ offset: true }).nullish(),
-    monitorId: z.string().uuid().nullish(),
-    cursor: z.string().nullish(),
-    limit: z.number().int().gte(1).lte(100),
-  })
-  .strict();
-export const params__7 = z
-  .object({
-    from: z.string().datetime({ offset: true }).nullish(),
-    to: z.string().datetime({ offset: true }).nullish(),
-    monitorId: z.string().uuid().nullish(),
-    cursor: z.string().nullish(),
-    limit: z.number().int().gte(1).lte(100),
-    environmentId: z.string().uuid().nullish(),
-    monitorType: z.string().nullish(),
-  })
-  .strict();
 export const CreateSecretRequest = z
   .object({
     key: z.string().min(0).max(255),
@@ -1905,7 +1770,7 @@ export const CreateStatusPageRequest = z
     enabled: z.boolean().nullish(),
     incidentMode: z.enum(["MANUAL", "REVIEW", "AUTOMATIC"]).nullish(),
     managedBy: z
-      .enum(["DASHBOARD", "CLI", "TERRAFORM", "MCP", "API"])
+      .enum(["DASHBOARD", "CLI", "TERRAFORM", "MCP", "API", "GIT"])
       .nullish(),
   })
   .strict();
@@ -1918,7 +1783,7 @@ export const UpdateStatusPageRequest = z
     enabled: z.boolean().nullable(),
     incidentMode: z.enum(["MANUAL", "REVIEW", "AUTOMATIC"]).nullable(),
     managedBy: z
-      .enum(["DASHBOARD", "CLI", "TERRAFORM", "MCP", "API"])
+      .enum(["DASHBOARD", "CLI", "TERRAFORM", "MCP", "API", "GIT"])
       .nullable(),
   })
   .partial()
@@ -2499,6 +2364,7 @@ export const KeyInfo = z
     expiresAt: z.string().datetime({ offset: true }).nullish(),
     lastUsedAt: z.string().datetime({ offset: true }).nullish(),
     scopes: z.array(z.string()),
+    tool: z.string().nullish(),
   })
   .passthrough();
 export const OrgInfo = z.object({ id: z.number().int(), name: z.string() }).passthrough();
@@ -3090,7 +2956,7 @@ export const RunDto = z
   .object({
     id: z.string().uuid(),
     organizationId: z.number().int(),
-    monitorId: z.string().uuid(),
+    monitorId: z.string().uuid().nullish(),
     monitorName: z.string().nullish(),
     monitorType: z.string().nullish(),
     host: z.string().nullish(),
@@ -3109,6 +2975,7 @@ export const RunDto = z
     phase: z.string(),
     cancelRequested: z.boolean(),
     outcome: z.string().nullish(),
+    flaky: z.boolean(),
     headline: z.string().nullish(),
     executionLine: z.string().nullish(),
     metaLine: z.string().nullish(),
@@ -3931,34 +3798,6 @@ export const IncidentDetailDto = z
     trigger: IncidentTriggerDto.nullish(),
   })
   .passthrough();
-export const IncidentFilterParams = z
-  .object({
-    status: z
-      .enum(["WATCHING", "TRIGGERED", "CONFIRMED", "RESOLVED"])
-      .nullish(),
-    severity: z.enum(["DOWN", "DEGRADED", "MAINTENANCE"]).nullish(),
-    source: z
-      .enum([
-        "AUTOMATIC",
-        "MANUAL",
-        "MONITORS",
-        "STATUS_DATA",
-        "RESOURCE_GROUP",
-      ])
-      .nullish(),
-    monitorId: z.string().uuid().nullish(),
-    serviceId: z.string().uuid().nullish(),
-    resourceGroupId: z.string().uuid().nullish(),
-    tagId: z.string().uuid().nullish(),
-    environmentId: z.string().uuid().nullish(),
-    excludeId: z.string().uuid().nullish(),
-    startedFrom: z.string().datetime({ offset: true }).nullish(),
-    startedTo: z.string().datetime({ offset: true }).nullish(),
-    search: z.string().min(0).max(200).nullish(),
-    page: z.number().int().gte(0),
-    size: z.number().int().gte(1).lte(200),
-  })
-  .strict();
 export const IncidentTimelineDto = z
   .object({
     transitions: z.array(IncidentStateTransitionDto),
@@ -4210,30 +4049,6 @@ export const MonitorRunDurationSummaryDto = z
     p50DurationMs: z.number().nullish(),
   })
   .passthrough();
-export const MonitorRunListParams = z
-  .object({
-    phase: z.string().nullish(),
-    outcome: z.string().nullish(),
-    region: z.string().nullish(),
-    source: z.string().nullish(),
-    q: z.string().nullish(),
-    revisionId: z.string().uuid().nullish(),
-    from: z.string().datetime({ offset: true }).nullish(),
-    to: z.string().datetime({ offset: true }).nullish(),
-    cursor: z.string().nullish(),
-    limit: z.number().int().gte(1).lte(100),
-    monitorType: z.string().nullish(),
-    incidentId: z.string().uuid().nullish(),
-    branch: z.string().nullish(),
-    flaky: z.boolean().nullish(),
-    sessionId: z.string().nullish(),
-    evaluationCycleId: z.string().uuid().nullish(),
-    excludeSource: z.string().nullish(),
-    sort: z.string().nullish(),
-    step: z.number().int().gte(0).nullish(),
-    caseIndex: z.number().int().gte(0).nullish(),
-  })
-  .strict();
 export const Point = z
   .object({
     at: z.string().datetime({ offset: true }),
@@ -4346,20 +4161,6 @@ export const MonitorTestResultDto = z
     warnings: z.array(z.string().nullable()).nullish(),
   })
   .passthrough();
-export const MonitorTriageParams = z
-  .object({
-    name: z.string().nullable(),
-    openIncident: z.boolean().nullable(),
-    muted: z.boolean().nullable(),
-    quarantined: z.boolean().nullable(),
-    pausedBefore: z.string().datetime({ offset: true }).nullable(),
-    flaky: z.boolean().nullable(),
-    group: z.string().nullable(),
-    ownerProject: z.string().nullable(),
-    sort: z.string().nullable(),
-  })
-  .partial()
-  .strict();
 export const MonitorUsage = z
   .object({
     monitorId: z.string().uuid(),
@@ -4548,13 +4349,6 @@ export const OverviewStepDto = z
   })
   .passthrough();
 export const OverviewStepsDto = z.object({ steps: z.array(OverviewStepDto) }).passthrough();
-export const Pageable = z
-  .object({
-    page: z.number().int().gte(0),
-    size: z.number().int().gte(1),
-    sort: z.array(z.string()),
-  })
-  .strict();
 export const PollChartBucketDto = z
   .object({
     bucket: z.string().datetime({ offset: true }),
@@ -4783,19 +4577,6 @@ export const RunCaseDto = z
     steps: z.array(RunStepDto),
   })
   .passthrough();
-export const RunCaseListParams = z
-  .object({ attempt: z.number().int().nullable() })
-  .partial()
-  .strict();
-export const RunConsoleParams = z
-  .object({
-    attempt: z.number().int().nullable(),
-    ungrouped: z.boolean().nullable(),
-    level: z.string().nullable(),
-    format: z.string().nullable(),
-  })
-  .partial()
-  .strict();
 export const RunEventDto = z
   .object({
     id: z.string().uuid(),
@@ -4810,10 +4591,6 @@ export const RunEventDto = z
     createdAt: z.string().datetime({ offset: true }),
   })
   .passthrough();
-export const RunEventParams = z
-  .object({ after: z.number().int().nullable() })
-  .partial()
-  .strict();
 export const RunOutcomeCountDto = z
   .object({ outcome: z.string(), count: z.number().int() })
   .passthrough();
@@ -4834,33 +4611,6 @@ export const RunHistogramBucketDto = z
     counts: z.array(RunOutcomeCountDto),
   })
   .passthrough();
-export const RunListParams = z
-  .object({
-    phase: z.string().nullish(),
-    outcome: z.string().nullish(),
-    region: z.string().nullish(),
-    source: z.string().nullish(),
-    environmentId: z.string().uuid().nullish(),
-    from: z.string().datetime({ offset: true }).nullish(),
-    to: z.string().datetime({ offset: true }).nullish(),
-    q: z.string().nullish(),
-    cursor: z.string().nullish(),
-    limit: z.number().int().gte(1).lte(100),
-    monitorId: z.string().uuid().nullish(),
-    revisionId: z.string().uuid().nullish(),
-    monitorType: z.string().nullish(),
-    incidentId: z.string().uuid().nullish(),
-    branch: z.string().nullish(),
-    flaky: z.boolean().nullish(),
-    sessionId: z.string().nullish(),
-    evaluationCycleId: z.string().uuid().nullish(),
-    excludeSource: z.string().nullish(),
-    sort: z.string().nullish(),
-    step: z.number().int().gte(0).nullish(),
-    caseIndex: z.number().int().gte(0).nullish(),
-    bucket: z.string().nullish(),
-  })
-  .strict();
 export const RunMetricsSummaryDto = z
   .object({
     from: z.string().datetime({ offset: true }),
@@ -4917,29 +4667,6 @@ export const RunNetworkDto = z
     hasMore: z.boolean(),
   })
   .passthrough();
-export const RunNetworkParams = z
-  .object({
-    attempt: z.number().int().nullable(),
-    failed: z.boolean().nullable(),
-    slow: z.boolean().nullable(),
-    stepId: z.string().nullable(),
-    xhr: z.boolean().nullable(),
-    source: z.string().nullable(),
-    cursor: z.string().nullable(),
-  })
-  .partial()
-  .strict();
-export const RunSkippedListParams = z
-  .object({
-    from: z.string().datetime({ offset: true }).nullish(),
-    to: z.string().datetime({ offset: true }).nullish(),
-    monitorId: z.string().uuid().nullish(),
-    cursor: z.string().nullish(),
-    limit: z.number().int().gte(1).lte(100),
-    environmentId: z.string().uuid().nullish(),
-    monitorType: z.string().nullish(),
-  })
-  .strict();
 export const RunTraceSummaryDto = z
   .object({
     runId: z.string().uuid(),
@@ -4950,15 +4677,6 @@ export const RunTraceSummaryDto = z
     truncated: z.boolean(),
   })
   .passthrough();
-export const RunWindowListParams = z
-  .object({
-    from: z.string().datetime({ offset: true }).nullish(),
-    to: z.string().datetime({ offset: true }).nullish(),
-    monitorId: z.string().uuid().nullish(),
-    cursor: z.string().nullish(),
-    limit: z.number().int().gte(1).lte(100),
-  })
-  .strict();
 export const ScheduledMaintenanceDto = z
   .object({
     id: z.string().uuid(),
@@ -6263,7 +5981,6 @@ export const WebhookEventCatalogResponse = z
   .passthrough();
 
 export const schemas: Record<string, z.ZodTypeAny> = {
-  pageable,
   ErrorCategory,
   ErrorEntry,
   ErrorNext,
@@ -6329,7 +6046,6 @@ export const schemas: Record<string, z.ZodTypeAny> = {
   InjectEmailMessageRequest,
   CreateEnvironmentRequest,
   UpdateEnvironmentRequest,
-  params,
   CreateManualIncidentRequest,
   UpdateIncidentRequest,
   ResolveIncidentRequest,
@@ -6339,7 +6055,6 @@ export const schemas: Record<string, z.ZodTypeAny> = {
   UpdateMaintenanceWindowRequest,
   ChangeRoleRequest,
   ChangeStatusRequest,
-  triage,
   DnsMonitorConfig,
   HeartbeatMonitorConfig,
   HttpMonitorConfig,
@@ -6415,7 +6130,6 @@ export const schemas: Record<string, z.ZodTypeAny> = {
   RunSessionContext,
   CodeTestTargetRequest,
   RollbackRevisionRequest,
-  params__2,
   RemapSecretRequest,
   UpsertMonitorSessionRequest,
   RemoveMonitorTagsRequest,
@@ -6442,11 +6156,9 @@ export const schemas: Record<string, z.ZodTypeAny> = {
   UpdateResourceGroupRequest,
   AddResourceGroupMemberRequest,
   EvidencePurgeRequest,
-  params__3,
   NearestOtherRegion,
   CaptureCompareDto,
   SingleValueResponseCaptureCompareDto,
-  params__4,
   ConsoleGroupDto,
   ConsoleLineDto,
   RunConsoleDto,
@@ -6458,9 +6170,6 @@ export const schemas: Record<string, z.ZodTypeAny> = {
   PickerItem,
   RunDiffDto,
   SingleValueResponseRunDiffDto,
-  params__5,
-  params__6,
-  params__7,
   CreateSecretRequest,
   UpdateSecretRequest,
   WriteSecretEnvironmentValueRequest,
@@ -6656,7 +6365,6 @@ export const schemas: Record<string, z.ZodTypeAny> = {
   LinkedStatusPageIncidentDto,
   IncidentTriggerDto,
   IncidentDetailDto,
-  IncidentFilterParams,
   IncidentTimelineDto,
   InjectEmailMessageResponse,
   IntegrationFieldDto,
@@ -6690,7 +6398,6 @@ export const schemas: Record<string, z.ZodTypeAny> = {
   MonitorRunDurationMetricDto,
   MonitorRunDurationBatchDto,
   MonitorRunDurationSummaryDto,
-  MonitorRunListParams,
   Point,
   MonitorRunSeriesDto,
   MonitorScheduleDto,
@@ -6701,7 +6408,6 @@ export const schemas: Record<string, z.ZodTypeAny> = {
   MonitorSessionDto,
   MonitorSettingsPreviewDto,
   MonitorTestResultDto,
-  MonitorTriageParams,
   MonitorUsage,
   MonitorValidationFindingDto,
   MonitorValidationProjectionDto,
@@ -6718,7 +6424,6 @@ export const schemas: Record<string, z.ZodTypeAny> = {
   OverviewStepCellDto,
   OverviewStepDto,
   OverviewStepsDto,
-  Pageable,
   PollChartBucketDto,
   PricingTier,
   RegionBucketDto,
@@ -6740,25 +6445,18 @@ export const schemas: Record<string, z.ZodTypeAny> = {
   RunArtifactDto,
   RunStepDto,
   RunCaseDto,
-  RunCaseListParams,
-  RunConsoleParams,
   RunEventDto,
-  RunEventParams,
   RunOutcomeCountDto,
   Value,
   RunFacetDto,
   RunHistogramBucketDto,
-  RunListParams,
   RunMetricsSummaryDto,
   RunMonitorStripDto,
   RunnerLogLiveEvent,
   RunnerRegionStatusDto,
   RunnerRegionStatusesDto,
   RunNetworkDto,
-  RunNetworkParams,
-  RunSkippedListParams,
   RunTraceSummaryDto,
-  RunWindowListParams,
   ScheduledMaintenanceDto,
   SecretAuditDto,
   SecretUsageDto,

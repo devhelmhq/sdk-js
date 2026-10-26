@@ -8,8 +8,8 @@ import {
   DevhelmRateLimitError,
   DevhelmServerError,
   DevhelmValidationError,
-  errorFromResponse,
 } from '../src/errors.js'
+import {errorFromResponse} from '../src/error-mapping.js'
 
 describe('errorFromResponse', () => {
   it('returns DevhelmAuthError for 401', () => {
@@ -39,18 +39,19 @@ describe('errorFromResponse', () => {
     expect(err.status).toBe(409)
   })
 
-  it('returns plain DevhelmApiError for 400 (not Validation)', () => {
+  it('a legacy 400 body is a ValidationError that still matches DevhelmApiError', () => {
     const err = errorFromResponse(400, '{"message":"Name is required","detail":"field: name"}')
     expect(err).toBeInstanceOf(DevhelmApiError)
-    expect(err).not.toBeInstanceOf(DevhelmValidationError)
+    expect(err).toBeInstanceOf(DevhelmValidationError)
+    expect(err.category).toBe('validation')
     expect(err.status).toBe(400)
     expect(err.detail).toBe('field: name')
   })
 
-  it('returns plain DevhelmApiError for 422 (not Validation)', () => {
+  it('a legacy 422 body is a ValidationError that still matches DevhelmApiError', () => {
     const err = errorFromResponse(422, '{"message":"Invalid frequency"}')
     expect(err).toBeInstanceOf(DevhelmApiError)
-    expect(err).not.toBeInstanceOf(DevhelmValidationError)
+    expect(err.category).toBe('validation')
     expect(err.status).toBe(422)
   })
 
@@ -248,7 +249,7 @@ describe('errorFromResponse', () => {
     expect(text.rawBody).toBe('Bad Gateway')
 
     const empty = errorFromResponse(500, '')
-    expect(empty.rawBody).toBeUndefined()
+    expect(empty.rawBody).toBeNull()
   })
 
   describe('requestId resolution', () => {

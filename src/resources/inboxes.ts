@@ -1,5 +1,6 @@
+import type {JsonValue} from '../json.js'
 import {z} from 'zod'
-import {DevhelmValidationError} from '../errors.js'
+import {ValidationError} from '../errors.js'
 import type {ApiClient} from '../http.js'
 import {apiGet, apiPost, fetchAllPages, fetchCursorPage, fetchPage, fetchSingle, fetchVoid} from '../http.js'
 import type {CursorPage, Page} from '../types.js'
@@ -68,7 +69,7 @@ export interface ListedEvent extends WebhookEventDto {
 
 export interface Event extends ListedEvent {
   text(): string
-  json(): unknown
+  json(): JsonValue
 }
 
 export interface InboxEvents {
@@ -187,10 +188,10 @@ export class Inboxes {
       text: () => eventText(dto.body),
       json: () => {
         try {
-          return JSON.parse(eventText(dto.body)) as unknown
+          return JSON.parse(eventText(dto.body)) as JsonValue
         } catch (err) {
-          if (err instanceof DevhelmValidationError) throw err
-          throw new DevhelmValidationError('Event body is not JSON')
+          if (err instanceof ValidationError) throw err
+          throw new ValidationError('Event body is not JSON', {code: 'BODY_NOT_JSON', cause: err instanceof Error ? err : undefined})
         }
       },
     }
@@ -198,6 +199,6 @@ export class Inboxes {
 }
 
 function eventText(body: string | null | undefined): string {
-  if (body == null) throw new DevhelmValidationError('Event body is not on this response')
+  if (body == null) throw new ValidationError('Event body is not on this response')
   return body
 }

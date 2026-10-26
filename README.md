@@ -51,22 +51,43 @@ await client.monitors.resume(monitor.id)
 await client.monitors.delete(monitor.id)
 ```
 
-## Testing a monitor
+## Code checks (browser and multi-step API)
 
-Neither method records the result against the monitor's health.
+Point `code` at a file. The SDK resolves the import closure, refuses symlinks, dotfiles and imports outside the bundle, scans for literal secrets, uploads the closure and checks that the API computed the same digest.
 
-```typescript
-// HTTP, TCP, DNS, ICMP, MCP: run once through the probe and return the result
-const result = await client.monitors.test(monitor.id)
-console.log(result.passed, result.statusCode)
+```ts
+import {Devhelm} from '@devhelm/sdk'
+const devhelm = new Devhelm({token: process.env.DEVHELM_API_TOKEN})
 
-// Browser and multi-step API: queue a validation run and poll it by id.
-// environmentId and region are optional (each defaults to the monitor's own).
-const run = await client.monitors.testRun(monitor.id, {environmentId, region: 'eu-west'})
-console.log(run.id, run.phase)
+// Validate a file before any monitor exists (billed, never alerts)
+const tried = await devhelm.monitors.testAdhoc({type: 'BROWSER', environment: 'staging', code: './checkout.spec.ts'}, {wait: true})
+
+// Create: revision 1 goes live in this call, and the monitor runs at create
+const m = await devhelm.monitors.create({name: 'Checkout', type: 'BROWSER', environment: 'production',
+                                          code: './checkout.spec.ts', frequencySeconds: 600, regions: ['us-east']})
+
+// Change: draft → test → publish
+const {revision} = await devhelm.monitors.revisions.create(m.id, {code: './checkout.spec.ts'})
+const t = await devhelm.monitors.revisions.test(m.id, revision.id, {wait: true})
+if (t.outcome === 'passed') await devhelm.monitors.publish(m.id, {revisionId: revision.id, expectedLiveRevisionId: m.liveRevisionId})
+
+// Recorded runs in several regions; never alerts unless {signal: true}
+const {runs} = await devhelm.monitors.trigger(m.id, {regions: ['us-east', 'eu-west'], wait: true})
 ```
 
-`monitors.test()` on a browser or multi-step API monitor throws `DevhelmMonitorTestQueuedError` (a `DevhelmValidationError`). The run the API queued is on `err.run`.
+`code` takes a path, `{entrypoint, include}` or `{entrypoint, files}`. The bundle root is the nearest ancestor with `.git`, else the entrypoint's directory (`root` overrides it). `auth.setup.ts` next to the entrypoint is always bundled.
+
+`wait` uses the run's event stream, then polling. It returns the finished run whatever its outcome, and throws only `WaitTimeoutError {runId, phase}` (default 5 minutes). It never cancels the run. Use `devhelm.runs.wait(id)` for a run you already have.
+
+`monitors.probe(id)` runs the uptime probe once. `monitors.test(id)` queues a validation run for a code monitor. On an uptime monitor, `monitors.test(id)` still returns the probe result until 2027-01-31, with a deprecation warning; after that it throws `ValidationError` `USE_PROBE`.
+
+### Entry points
+
+| Import | For |
+| --- | --- |
+| `@devhelm/sdk` | Node.js. Reads `code` from disk, `DEVHELM_API_TOKEN` and the `devhelm auth login` context |
+| `@devhelm/sdk/web` | Browsers and other runtimes without a filesystem. `code` is `{entrypoint, files}` only; pass `token` |
+| `@devhelm/sdk/bundler` | The bundler on its own: `resolveBundle`, `checkBundle`, `computeDigest`, `scanSecrets`, `toCreateBundleRequest`, `zipBundle`, `RUNTIME_CATALOG` |
 
 ## Inbound testing
 
@@ -93,22 +114,23 @@ const file = await message.attachments?.[0]?.file()
 import {Devhelm} from '@devhelm/sdk'
 
 const client = new Devhelm({
-  token: 'your-api-token',           // required (or DEVHELM_API_TOKEN env var)
+  token: 'your-api-token',           // or DEVHELM_API_TOKEN, or the `devhelm auth login` context
   orgId: '1',                        // optional (or DEVHELM_ORG_ID; defaults to '1')
   workspaceId: '1',                  // optional (or DEVHELM_WORKSPACE_ID; omit when the org has one workspace)
-  baseUrl: 'https://api.devhelm.io', // optional, defaults to production
+  baseUrl: 'https://api.devhelm.io', // optional (or DEVHELM_API_URL)
 })
 ```
 
-Environment variables are used as fallbacks when constructor arguments are not provided:
+| Parameter     | Fallbacks, in order                                    |
+| ------------- | ------------------------------------------------------ |
+| `token`       | `DEVHELM_API_TOKEN`, then the CLI context              |
+| `baseUrl`     | `DEVHELM_API_URL`, then the CLI context, then production |
+| `orgId`       | `DEVHELM_ORG_ID`                                       |
+| `workspaceId` | `DEVHELM_WORKSPACE_ID`                                 |
 
-| Parameter     | Env Variable           |
-| ------------- | ---------------------- |
-| `token`       | `DEVHELM_API_TOKEN`    |
-| `orgId`       | `DEVHELM_ORG_ID`       |
-| `workspaceId` | `DEVHELM_WORKSPACE_ID` |
+No token anywhere throws `ValidationError` with code `NO_TOKEN`.
 
-Leave `workspaceId` unset when the organization has one workspace. Set it when the organization has several.
+Every call sends `X-DevHelm-Client: sdk-js/<version>` (wrappers pass `client: 'cli/1.30.0'`). Every POST carries an `Idempotency-Key`: one UUID per call, reused only when the SDK retries that call. The SDK retries 429, 503 and retryable 409s (`DEPLOY_LOCKED`) up to 5 times, honouring `Retry-After` (`retry: {maxAttempts, maxDelayMs}`).
 
 ## Resources
 
@@ -156,40 +178,40 @@ console.log(results.hasMore)
 
 ## Error Handling
 
-The SDK raises three top-level error types:
+Every error is a `DevhelmError`. The class follows the API's `category`, not the HTTP status:
 
-- `DevhelmValidationError` — local request/response shape validation failed.
-- `DevhelmApiError` — the API returned a non-2xx status. Subclassed by HTTP class for ergonomics:
-  - `DevhelmAuthError` (401/403)
-  - `DevhelmNotFoundError` (404)
-  - `DevhelmConflictError` (409)
-  - `DevhelmRateLimitError` (429)
-  - `DevhelmServerError` (5xx)
-- `DevhelmTransportError` — the request never reached a server response (connection refused, timeout, TLS failure, etc.).
+| `category` | Class | CLI exit |
+| --- | --- | --- |
+| `validation` | `ValidationError` | 4 |
+| `blocked` | `BlockedError` | 4 |
+| `not_found` | `NotFoundError` | 4 |
+| `auth` | `AuthError` | 17 |
+| `permission` | `PermissionError` | 17 |
+| `ownership` | `OwnershipError` | 17 |
+| `plan` | `PlanLimitError` | 16 |
+| `quota` | `QuotaError` | 16 |
+| `confirmation_required` | `ConfirmationRequiredError` | 15 |
+| `conflict` | `ConflictError` | 18 |
+| `gone` | `GoneError` | 20 |
+| `rate_limit` | `RateLimitError` | 11 |
+| `platform` | `PlatformError` | 11 |
+| `transport` | `TransportError` | 12 |
 
-Every `DevhelmApiError` carries:
-
-- `status` — the HTTP status code
-- `code` — coarse machine-readable category (e.g. `NOT_FOUND`, `RATE_LIMITED`); switch on this, not the human-readable `message`
-- `requestId` — the per-request id from the `X-Request-Id` response header; always include this in support tickets
+`runs.wait()` adds `WaitTimeoutError` (exit 19). Each error carries every `ErrorResponse` field (`code`, `requestId`, `retryable`, `errors[]`, `next`, `details`, `used`, `limit`, `resetsAt`, …) and `exitCode`.
 
 ```ts
-import {Devhelm, DevhelmAuthError, DevhelmError} from '@devhelm/sdk'
-
-const client = new Devhelm({token: 'bad-token', orgId: '1', workspaceId: '1'})
+import {Devhelm, QuotaError, DevhelmError} from '@devhelm/sdk'
 
 try {
-  await client.monitors.list()
+  await devhelm.monitors.trigger(id, {regions: ['us-east']})
 } catch (e) {
-  if (e instanceof DevhelmAuthError) {
-    console.log(`Auth failed: ${e.message} (HTTP ${e.status}, requestId=${e.requestId})`)
-  } else if (e instanceof DevhelmError) {
-    console.log(`API error [${e.code}]: ${e.message}`)
-  } else {
-    throw e
-  }
+  if (e instanceof QuotaError) console.log(`${e.used}/${e.limit} runs used; resumes ${e.resetsAt}`)
+  else if (e instanceof DevhelmError) console.log(`[${e.category}] ${e.code}: ${e.message} (${e.requestId})`)
+  else throw e
 }
 ```
+
+The 1.11 names (`DevhelmApiError`, `DevhelmAuthError`, `DevhelmNotFoundError`, `DevhelmConflictError`, `DevhelmRateLimitError`, `DevhelmServerError`, `DevhelmValidationError`, `DevhelmTransportError`) still work for `instanceof` until 2027-01-31.
 
 ## TypeScript
 
@@ -212,8 +234,7 @@ Strict-mode TypeScript and ESM are first-class — the package ships ESM-only wi
 ## Compatibility
 
 - Node.js ≥ 18 (uses native `fetch`)
-- Browser bundlers (Vite, Webpack, esbuild, Rollup) — works with the same ESM build
-- Cloudflare Workers — works (uses native `fetch`)
+- Browsers, Cloudflare Workers and other runtimes: import `@devhelm/sdk/web`
 
 The client sends `X-DevHelm-Surface: sdk-js` and `X-DevHelm-Surface-Version: <package version>` on every request so the API can attribute traffic and warn you if your version is end-of-life. See [Surface Support Policy](https://devhelm.io/surfaces/support).
 

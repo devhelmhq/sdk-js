@@ -393,8 +393,8 @@ export const CursorPageServiceCatalogDtoSchema = CursorPageServiceCatalogDto
 
 // Envelope factories for callers that want to compose response schemas
 // outside of the built-in `parseSingle`/`parsePage`/`parseCursorPage`
-// helpers. TableValueResult is `.passthrough()` so additive envelope
-// fields (nextCursor, …) cannot break list helpers.
+// helpers. All three envelopes are sealed; TableValueResult tolerates the
+// historical `nextCursor` key.
 export function tableValueResultSchema<T extends z.ZodTypeAny>(itemSchema: T) {
   return z.object({
     data: z.array(itemSchema),
@@ -403,7 +403,7 @@ export function tableValueResultSchema<T extends z.ZodTypeAny>(itemSchema: T) {
     totalElements: z.number().int().nullable(),
     totalPages: z.number().int().nullable(),
     nextCursor: z.string().nullable().optional(),
-  }).passthrough()
+  }).strict()
 }
 
 export function singleValueResponseSchema<T extends z.ZodTypeAny>(itemSchema: T) {
@@ -417,3 +417,75 @@ export function cursorPageSchema<T extends z.ZodTypeAny>(itemSchema: T) {
     hasMore: z.boolean(),
   }).strict()
 }
+
+// ── Synthetics: bundles, revisions, runs, runtimes, usage ──────────
+
+export {
+  BundleDto as BundleDtoSchema,
+  BundleCheckResultDto as BundleCheckResultDtoSchema,
+  CreateBundleRequest as CreateBundleRequestSchema,
+  MonitorCodeSpec as MonitorCodeSpecSchema,
+  CodeSource as CodeSourceSchema,
+  RevisionDto as RevisionDtoSchema,
+  RevisionDiffDto as RevisionDiffDtoSchema,
+  RevisionFilesDto as RevisionFilesDtoSchema,
+  CreateDraftRevisionRequest as CreateDraftRevisionRequestSchema,
+  CreateDraftRevisionResponse as CreateDraftRevisionResponseSchema,
+  DefinitionHeadDto as DefinitionHeadDtoSchema,
+  PublishRevisionRequest as PublishRevisionRequestSchema,
+  RollbackRevisionRequest as RollbackRevisionRequestSchema,
+  RollbackPreviewDto as RollbackPreviewDtoSchema,
+  TransferMonitorRequest as TransferMonitorRequestSchema,
+  TakeoverMonitorRequest as TakeoverMonitorRequestSchema,
+  MonitorDriftDto as MonitorDriftDtoSchema,
+  MonitorOverlayRequest as MonitorOverlayRequestSchema,
+  QuarantineMonitorRequest as QuarantineMonitorRequestSchema,
+  RestoreMonitorRequest as RestoreMonitorRequestSchema,
+  MonitorHistoryEntryDto as MonitorHistoryEntryDtoSchema,
+  TriggerRunRequest as TriggerRunRequestSchema,
+  TriggerRunsResponse as TriggerRunsResponseSchema,
+  MonitorTestRequest as MonitorTestRequestSchema,
+  RunSessionContext as RunSessionContextSchema,
+  RuntimeProfileDto as RuntimeProfileDtoSchema,
+  RunEventDto as RunEventDtoSchema,
+  RunCaseDto as RunCaseDtoSchema,
+  RunConsoleDto as RunConsoleDtoSchema,
+  RunNetworkDto as RunNetworkDtoSchema,
+  NetworkRowDto as NetworkRowDtoSchema,
+  RunArtifactDto as RunArtifactDtoSchema,
+  ArtifactDownloadDto as ArtifactDownloadDtoSchema,
+  RunTraceSummaryDto as RunTraceSummaryDtoSchema,
+  RunDiffDto as RunDiffDtoSchema,
+  RunMetricsSummaryDto as RunMetricsSummaryDtoSchema,
+  RunSkippedEntryDto as RunSkippedEntryDtoSchema,
+  EvidencePurgeRequest as EvidencePurgeRequestSchema,
+  SecretUsageDto as SecretUsageDtoSchema,
+  WriteSecretEnvironmentValueRequest as WriteSecretEnvironmentValueRequestSchema,
+  MonitorSecretRequestsDto as MonitorSecretRequestsDtoSchema,
+  RemapSecretRequest as RemapSecretRequestSchema,
+  MonitorSessionDto as MonitorSessionDtoSchema,
+  UpsertMonitorSessionRequest as UpsertMonitorSessionRequestSchema,
+  SyntheticsUsagePeriodDto as SyntheticsUsagePeriodDtoSchema,
+  EntitlementResponse as EntitlementResponseSchema,
+  AuthMeResponse as AuthMeResponseSchema,
+  AuditEventDto as AuditEventDtoSchema,
+  ValidateMonitorsRequest as ValidateMonitorsRequestSchema,
+  MonitorValidationResultDto as MonitorValidationResultDtoSchema,
+  MonitorUsageProjectionDto as MonitorUsageProjectionDtoSchema,
+  UpdateIncidentRequest as UpdateIncidentRequestSchema,
+  AddIncidentUpdateRequest as AddIncidentUpdateRequestSchema,
+  AcknowledgeAllIncidentsResponse as AcknowledgeAllIncidentsResponseSchema,
+  RelatedIncidentsResponse as RelatedIncidentsResponseSchema,
+  IncidentActivityEventDto as IncidentActivityEventDtoSchema,
+  IncidentTriggerDto as IncidentTriggerDtoSchema,
+  SetStatusPageComponentOverrideRequest as SetStatusPageComponentOverrideRequestSchema,
+  UpdateStatusPageIncidentUpdateRequest as UpdateStatusPageIncidentUpdateRequestSchema,
+  RegionDto as RegionDtoSchema,
+  ScriptMonitorConfig as ScriptMonitorConfigSchema,
+  HttpMonitorConfig as HttpMonitorConfigSchema,
+  DnsMonitorConfig as DnsMonitorConfigSchema,
+  TcpMonitorConfig as TcpMonitorConfigSchema,
+  IcmpMonitorConfig as IcmpMonitorConfigSchema,
+  HeartbeatMonitorConfig as HeartbeatMonitorConfigSchema,
+  McpServerMonitorConfig as McpServerMonitorConfigSchema,
+} from './generated/schemas.js'

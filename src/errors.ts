@@ -1,34 +1,262 @@
-import {z} from 'zod'
-import {ErrorResponseSchema} from './schemas.js'
 import type {ErrorResponse, RunDto} from './types.js'
+import type {JsonObject, JsonValue} from './json.js'
 
 /**
- * Error taxonomy for the DevHelm SDK (P4 — see
- * `mono/cowork/design/040-codegen-policies.md`):
+ * Error taxonomy (doc 42 §5.2, doc 32 D-1/D-2).
  *
- *   DevhelmValidationError  — local request/response shape validation failed
- *   DevhelmApiError         — API returned a non-2xx (with status + body)
- *   DevhelmTransportError   — request never reached the server
+ * Every error the SDK throws is a {@link DevhelmError}. The concrete class is
+ * chosen by the `category` of the API's `ErrorResponse` (never by the HTTP
+ * status), plus the client-side `transport` category:
  *
- * All three inherit from `DevhelmError` for catch-all sites.
+ *   validation            → {@link ValidationError}
+ *   blocked               → {@link BlockedError}
+ *   auth                  → {@link AuthError}
+ *   permission            → {@link PermissionError}
+ *   ownership             → {@link OwnershipError}
+ *   plan                  → {@link PlanLimitError}
+ *   quota                 → {@link QuotaError}
+ *   rate_limit            → {@link RateLimitError}
+ *   conflict              → {@link ConflictError}
+ *   confirmation_required → {@link ConfirmationRequiredError}
+ *   not_found             → {@link NotFoundError}
+ *   gone                  → {@link GoneError}
+ *   platform              → {@link PlatformError}
+ *   transport             → {@link TransportError}
+ *
+ * `runs.wait()` adds {@link WaitTimeoutError}. Each error carries every
+ * `ErrorResponse` field, and `exitCode` gives the frozen D-2 CLI exit code.
  */
 
-export class DevhelmError extends Error {
-  /**
-   * Coarse machine-readable category for switching on error class without
-   * `instanceof` chains. Standardised across every {@link DevhelmError}
-   * subclass so `err.code` is always populated:
-   *   - {@link DevhelmValidationError} → `"VALIDATION"`
-   *   - {@link DevhelmTransportError}  → `"TRANSPORT"`
-   *   - {@link DevhelmApiError}        → server-supplied (e.g. `"NOT_FOUND"`)
-   */
-  readonly code: string
+export const ERROR_CATEGORIES = [
+  'validation',
+  'blocked',
+  'auth',
+  'permission',
+  'ownership',
+  'plan',
+  'quota',
+  'rate_limit',
+  'conflict',
+  'confirmation_required',
+  'not_found',
+  'gone',
+  'platform',
+  'transport',
+] as const
 
-  constructor(message: string, code = 'ERROR') {
+export type ErrorCategory = (typeof ERROR_CATEGORIES)[number]
+
+/** One structured rejection, as in `ErrorResponse.errors[]`. */
+export interface ErrorEntry {
+  code: string
+  field?: string | null
+  message: string
+}
+
+/** Command and documentation that fix an error. */
+export interface ErrorNext {
+  command?: string | null
+  docs?: string | null
+}
+
+/** Fields of an error, as carried by `ErrorResponse` (D-1). */
+export interface DevhelmErrorInit {
+  message: string
+  category: ErrorCategory
+  code: string
+  status?: number | null
+  retryable?: boolean
+  requestId?: string | null
+  timestamp?: number | null
+  errors?: ErrorEntry[] | null
+  retryAfterSeconds?: number | null
+  resource?: string | null
+  used?: number | null
+  limit?: number | null
+  resetsAt?: string | null
+  plan?: string | null
+  upgradeUrl?: string | null
+  canRaise?: string | null
+  owner?: string | null
+  required?: string | null
+  have?: number | null
+  reason?: string | null
+  next?: ErrorNext | null
+  details?: JsonObject | null
+  expiredAt?: string | null
+  policy?: string | null
+  /** The parsed `ErrorResponse`, when the body matched the contract. */
+  response?: ErrorResponse | null
+  /** The raw body (parsed JSON or text), for responses that did not match. */
+  rawBody?: JsonValue | null
+  /** Human-readable detail from a legacy (pre-envelope) body. */
+  detail?: string | null
+  cause?: Error
+}
+
+/** Options accepted by the category constructors: every field except `message` and `category`. */
+export type ErrorFields = Partial<Omit<DevhelmErrorInit, 'message' | 'category'>>
+
+/** Frozen CLI exit code per category (doc 32 D-2). */
+export function exitCodeForCategory(category: ErrorCategory): number {
+  switch (category) {
+    case 'validation':
+    case 'blocked':
+    case 'not_found':
+      return 4
+    case 'auth':
+    case 'permission':
+    case 'ownership':
+      return 17
+    case 'plan':
+    case 'quota':
+      return 16
+    case 'confirmation_required':
+      return 15
+    case 'conflict':
+      return 18
+    case 'gone':
+      return 20
+    case 'rate_limit':
+    case 'platform':
+      return 11
+    case 'transport':
+      return 12
+  }
+}
+
+export class DevhelmError extends Error {
+  readonly category: ErrorCategory
+  /** Stable machine code, e.g. `NOT_FOUND`, `SYNTHETICS_USAGE_CAPPED`, `NO_TOKEN`. */
+  readonly code: string
+  /** HTTP status; null for client-side errors (validation before the call, transport). */
+  readonly status: number | null
+  readonly retryable: boolean
+  readonly requestId: string | null
+  readonly timestamp: number | null
+  readonly errors: ErrorEntry[]
+  readonly retryAfterSeconds: number | null
+  readonly resource: string | null
+  readonly used: number | null
+  readonly limit: number | null
+  readonly resetsAt: string | null
+  readonly plan: string | null
+  readonly upgradeUrl: string | null
+  readonly canRaise: string | null
+  readonly owner: string | null
+  readonly required: string | null
+  readonly have: number | null
+  readonly reason: string | null
+  readonly next: ErrorNext | null
+  readonly details: JsonObject
+  readonly expiredAt: string | null
+  readonly policy: string | null
+  /** The parsed `ErrorResponse`; null for client-side errors and non-conforming bodies. */
+  readonly response: ErrorResponse | null
+  /** Raw response body (parsed JSON or text) when there was one. */
+  readonly rawBody: JsonValue | null
+  /** @deprecated since 1.12, removed 2027-01-31. Legacy body detail; use `message`. */
+  readonly detail: string | undefined
+
+  constructor(message: string, codeOrInit?: string | DevhelmErrorInit) {
     super(message)
     this.name = 'DevhelmError'
-    this.code = code
+    const init: DevhelmErrorInit =
+      typeof codeOrInit === 'object'
+        ? codeOrInit
+        : {message, category: 'platform', code: codeOrInit ?? 'ERROR'}
+    this.category = init.category
+    this.code = init.code
+    this.status = init.status ?? null
+    this.retryable = init.retryable ?? false
+    this.requestId = init.requestId ?? null
+    this.timestamp = init.timestamp ?? null
+    this.errors = init.errors ?? []
+    this.retryAfterSeconds = init.retryAfterSeconds ?? null
+    this.resource = init.resource ?? null
+    this.used = init.used ?? null
+    this.limit = init.limit ?? null
+    this.resetsAt = init.resetsAt ?? null
+    this.plan = init.plan ?? null
+    this.upgradeUrl = init.upgradeUrl ?? null
+    this.canRaise = init.canRaise ?? null
+    this.owner = init.owner ?? null
+    this.required = init.required ?? null
+    this.have = init.have ?? null
+    this.reason = init.reason ?? null
+    this.next = init.next ?? null
+    this.details = init.details ?? {}
+    this.expiredAt = init.expiredAt ?? null
+    this.policy = init.policy ?? null
+    this.response = init.response ?? null
+    this.rawBody = init.rawBody ?? null
+    this.detail = init.detail ?? undefined
+    if (init.cause !== undefined) {
+      Object.defineProperty(this, 'cause', {value: init.cause, enumerable: false, writable: true, configurable: true})
+    }
   }
+
+  /** Frozen CLI exit code (doc 32 D-2) for this error. */
+  get exitCode(): number {
+    return exitCodeForCategory(this.category)
+  }
+
+  /** @deprecated since 1.12, removed 2027-01-31. Use `response`. */
+  get body(): ErrorResponse | undefined {
+    return this.response ?? undefined
+  }
+
+  /** @deprecated since 1.12, removed 2027-01-31. Use `retryAfterSeconds`. */
+  get retryAfter(): number | undefined {
+    return this.retryAfterSeconds ?? undefined
+  }
+
+  /** Plain JSON form: `category` plus every `ErrorResponse` field that is set. */
+  toJSON(): JsonObject {
+    const out: JsonObject = {
+      name: this.name,
+      category: this.category,
+      code: this.code,
+      status: this.status,
+      retryable: this.retryable,
+      message: this.message,
+      requestId: this.requestId,
+    }
+    if (this.errors.length > 0) {
+      out['errors'] = this.errors.map((e) => ({code: e.code, field: e.field ?? null, message: e.message}))
+    }
+    const optional: Array<[string, JsonValue]> = [
+      ['retryAfterSeconds', this.retryAfterSeconds],
+      ['resource', this.resource],
+      ['used', this.used],
+      ['limit', this.limit],
+      ['resetsAt', this.resetsAt],
+      ['plan', this.plan],
+      ['upgradeUrl', this.upgradeUrl],
+      ['canRaise', this.canRaise],
+      ['owner', this.owner],
+      ['required', this.required],
+      ['have', this.have],
+      ['reason', this.reason],
+      ['expiredAt', this.expiredAt],
+      ['policy', this.policy],
+    ]
+    for (const [key, value] of optional) {
+      if (value !== null) out[key] = value
+    }
+    if (this.next) out['next'] = {command: this.next.command ?? null, docs: this.next.docs ?? null}
+    if (Object.keys(this.details).length > 0) out['details'] = this.details
+    return out
+  }
+}
+
+function withCategory(category: ErrorCategory, message: string, fields: ErrorFields | undefined, defaultCode: string): DevhelmErrorInit {
+  return {...fields, message, category, code: fields?.code ?? defaultCode}
+}
+
+/** The parts of a `ZodError` the SDK reads. */
+export interface ZodErrorLike {
+  issues: ReadonlyArray<{path: ReadonlyArray<PropertyKey>; message: string; code: string; keys?: ReadonlyArray<string>}>
 }
 
 export interface ValidationIssue {
@@ -37,18 +265,29 @@ export interface ValidationIssue {
   readonly code: string
 }
 
-export class DevhelmValidationError extends DevhelmError {
+/**
+ * The request is invalid: rejected by the API (400/426) or caught before the
+ * call (strict request schemas, `USE_PROBE`, `NO_TOKEN`, bundler refusals,
+ * `BUNDLE_DIGEST_MISMATCH`).
+ */
+export class ValidationError extends DevhelmError {
+  /** Local schema issues when the SDK rejected the value before sending it. */
   readonly issues: ReadonlyArray<ValidationIssue>
 
-  constructor(message: string, issues: ReadonlyArray<ValidationIssue> = []) {
-    super(message, 'VALIDATION')
-    this.name = 'DevhelmValidationError'
-    this.issues = issues
+  /**
+   * `fields` carries the envelope fields. Passing an issue array as the second
+   * argument is the 1.11 `DevhelmValidationError(message, issues)` form.
+   */
+  constructor(message: string, fields?: ErrorFields | ReadonlyArray<ValidationIssue>, issues?: ReadonlyArray<ValidationIssue>) {
+    const legacyIssues = isIssueList(fields) ? fields : undefined
+    super(message, withCategory('validation', message, isIssueList(fields) ? undefined : fields, 'VALIDATION'))
+    this.name = 'ValidationError'
+    this.issues = legacyIssues ?? issues ?? []
   }
 
-  static fromZodError(error: z.ZodError, prefix: string): DevhelmValidationError {
+  static fromZodError(error: ZodErrorLike, prefix: string): ValidationError {
     const issues: ValidationIssue[] = error.issues.map((i) => ({
-      path: [...i.path] as Array<string | number>,
+      path: i.path.map((p) => (typeof p === 'symbol' ? String(p) : p)),
       message: i.message,
       code: i.code,
     }))
@@ -56,217 +295,404 @@ export class DevhelmValidationError extends DevhelmError {
       .slice(0, 5)
       .map((i) => `${i.path.join('.') || '<root>'}: ${i.message}`)
       .join('; ')
-    return new DevhelmValidationError(`${prefix}: ${summary}`, issues)
+    const errors: ErrorEntry[] = []
+    for (const issue of error.issues) {
+      const base = issue.path.map((p) => (typeof p === 'symbol' ? String(p) : p)).join('.')
+      if (issue.code === 'unrecognized_keys') {
+        for (const key of issue.keys ?? []) {
+          errors.push({code: 'FIELD_UNKNOWN', field: base ? `${base}.${key}` : key, message: `Unknown field ${key}`})
+        }
+      } else {
+        errors.push({code: 'FIELD_INVALID', field: base || null, message: issue.message})
+      }
+    }
+    return new ValidationError(`${prefix}: ${summary}`, {code: 'VALIDATION', errors}, issues)
+  }
+}
+
+function isIssueList(value: ErrorFields | ReadonlyArray<ValidationIssue> | undefined): value is ReadonlyArray<ValidationIssue> {
+  return Array.isArray(value)
+}
+
+/** A precondition blocks the call, e.g. `RUN_KEYS_MISSING` (exit 4). */
+export class BlockedError extends DevhelmError {
+  constructor(message: string, fields?: ErrorFields) {
+    super(message, withCategory('blocked', message, fields, 'BLOCKED'))
+    this.name = 'BlockedError'
+  }
+}
+
+/** The credential is invalid, expired or revoked (401). */
+export class AuthError extends DevhelmError {
+  constructor(message: string, fields?: ErrorFields) {
+    super(message, withCategory('auth', message, fields, 'UNAUTHORIZED'))
+    this.name = 'AuthError'
+  }
+}
+
+/** The key lacks a scope or the user a role (403). `reason` is `scope` or `role`. */
+export class PermissionError extends DevhelmError {
+  constructor(message: string, fields?: ErrorFields) {
+    super(message, withCategory('permission', message, fields, 'FORBIDDEN'))
+    this.name = 'PermissionError'
+  }
+}
+
+/** Another tool owns the resource, e.g. `MONITOR_OWNED_BY_OTHER`. `owner` names it. */
+export class OwnershipError extends DevhelmError {
+  constructor(message: string, fields?: ErrorFields) {
+    super(message, withCategory('ownership', message, fields, 'MONITOR_OWNED_BY_OTHER'))
+    this.name = 'OwnershipError'
+  }
+}
+
+/** The plan does not include this, e.g. `MONITOR_FREQUENCY_BELOW_PLAN_MIN`, `MONITOR_LIMIT_REACHED`. */
+export class PlanLimitError extends DevhelmError {
+  constructor(message: string, fields?: ErrorFields) {
+    super(message, withCategory('plan', message, fields, 'PLAN_LIMIT'))
+    this.name = 'PlanLimitError'
+  }
+}
+
+/** A usage meter is exhausted, e.g. `SYNTHETICS_USAGE_CAPPED`, `TESTING_QUOTA_EXHAUSTED`. */
+export class QuotaError extends DevhelmError {
+  constructor(message: string, fields?: ErrorFields) {
+    super(message, withCategory('quota', message, fields, 'QUOTA_EXHAUSTED'))
+    this.name = 'QuotaError'
+  }
+}
+
+/** Rate limited after the SDK's bounded retries (429). */
+export class RateLimitError extends DevhelmError {
+  constructor(message: string, fields?: ErrorFields) {
+    super(message, withCategory('rate_limit', message, fields, 'RATE_LIMITED'))
+    this.name = 'RateLimitError'
+  }
+}
+
+/** State conflict, e.g. `LIVE_REVISION_CHANGED`, `REVISION_UNTESTED`, `DEPLOY_LOCKED`, `DRAFT_LIMIT`. */
+export class ConflictError extends DevhelmError {
+  constructor(message: string, fields?: ErrorFields) {
+    super(message, withCategory('conflict', message, fields, 'CONFLICT'))
+    this.name = 'ConflictError'
+  }
+}
+
+/** The write needs an explicit confirmation (D-4). */
+export class ConfirmationRequiredError extends DevhelmError {
+  constructor(message: string, fields?: ErrorFields) {
+    super(message, withCategory('confirmation_required', message, fields, 'CONFIRMATION_REQUIRED'))
+    this.name = 'ConfirmationRequiredError'
+  }
+}
+
+/** Unknown monitor, run, revision, environment, … (404). */
+export class NotFoundError extends DevhelmError {
+  constructor(message: string, fields?: ErrorFields) {
+    super(message, withCategory('not_found', message, fields, 'NOT_FOUND'))
+    this.name = 'NotFoundError'
+  }
+}
+
+/** Evidence or run expired, e.g. `EVIDENCE_EXPIRED`, `RUN_EXPIRED` (410). */
+export class GoneError extends DevhelmError {
+  constructor(message: string, fields?: ErrorFields) {
+    super(message, withCategory('gone', message, fields, 'GONE'))
+    this.name = 'GoneError'
+  }
+}
+
+/** The platform failed (5xx, unusable response, `RUNTIME_UNAVAILABLE`). */
+export class PlatformError extends DevhelmError {
+  constructor(message: string, fields?: ErrorFields) {
+    super(message, withCategory('platform', message, fields, 'PLATFORM_ERROR'))
+    this.name = 'PlatformError'
+  }
+}
+
+/** The request never reached the API (DNS, connection refused, TLS, abort). */
+export class TransportError extends DevhelmError {
+  constructor(message: string, fields?: ErrorFields) {
+    super(message, withCategory('transport', message, {retryable: true, ...fields}, 'TRANSPORT'))
+    this.name = 'TransportError'
   }
 }
 
 /**
- * Thrown by `monitors.test()` when the API answers 202: the monitor is a
- * browser or multi-step API monitor, so the API queued a validation run
- * instead of returning a probe result. Call `monitors.testRun()` for these
- * monitors. The run the API already queued is on `run`.
- *
- * Extends `DevhelmValidationError`, which is what `test()` threw for these
- * monitors before the API started queuing runs, so existing catch sites
- * keep working.
+ * `runs.wait()` reached its deadline before the run finished. The run keeps
+ * going (the SDK never cancels it); `phase` is the last phase seen.
+ * CLI exit 19 (`runsContinue: true`).
  */
-export class DevhelmMonitorTestQueuedError extends DevhelmValidationError {
-  readonly run: RunDto
+export class WaitTimeoutError extends DevhelmError {
+  readonly runId: string
+  readonly phase: string
+  /** The run as last fetched, when the SDK got one. */
+  readonly run: RunDto | null
 
-  constructor(run: RunDto) {
-    super(
-      `monitors.test() got a queued validation run (${run.id}) instead of a probe result: ` +
-        'this is a browser or multi-step API monitor. Use monitors.testRun() for these monitors.',
-    )
-    this.name = 'DevhelmMonitorTestQueuedError'
+  constructor(runId: string, phase: string, timeoutMs: number, run: RunDto | null = null) {
+    const message = `Run ${runId} did not finish within ${Math.round(timeoutMs / 1000)} s (last phase: ${phase}); it keeps running`
+    super(message, {
+      message,
+      category: 'platform',
+      code: 'WAIT_TIMEOUT',
+      retryable: true,
+      details: {runId, phase, timeoutMs, runsContinue: true},
+    })
+    this.name = 'WaitTimeoutError'
+    this.runId = runId
+    this.phase = phase
     this.run = run
+  }
+
+  override get exitCode(): number {
+    return 19
   }
 }
 
+// ── Deprecated names (removed 2027-01-31) ─────────────────────────────
+//
+// 1.11 and earlier classified errors by HTTP status. These names keep
+// working for `instanceof`: each one matches the errors it used to match.
+
+/** @deprecated since 1.12, removed 2027-01-31. Use the category classes. */
 export interface DevhelmApiErrorOptions {
-  /** Human-readable detail extracted from the response body, if any. */
   detail?: string
-  /**
-   * Coarse machine-readable category from `ErrorResponse.code`
-   * (e.g. `NOT_FOUND`, `RATE_LIMITED`). Switch on this — never on
-   * `message` — when adapting behaviour to specific error classes.
-   */
   code?: string
-  /**
-   * Per-request id from the API's `X-Request-Id` response header
-   * (and mirrored in `ErrorResponse.requestId`). Always include it
-   * when filing a support ticket.
-   */
   requestId?: string
-  /**
-   * Parsed canonical error envelope (`ErrorResponse` from the OpenAPI
-   * spec) when the response matched the contract. `undefined` for
-   * non-conforming bodies (e.g. proxy 502 HTML, plain text, or JSON
-   * shapes that predate the canonical envelope).
-   */
   body?: ErrorResponse
-  /**
-   * Raw response body — the unparsed JSON value or response text.
-   * Always populated when there was a body. Useful for debugging
-   * non-conforming responses without losing the original shape.
-   */
-  rawBody?: unknown
-  /**
-   * Seconds to wait before retrying, parsed from the `Retry-After`
-   * response header on a 429. `undefined` when the header was absent
-   * or not a valid integer.
-   */
+  rawBody?: JsonValue
   retryAfter?: number
 }
 
-export class DevhelmApiError extends DevhelmError {
-  readonly status: number
-  readonly detail: string | undefined
-  readonly requestId: string | undefined
-  readonly body: ErrorResponse | undefined
-  readonly rawBody: unknown
-  readonly retryAfter: number | undefined
-
-  constructor(message: string, status: number, options?: DevhelmApiErrorOptions) {
-    // Server-supplied code wins; fall back to a generic API-error label so
-    // `err.code` is never undefined for catch sites switching on category.
-    super(message, options?.code ?? 'API_ERROR')
-    this.name = 'DevhelmApiError'
-    this.status = status
-    this.detail = options?.detail
-    this.requestId = options?.requestId
-    this.body = options?.body
-    this.rawBody = options?.rawBody
-    this.retryAfter = options?.retryAfter
+function legacyInit(message: string, status: number, options: DevhelmApiErrorOptions | undefined): DevhelmErrorInit {
+  const body = options?.body
+  return {
+    ...(body ? envelopeFields(body) : {}),
+    message,
+    category: categoryOf(body?.category, status),
+    code: options?.code ?? body?.code ?? defaultCodeForStatus(status),
+    status,
+    requestId: options?.requestId ?? body?.requestId ?? null,
+    response: body ?? null,
+    rawBody: options?.rawBody ?? null,
+    retryAfterSeconds: options?.retryAfter ?? body?.retryAfterSeconds ?? null,
+    detail: options?.detail ?? null,
   }
 }
 
+/** @deprecated since 1.12, removed 2027-01-31. Matches every error that carries an HTTP status. */
+export class DevhelmApiError extends DevhelmError {
+  static [Symbol.hasInstance](value: object): boolean {
+    return value instanceof DevhelmError && value.status !== null
+  }
+
+  constructor(message: string, status: number, options?: DevhelmApiErrorOptions) {
+    super(message, legacyInit(message, status, options))
+    this.name = 'DevhelmApiError'
+  }
+}
+
+/** @deprecated since 1.12, removed 2027-01-31. Use `AuthError` / `PermissionError`. Matches 401 and 403. */
 export class DevhelmAuthError extends DevhelmApiError {
+  static override [Symbol.hasInstance](value: object): boolean {
+    return value instanceof DevhelmError && (value.status === 401 || value.status === 403)
+  }
+
   constructor(message: string, status: number, options?: DevhelmApiErrorOptions) {
     super(message, status, options)
     this.name = 'DevhelmAuthError'
   }
 }
 
+/** @deprecated since 1.12, removed 2027-01-31. Use `NotFoundError`. Matches 404. */
 export class DevhelmNotFoundError extends DevhelmApiError {
+  static override [Symbol.hasInstance](value: object): boolean {
+    return value instanceof DevhelmError && value.status === 404
+  }
+
   constructor(message: string, status: number, options?: DevhelmApiErrorOptions) {
     super(message, status, options)
     this.name = 'DevhelmNotFoundError'
   }
 }
 
+/** @deprecated since 1.12, removed 2027-01-31. Use `ConflictError` (and `OwnershipError`, `BlockedError`). Matches 409. */
 export class DevhelmConflictError extends DevhelmApiError {
+  static override [Symbol.hasInstance](value: object): boolean {
+    return value instanceof DevhelmError && value.status === 409
+  }
+
   constructor(message: string, status: number, options?: DevhelmApiErrorOptions) {
     super(message, status, options)
     this.name = 'DevhelmConflictError'
   }
 }
 
+/** @deprecated since 1.12, removed 2027-01-31. Use `RateLimitError`. Matches 429. */
 export class DevhelmRateLimitError extends DevhelmApiError {
+  static override [Symbol.hasInstance](value: object): boolean {
+    return value instanceof DevhelmError && value.status === 429
+  }
+
   constructor(message: string, status: number, options?: DevhelmApiErrorOptions) {
     super(message, status, options)
     this.name = 'DevhelmRateLimitError'
   }
 }
 
+/** @deprecated since 1.12, removed 2027-01-31. Use `PlatformError`. Matches 5xx. */
 export class DevhelmServerError extends DevhelmApiError {
+  static override [Symbol.hasInstance](value: object): boolean {
+    return value instanceof DevhelmError && value.status !== null && value.status >= 500
+  }
+
   constructor(message: string, status: number, options?: DevhelmApiErrorOptions) {
     super(message, status, options)
     this.name = 'DevhelmServerError'
   }
 }
 
-export class DevhelmTransportError extends DevhelmError {
-  constructor(message: string, options?: {cause?: unknown}) {
-    super(message, 'TRANSPORT')
-    this.name = 'DevhelmTransportError'
-    if (options?.cause !== undefined) {
-      // Node 16+ supports the standard cause chain; we set it explicitly so
-      // the instance shape stays consistent across runtimes.
-      ;(this as {cause?: unknown}).cause = options.cause
-    }
+/** @deprecated since 1.12, removed 2027-01-31. Use `ValidationError`. */
+export const DevhelmValidationError = ValidationError
+/** @deprecated since 1.12, removed 2027-01-31. Use `ValidationError`. */
+export type DevhelmValidationError = ValidationError
+
+/** @deprecated since 1.12, removed 2027-01-31. Use `TransportError`. */
+export const DevhelmTransportError = TransportError
+/** @deprecated since 1.12, removed 2027-01-31. Use `TransportError`. */
+export type DevhelmTransportError = TransportError
+
+/**
+ * @deprecated since 1.12, removed 2027-01-31. No longer thrown:
+ * `monitors.test()` returns the queued `Run` for browser and multi-step API
+ * monitors.
+ */
+export class DevhelmMonitorTestQueuedError extends ValidationError {
+  readonly run: RunDto
+
+  constructor(run: RunDto) {
+    super(`monitors.test() queued validation run ${run.id}`, {code: 'TEST_QUEUED'})
+    this.name = 'DevhelmMonitorTestQueuedError'
+    this.run = run
   }
 }
 
-// Lenient shape used to extract a human-readable message + detail from
-// non-conforming error bodies (e.g. older deployments that emit
-// `{message, error, detail}` instead of the canonical `ErrorResponse`,
-// or proxies that include their own shape).
-const FallbackErrorShape = z
-  .object({
-    message: z.string().optional(),
-    error: z.string().optional(),
-    detail: z.string().optional(),
-    code: z.string().optional(),
-    requestId: z.string().optional(),
-    request_id: z.string().optional(),
-  })
-  .passthrough()
+// ── Mapping a response to an error ────────────────────────────────────
 
-/**
- * Map an HTTP error response to a typed {@link DevhelmApiError} subclass.
- *
- * `requestId` is the value of the `X-Request-Id` response header. Pass it
- * in from the call site so the SDK still surfaces the id even when the
- * server returned a non-JSON body (e.g. an HTML error page from a
- * misconfigured proxy). The header takes precedence over any value found
- * in the body.
- */
-export function errorFromResponse(
-  status: number,
-  body: string,
-  options?: {requestId?: string; retryAfter?: string},
-): DevhelmApiError {
-  let message = `HTTP ${status}`
-  let detail: string | undefined
-  let code: string | undefined
-  let bodyRequestId: string | undefined
-  let parsed: ErrorResponse | undefined
-  let rawBody: unknown = body || undefined
+/** Categories the API sends; `transport` is client-side only. */
+const SERVER_CATEGORIES: ReadonlyArray<ErrorCategory> = ERROR_CATEGORIES.filter((c) => c !== 'transport')
 
-  if (body) {
-    try {
-      const json: unknown = JSON.parse(body)
-      rawBody = json
+function isServerCategory(value: string): value is ErrorCategory {
+  return (SERVER_CATEGORIES as ReadonlyArray<string>).includes(value)
+}
 
-      const canonical = ErrorResponseSchema.safeParse(json)
-      if (canonical.success) {
-        parsed = canonical.data
-        message = parsed.message
-        code = parsed.code
-        bodyRequestId = parsed.requestId ?? undefined
-      } else {
-        const fallback = FallbackErrorShape.safeParse(json)
-        if (fallback.success) {
-          message = fallback.data.message ?? fallback.data.error ?? message
-          detail = fallback.data.detail
-          code = fallback.data.code
-          bodyRequestId = fallback.data.requestId ?? fallback.data.request_id
-          if (message === `HTTP ${status}` && !fallback.data.message && !fallback.data.error) {
-            message = body
-          }
-        } else {
-          message = body
-        }
-      }
-    } catch {
-      message = body
-    }
+export function categoryForStatus(status: number): ErrorCategory {
+  if (status === 401) return 'auth'
+  if (status === 402) return 'plan'
+  if (status === 403) return 'permission'
+  if (status === 404) return 'not_found'
+  if (status === 409) return 'conflict'
+  if (status === 410) return 'gone'
+  if (status === 429) return 'rate_limit'
+  if (status >= 500) return 'platform'
+  if (status >= 400) return 'validation'
+  return 'platform'
+}
+
+/** Category from the body; an unknown value (from a newer API) falls back to the status. */
+export function categoryOf(value: string | null | undefined, status: number): ErrorCategory {
+  if (value && isServerCategory(value)) return value
+  return categoryForStatus(status)
+}
+
+export function envelopeFields(body: ErrorResponse): ErrorFields {
+  const details: JsonObject = {}
+  if (body.details) {
+    for (const [k, v] of Object.entries(body.details)) details[k] = v ?? null
   }
-
-  const retryAfter = options?.retryAfter ? Number.parseInt(options.retryAfter, 10) : undefined
-  const opts: DevhelmApiErrorOptions = {
-    detail,
-    code,
-    requestId: options?.requestId ?? bodyRequestId,
-    body: parsed,
-    rawBody,
-    retryAfter: Number.isFinite(retryAfter) ? retryAfter : undefined,
+  const errors: ErrorEntry[] = []
+  for (const e of body.errors ?? []) {
+    if (e) errors.push({code: e.code, field: e.field ?? null, message: e.message})
   }
-  if (status === 401 || status === 403) return new DevhelmAuthError(message, status, opts)
-  if (status === 404) return new DevhelmNotFoundError(message, status, opts)
-  if (status === 409) return new DevhelmConflictError(message, status, opts)
-  if (status === 429) return new DevhelmRateLimitError(message, status, opts)
-  if (status >= 500) return new DevhelmServerError(message, status, opts)
-  return new DevhelmApiError(message, status, opts)
+  return {
+    retryable: body.retryable,
+    requestId: body.requestId ?? null,
+    timestamp: body.timestamp,
+    errors,
+    retryAfterSeconds: body.retryAfterSeconds ?? null,
+    resource: body.resource ?? null,
+    used: body.used ?? null,
+    limit: body.limit ?? null,
+    resetsAt: body.resetsAt ?? null,
+    plan: body.plan ?? null,
+    upgradeUrl: body.upgradeUrl ?? null,
+    canRaise: body.canRaise ?? null,
+    owner: body.owner ?? null,
+    required: body.required ?? null,
+    have: body.have ?? null,
+    reason: body.reason ?? null,
+    next: body.next ? {command: body.next.command ?? null, docs: body.next.docs ?? null} : null,
+    details,
+    expiredAt: body.expiredAt ?? null,
+    policy: body.policy ?? null,
+  }
+}
+
+/** Construct the error class for a category. */
+export function errorForCategory(init: DevhelmErrorInit): DevhelmError {
+  const {message, category: _category, ...fields} = init
+  switch (init.category) {
+    case 'validation':
+      return new ValidationError(message, fields)
+    case 'blocked':
+      return new BlockedError(message, fields)
+    case 'auth':
+      return new AuthError(message, fields)
+    case 'permission':
+      return new PermissionError(message, fields)
+    case 'ownership':
+      return new OwnershipError(message, fields)
+    case 'plan':
+      return new PlanLimitError(message, fields)
+    case 'quota':
+      return new QuotaError(message, fields)
+    case 'rate_limit':
+      return new RateLimitError(message, fields)
+    case 'conflict':
+      return new ConflictError(message, fields)
+    case 'confirmation_required':
+      return new ConfirmationRequiredError(message, fields)
+    case 'not_found':
+      return new NotFoundError(message, fields)
+    case 'gone':
+      return new GoneError(message, fields)
+    case 'platform':
+      return new PlatformError(message, fields)
+    case 'transport':
+      return new TransportError(message, fields)
+  }
+}
+
+
+export function defaultCodeForStatus(status: number): string {
+  switch (status) {
+    case 400:
+      return 'BAD_REQUEST'
+    case 401:
+      return 'UNAUTHORIZED'
+    case 402:
+      return 'PAYMENT_REQUIRED'
+    case 403:
+      return 'FORBIDDEN'
+    case 404:
+      return 'NOT_FOUND'
+    case 409:
+      return 'CONFLICT'
+    case 410:
+      return 'GONE'
+    case 429:
+      return 'RATE_LIMITED'
+    default:
+      return status >= 500 ? 'PLATFORM_ERROR' : 'API_ERROR'
+  }
 }
