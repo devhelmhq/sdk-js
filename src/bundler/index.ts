@@ -34,6 +34,7 @@ import {
   type ResolvedBundle,
 } from './core.js'
 import {DiskSource} from './disk.js'
+import {compileGlob} from './glob.js'
 import {detectSource} from './source.js'
 import {normalizeBundlePath} from './paths.js'
 
@@ -160,8 +161,9 @@ export async function checkBundle(input: CodeInput, options: ResolveBundleOption
   const root = realpathSync(rootGiven)
 
   const include: string[] = []
+  const includeArgIndex: number[] = []
   const extra: BundleFinding[] = []
-  for (const glob of includeArg ?? []) {
+  for (const [index, glob] of (includeArg ?? []).entries()) {
     const absGlob = isAbsolute(glob) ? glob : join(cwd, glob)
     const rel = relative(rootGiven, absGlob).split(sep).join('/')
     if (rel.startsWith('..') || isAbsolute(rel)) {
@@ -169,11 +171,21 @@ export async function checkBundle(input: CodeInput, options: ResolveBundleOption
       continue
     }
     include.push(rel || '**')
+    includeArgIndex.push(index)
   }
 
   const setup = setupPath(entrypoint, options.setupFile)
   const disk = new DiskSource({root, include: include.length > 0 ? include : undefined})
   const included = disk.includeFiles()
+  // An include that matches no file is refused, as the server refuses an include path not in the set.
+  const matched = [...included.files, ...included.skipped.map((s) => s.path)]
+  include.forEach((glob, i) => {
+    const regex = compileGlob(glob)
+    if (!matched.some((p) => regex.test(p))) {
+      const field = `include[${includeArgIndex[i] ?? i}]`
+      extra.push(finding('MONITOR_PACKAGE_PATH_INVALID', `Included file ${includeArg?.[includeArgIndex[i] ?? i] ?? glob} is not in the bundle`, {rule: 'include_missing', file: field}))
+    }
+  })
   for (const s of included.skipped) {
     if (s.rule === 'symlink') {
       // A symlink anywhere in the set is refused, as the server refuses one in an upload.

@@ -62,6 +62,15 @@ describe('bundle conformance vectors', () => {
         const result = await checkBundle({entrypoint: entry, files, include: v.request.include}, {runtime, source: false})
         if (v.expect.refusal) {
           expect(result.errors.map((f) => f.code)).toContain(v.expect.refusal.code)
+          // The same refusal from disk.
+          const disk = await checkBundle(join(root, entry), {runtime, source: false, root, cwd: root, include: v.request.include})
+          expect(disk.errors.map((f) => f.code)).toContain(v.expect.refusal.code)
+          const field = (v.expect.refusal as {field?: string}).field
+          if (field) {
+            expect(result.errors.map((f) => f.file)).toContain(field)
+            expect(disk.errors.map((f) => f.file)).toContain(field)
+            await expect(resolveBundle(join(root, entry), {runtime, source: false, root, cwd: root, include: v.request.include})).rejects.toMatchObject({code: v.expect.refusal.code})
+          }
           return
         }
         expect(result.errors).toEqual([])
