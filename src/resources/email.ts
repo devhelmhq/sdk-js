@@ -112,6 +112,8 @@ export type Message = Omit<EmailMessageFields, 'attachments'> & {
 
 type Assert<T extends true> = T
 type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false
+type MessageOtp = NonNullable<Message['otp']>[number]
+type MessageLink = NonNullable<Message['links']>[number]
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- fails the build if these fields widen to unknown
 type MessageBodyFieldsAreTyped = Assert<
   [
@@ -119,7 +121,11 @@ type MessageBodyFieldsAreTyped = Assert<
     Same<Message['html'], string | null | undefined>,
     Same<Message['bodyTruncated'], boolean | null | undefined>,
     Same<Message['rawUrl'], string | null | undefined>,
-  ] extends [true, true, true, true]
+    Same<Message['id'], string>,
+    Same<Message['receivedAt'], string>,
+    Same<MessageOtp['value'], string>,
+    Same<MessageLink['href'], string>,
+  ] extends [true, true, true, true, true, true, true, true]
     ? true
     : false
 >
