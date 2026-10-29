@@ -163,6 +163,7 @@ function toRuntimePackages(profile: RuntimeProfileDto): RuntimePackages {
     eolAt: profile.eolAt ?? null,
     packages: profile.packages ?? null,
     nodeBuiltins: profile.nodeBuiltins ?? null,
+    platformDefault: profile.platformDefault,
   }
 }
 

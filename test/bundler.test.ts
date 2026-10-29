@@ -239,8 +239,19 @@ describe('closure resolution on disk', () => {
   it('selects the newest available runtime from the bundled catalog', () => {
     const rt = selectRuntime(RUNTIME_CATALOG)
     expect(rt?.status).toBe('available')
+    expect(rt?.platformDefault).toBeUndefined()
     expect(Object.keys(rt?.packages ?? {})).toContain('@playwright/test')
     expect(selectRuntime(RUNTIME_CATALOG, 'no-such-runtime')).toBeUndefined()
+  })
+
+  it('prefers the platform default, and otherwise the last available runtime', () => {
+    const catalog: RuntimePackages[] = [
+      {id: 'current', status: 'deprecated', platformDefault: true},
+      {id: 'next', status: 'available'},
+    ]
+    expect(selectRuntime(catalog)?.id).toBe('current')
+    expect(selectRuntime(catalog, 'next')?.id).toBe('next')
+    expect(selectRuntime([{id: 'a', status: 'available'}, {id: 'b', status: 'available'}])?.id).toBe('b')
   })
 
   it('include globs ship files nothing imports, and their own imports', async () => {

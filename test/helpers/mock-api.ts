@@ -74,7 +74,7 @@ export function runDto(overrides: Record<string, unknown> = {}) {
     cancelRequested: false,
     bundleDigest: 'sha256:abc',
     capturePolicySnapshot: {},
-    bindingVersionSnapshot: {},
+    bindingVersionSnapshot: {keys: [], attachedKeys: []},
     stream: true,
     evidence: [],
     tabCounts: {steps: 0, assets: 0, diff: 0},
