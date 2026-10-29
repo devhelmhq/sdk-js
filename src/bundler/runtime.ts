@@ -17,6 +17,11 @@ export interface RuntimePackages {
   eolAt?: string | null
   packages?: Record<string, string | null> | null
   nodeBuiltins?: string[] | null
+  /**
+   * Whether new checks use this runtime when none is pinned.
+   * Absent on the bundled snapshot, which has no platform default.
+   */
+  platformDefault?: boolean
 }
 
 /** Whether a bare specifier is available on the runtime. */
@@ -28,11 +33,14 @@ export function runtimeHasImport(runtime: RuntimePackages, spec: string): boolea
 }
 
 /**
- * Pick a runtime from a catalog: the pinned id, or (as the server does with
- * no pin) the last `available` entry.
+ * Pick a runtime from a catalog: the pinned id, or the platform default.
+ * A catalog with no platform default, including the bundled snapshot, uses
+ * the last `available` entry.
  */
 export function selectRuntime(catalog: ReadonlyArray<RuntimePackages>, runtimeId?: string | null): RuntimePackages | undefined {
   if (runtimeId && runtimeId.trim()) return catalog.find((r) => r.id === runtimeId.trim())
+  const platform = catalog.find((entry) => entry.platformDefault === true)
+  if (platform) return platform
   let available: RuntimePackages | undefined
   for (const entry of catalog) if (entry.status === 'available') available = entry
   return available

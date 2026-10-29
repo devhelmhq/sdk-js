@@ -1,8 +1,7 @@
 /**
  * JSON value types used wherever the API returns a free-form map
- * (`details`, `capturePolicySnapshot`, `bindingVersionSnapshot`, event
- * payloads). Public types never expose `any` or `unknown`; a free-form
- * value is a {@link JsonValue}.
+ * (`details`, event payloads). Public types never expose `any` or
+ * `unknown`; a free-form value is a {@link JsonValue}.
  */
 
 export type JsonPrimitive = string | number | boolean | null
