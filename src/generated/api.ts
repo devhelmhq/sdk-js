@@ -5549,6 +5549,13 @@ export interface components {
              */
             vaultSecretId?: string | null;
         };
+        /** @description Secret key names frozen when the run was created */
+        BindingVersionSnapshot: {
+            /** @description Secret key names resolved for this run */
+            keys: string[];
+            /** @description Secret key names attached to this run */
+            attachedKeys: string[];
+        };
         BodyContainsAssertion: {
             /** @enum {string} */
             type: "body_contains";
@@ -11756,14 +11763,8 @@ export interface components {
              * @description When stored evidence was purged
              */
             purgedAt?: string | null;
-            /** @description Capture settings frozen at create */
-            capturePolicySnapshot: {
-                [key: string]: Record<string, never>;
-            };
-            /** @description Resolved secret key names frozen at create */
-            bindingVersionSnapshot: {
-                [key: string]: Record<string, never>;
-            };
+            capturePolicySnapshot: components["schemas"]["CapturePolicy"];
+            bindingVersionSnapshot: components["schemas"]["BindingVersionSnapshot"];
             /**
              * Format: int64
              * @description Wall time from claim to finish
@@ -12322,7 +12323,14 @@ export interface components {
              */
             diff: number;
         };
-        /** @description Default execution environment; null uses the catalog default */
+        /** @description Whether a runtime can accept new runs in one probe region */
+        RuntimeRegionAvailability: {
+            /** @description Check region, such as us-east */
+            region: string;
+            /** @description Whether this runtime can run checks in the region */
+            available: boolean;
+        };
+        /** @description Customer-selectable runtime profile */
         RuntimeProfileDto: {
             /** @description Runtime environment identifier */
             id: string;
@@ -12356,6 +12364,10 @@ export interface components {
             /** @description Environment bindings this runtime reads */
             reservedBindings?: string[] | null;
             browser?: components["schemas"]["BrowserCapabilityEnvelope"] | null;
+            /** @description Whether new checks use this runtime when none is pinned */
+            platformDefault: boolean;
+            /** @description Whether each region can run this runtime */
+            regions: components["schemas"]["RuntimeRegionAvailability"][];
         };
         /** @description Bounded trace summary for a run */
         RunTraceSummaryDto: {

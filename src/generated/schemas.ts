@@ -2417,6 +2417,9 @@ export const ComponentUptimeDayDto = z
 export const BatchComponentUptimeDto = z
   .object({ components: z.record(z.string(), z.array(ComponentUptimeDayDto)) })
   .passthrough();
+export const BindingVersionSnapshot = z
+  .object({ keys: z.array(z.string()), attachedKeys: z.array(z.string()) })
+  .passthrough();
 export const BrowserCapabilityEnvelope = z
   .object({
     iframes: z.boolean(),
@@ -2895,6 +2898,9 @@ export const RunAttemptDto = z
     finishedAt: z.string().datetime({ offset: true }).nullish(),
   })
   .passthrough();
+export const RuntimeRegionAvailability = z
+  .object({ region: z.string().min(1), available: z.boolean() })
+  .passthrough();
 export const RuntimeProfileDto = z
   .object({
     id: z.string().min(1),
@@ -2908,6 +2914,8 @@ export const RuntimeProfileDto = z
     nodeBuiltins: z.array(z.string()).nullish(),
     reservedBindings: z.array(z.string()).nullish(),
     browser: BrowserCapabilityEnvelope.nullish(),
+    platformDefault: z.boolean(),
+    regions: z.array(RuntimeRegionAvailability),
   })
   .passthrough();
 export const HarnessReleaseDto = z
@@ -2988,8 +2996,8 @@ export const RunDto = z
     artifactsExpiredAt: z.string().datetime({ offset: true }).nullish(),
     pinnedAt: z.string().datetime({ offset: true }).nullish(),
     purgedAt: z.string().datetime({ offset: true }).nullish(),
-    capturePolicySnapshot: z.record(z.string(), z.object({}).partial().passthrough()),
-    bindingVersionSnapshot: z.record(z.string(), z.object({}).partial().passthrough()),
+    capturePolicySnapshot: CapturePolicy,
+    bindingVersionSnapshot: BindingVersionSnapshot,
     durationMs: z.number().int().nullish(),
     queueWaitMs: z.number().int().nullish(),
     queuePosition: z.number().int().nullish(),
@@ -6242,6 +6250,7 @@ export const schemas: Record<string, z.ZodTypeAny> = {
   IncidentRef,
   ComponentUptimeDayDto,
   BatchComponentUptimeDto,
+  BindingVersionSnapshot,
   BrowserCapabilityEnvelope,
   Bucket,
   FailureDetail,
@@ -6293,6 +6302,7 @@ export const schemas: Record<string, z.ZodTypeAny> = {
   RunTabCountsDto,
   RunLiveDto,
   RunAttemptDto,
+  RuntimeRegionAvailability,
   RuntimeProfileDto,
   HarnessReleaseDto,
   RunExecutionDto,

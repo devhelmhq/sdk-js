@@ -30,6 +30,8 @@ const RUNTIME = {
   status: 'available',
   packages: {'@playwright/test': '1.62.1'},
   nodeBuiltins: ['fs'],
+  platformDefault: true,
+  regions: [{region: 'us-east', available: true}],
 }
 
 function bundleRoutes(api: MockApi, mutateDigest?: (d: string) => string): MockApi {
