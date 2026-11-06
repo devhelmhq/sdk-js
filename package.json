@@ -1,7 +1,7 @@
 {
   "name": "@devhelm/sdk",
-  "version": "1.11.0",
-  "description": "DevHelm SDK for TypeScript and JavaScript \u2014 typed client for monitors, incidents, alerting, and more",
+  "version": "1.12.0",
+  "description": "DevHelm SDK for TypeScript and JavaScript — typed client for monitors, incidents, alerting, and more",
   "author": "DevHelm <hello@devhelm.io>",
   "license": "MIT",
   "homepage": "https://github.com/devhelmhq/sdk-js",
