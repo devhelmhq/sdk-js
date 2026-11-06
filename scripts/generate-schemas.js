@@ -21,6 +21,7 @@ import {
   relaxResponseStrict,
 } from './lib/preprocess.mjs'
 import { generateZodClientFromOpenAPI } from 'openapi-zod-client'
+import {splitSharedResponseSchemas} from './lib/split-shared-response-schemas.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(__dirname, '..')
@@ -133,6 +134,9 @@ function loosenSchemasAggregate(source) {
 async function main() {
   console.log('Reading OpenAPI spec...')
   const spec = JSON.parse(readFileSync(SPEC_PATH, 'utf8'))
+
+  const shared = splitSharedResponseSchemas(spec)
+  console.log(`Split ${shared.length} request/response schemas for tolerant decoding`)
 
   console.log('Preprocessing (via @devhelm/openapi-tools)...')
   const {
