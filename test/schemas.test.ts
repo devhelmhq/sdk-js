@@ -522,6 +522,25 @@ describe('response DTOs tolerate unknown fields (Postel\'s Law)', () => {
     expect(result.success).toBe(true)
   })
 
+  it('accepts and preserves additive fields inside response branding', () => {
+    const branding = {...validBranding, noIndex: true, timeZone: 'America/New_York'}
+    const result = parseSingle(schemas.StatusPageDto, {
+      data: {...validStatusPageDto, branding},
+    })
+    expect(result.branding).toMatchObject({noIndex: true, timeZone: 'America/New_York'})
+  })
+
+  it('keeps shared branding strict in requests', () => {
+    const result = schemas.CreateStatusPageRequest.safeParse({
+      name: 'Test', slug: 'test',
+      branding: {...validBranding, noIndex: true},
+    })
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(result.error.issues[0].code).toBe('unrecognized_keys')
+    }
+  })
+
   it('CreateStatusPageRequest still rejects unknown fields', () => {
     const raw = {name: 'Test', slug: 'test', typo: 'caught'}
     const result = schemas.CreateStatusPageRequest.safeParse(raw)
