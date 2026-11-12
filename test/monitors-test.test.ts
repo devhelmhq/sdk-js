@@ -56,6 +56,7 @@ const QUEUED_RUN: RunDto = {
   executionAttempts: [],
   billable: false,
   flaky: false,
+  evidenceIncomplete: false,
 }
 
 function json(status: number, body: unknown): Response {

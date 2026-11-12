@@ -84,6 +84,7 @@ export function runDto(overrides: Record<string, unknown> = {}) {
     executionAttempts: [],
     billable: true,
     flaky: false,
+    evidenceIncomplete: false,
     url: `https://app.devhelm.io/runs/${RUN_ID}`,
     ...overrides,
   }

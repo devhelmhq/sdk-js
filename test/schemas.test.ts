@@ -21,6 +21,7 @@ const validStatusPageDto = {
   description: null, branding: validBranding,
   visibility: 'PUBLIC', enabled: true,
   incidentMode: 'MANUAL',
+  subscriberChannels: ['EMAIL', 'WEBHOOK'],
   componentCount: 0, subscriberCount: 0,
   overallStatus: 'OPERATIONAL',
   createdAt: '2024-01-01T00:00:00Z', updatedAt: '2024-01-01T00:00:00Z',
@@ -533,7 +534,7 @@ describe('response DTOs tolerate unknown fields (Postel\'s Law)', () => {
   it('keeps shared branding strict in requests', () => {
     const result = schemas.CreateStatusPageRequest.safeParse({
       name: 'Test', slug: 'test',
-      branding: {...validBranding, noIndex: true},
+      branding: {...validBranding, futureBrandingField: true},
     })
     expect(result.success).toBe(false)
     if (!result.success) {
