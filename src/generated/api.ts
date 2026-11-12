@@ -2502,6 +2502,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/monitors/batch-summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Result summaries for several monitors
+         * @description The results summary of up to 100 monitors in one call, so a list page needs no per-monitor request. Monitors outside the workspace are left out.
+         */
+        get: operations["batchSummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/monitors/bulk": {
         parameters: {
             query?: never;
@@ -10091,6 +10111,20 @@ export interface components {
             /** @description 48 display buckets; present only when density=48 */
             displayTicks?: components["schemas"]["MonitorDisplayTickDto"][] | null;
         };
+        /** @description Result summaries for a set of monitors */
+        MonitorBatchSummaryDto: {
+            /** @description One entry per requested monitor that exists in the workspace */
+            monitors: components["schemas"]["MonitorBatchSummaryItemDto"][];
+        };
+        /** @description Result summary of one monitor */
+        MonitorBatchSummaryItemDto: {
+            /**
+             * Format: uuid
+             * @description Monitor identifier
+             */
+            id: string;
+            summary: components["schemas"]["ResultSummaryDto"];
+        };
         /** @description Run allowance that is keeping a code monitor from running */
         MonitorCappedDto: {
             /**
@@ -14149,6 +14183,9 @@ export interface components {
         };
         SingleValueResponseMonitorBatchHistoryDto: {
             data: components["schemas"]["MonitorBatchHistoryDto"];
+        };
+        SingleValueResponseMonitorBatchSummaryDto: {
+            data: components["schemas"]["MonitorBatchSummaryDto"];
         };
         SingleValueResponseMonitorDriftDto: {
             data: components["schemas"]["MonitorDriftDto"];
@@ -39322,6 +39359,133 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["SingleValueResponseMonitorBatchHistoryDto"];
+                };
+            };
+            /** @description Bad request — the payload failed validation */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized — missing or invalid credentials */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Payment required — the plan or quota does not allow this */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden — the actor lacks permission for this resource */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not found — the requested resource does not exist */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict — the request collides with current resource state */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Gone — the resource is no longer available */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many requests — retry after the window resets */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal server error — see the message field for details */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Bad gateway — an upstream provider returned an error */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service unavailable — try again shortly */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    batchSummary: {
+        parameters: {
+            query: {
+                /** @description Monitor ids, comma-separated; at most 100 */
+                ids: string[];
+                /** @description Chart window: 24h returns hourly buckets, 7d/30d/90d return daily buckets */
+                chartWindow?: "24h" | "7d" | "30d" | "90d";
+            };
+            header?: {
+                /** @description Calling surface and version, e.g. cli/1.4.0 or sdk-js/2.0.0 */
+                "X-DevHelm-Client"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SingleValueResponseMonitorBatchSummaryDto"];
                 };
             };
             /** @description Bad request — the payload failed validation */
