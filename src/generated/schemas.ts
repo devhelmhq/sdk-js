@@ -1491,6 +1491,40 @@ export const UpdateOrgDetailsRequest = z
     websiteUrl: z.string().min(0).max(255).nullish(),
   })
   .strict();
+export const CreateSsoConnectionRequest = z
+  .object({
+    name: z.string().min(0).max(120),
+    signInScope: z.enum(["ROUTED_DOMAINS", "ANY_IDP_USER"]).nullish(),
+  })
+  .strict();
+export const UpdateSsoConnectionRequest = z
+  .object({
+    name: z.string().min(1).max(120).nullable(),
+    enabled: z.boolean().nullable(),
+    spEntityId: z.string().nullable(),
+    acsUrl: z.string().nullable(),
+    signInScope: z.enum(["ROUTED_DOMAINS", "ANY_IDP_USER"]).nullable(),
+  })
+  .partial()
+  .strict();
+export const AddSsoCertificateRequest = z
+  .object({ certificate: z.string().min(0).max(16384) })
+  .strict();
+export const AddSsoDomainRequest = z
+  .object({ domain: z.string().min(0).max(253) })
+  .strict();
+export const SetIdpMetadataRequest = z
+  .object({ xml: z.string().nullable(), url: z.string().nullable() })
+  .partial()
+  .strict();
+export const UpdateOrgSsoSettingsRequest = z
+  .object({
+    enforced: z.boolean().nullable(),
+    jitEnabled: z.boolean().nullable(),
+    defaultRole: z.enum(["OWNER", "ADMIN", "MEMBER"]).nullable(),
+  })
+  .partial()
+  .strict();
 export const RetryStrategy = z
   .object({
     type: z.string(),
@@ -1706,13 +1740,51 @@ export const ServiceSubscribeRequest = z
   })
   .partial()
   .strict();
+export const CreateStatusPageGroupRequest = z
+  .object({
+    name: z.string().min(0).max(255),
+    slug: z
+      .string()
+      .min(3)
+      .max(63)
+      .regex(/^[a-z0-9][a-z0-9-]*[a-z0-9]$/),
+    mode: z.enum(["SEPARATE", "UNIFIED"]).nullish(),
+  })
+  .strict();
+export const UpdateStatusPageGroupRequest = z
+  .object({
+    name: z.string().min(1).max(255).nullable(),
+    mode: z.enum(["SEPARATE", "UNIFIED"]).nullable(),
+  })
+  .partial()
+  .strict();
+export const SetStatusPageGroupDefaultPageRequest = z
+  .object({ statusPageId: z.string().uuid() })
+  .strict();
+export const AddCustomDomainRequest = z
+  .object({
+    hostname: z
+      .string()
+      .min(0)
+      .max(255)
+      .regex(
+        /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/
+      ),
+  })
+  .strict();
+export const AddStatusPageGroupMemberRequest = z
+  .object({ statusPageId: z.string().uuid(), key: z.string().min(0).max(64) })
+  .strict();
+export const ReorderStatusPageGroupMembersRequest = z
+  .object({ statusPageIds: z.array(z.string().uuid()).min(1) })
+  .strict();
 export const StatusPageBranding = z
   .object({
     logoUrl: z
       .string()
       .min(0)
       .max(2048)
-      .regex(/^https?:\/\/.*/)
+      .regex(/^https:\/\/.*/)
       .nullable(),
     faviconUrl: z
       .string()
@@ -1760,6 +1832,8 @@ export const StatusPageBranding = z
       .nullable(),
     hidePoweredBy: z.boolean().default(false),
     showSubscribeButton: z.boolean().default(true),
+    noIndex: z.boolean().default(false),
+    timeZone: z.string().min(0).max(64).nullable(),
     customCss: z.string().min(0).max(50000).nullable(),
     customHeadHtml: z.string().min(0).max(50000).nullable(),
   })
@@ -1775,7 +1849,9 @@ export const CreateStatusPageRequest = z
       .regex(/^[a-z0-9][a-z0-9-]*[a-z0-9]$/),
     description: z.string().min(0).max(500).nullish(),
     branding: StatusPageBranding.nullish(),
-    visibility: z.enum(["PUBLIC", "PASSWORD", "IP_RESTRICTED"]).nullish(),
+    visibility: z
+      .enum(["PUBLIC", "PASSWORD", "IP_RESTRICTED", "LOGIN_REQUIRED"])
+      .nullish(),
     enabled: z.boolean().nullish(),
     incidentMode: z.enum(["MANUAL", "REVIEW", "AUTOMATIC"]).nullish(),
     managedBy: z
@@ -1788,14 +1864,30 @@ export const UpdateStatusPageRequest = z
     name: z.string().min(0).max(255).nullable(),
     description: z.string().min(0).max(500).nullable(),
     branding: StatusPageBranding.nullable(),
-    visibility: z.enum(["PUBLIC", "PASSWORD", "IP_RESTRICTED"]).nullable(),
+    visibility: z
+      .enum(["PUBLIC", "PASSWORD", "IP_RESTRICTED", "LOGIN_REQUIRED"])
+      .nullable(),
+    emailSignIn: z.enum(["PASSWORD", "MAGIC_LINK"]).nullable(),
+    clearEmailSignIn: z.boolean().nullable(),
     enabled: z.boolean().nullable(),
     incidentMode: z.enum(["MANUAL", "REVIEW", "AUTOMATIC"]).nullable(),
     managedBy: z
       .enum(["DASHBOARD", "CLI", "TERRAFORM", "MCP", "API", "GIT"])
       .nullable(),
+    subscriberChannels: z
+      .array(z.enum(["EMAIL", "SMS", "WEBHOOK", "TEAMS"]))
+      .max(3)
+      .nullable(),
+    confirmPublic: z.boolean().nullable(),
+    confirmConvertSubscribers: z.boolean().nullable(),
   })
   .partial()
+  .strict();
+export const UpdateStatusPageAccessPolicyRequest = z
+  .object({
+    sessionAbsoluteTtlSeconds: z.number().int().gte(3600).lte(7776000),
+    sessionIdleTtlSeconds: z.number().int().gte(300).lte(7776000),
+  })
   .strict();
 export const CreateStatusPageComponentRequest = z
   .object({
@@ -1848,17 +1940,13 @@ export const ComponentPosition = z
 export const ReorderComponentsRequest = z
   .object({ positions: z.array(ComponentPosition).min(1) })
   .strict();
-export const AddCustomDomainRequest = z
-  .object({
-    hostname: z
-      .string()
-      .min(0)
-      .max(255)
-      .regex(
-        /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/
-      ),
-  })
+export const BulkDeactivateEndUsersRequest = z
+  .object({ emails: z.array(z.string().min(0).max(320)).max(1000) })
   .strict();
+export const InviteStatusPageEndUsersRequest = z
+  .object({ emails: z.array(z.string()).max(100) })
+  .strict();
+export const StreamingResponseBody = z.object({}).partial().passthrough();
 export const CreateStatusPageComponentGroupRequest = z
   .object({
     name: z.string().min(0).max(255),
@@ -1899,6 +1987,10 @@ export const CreateStatusPageIncidentRequest = z
     affectedComponents: z.array(AffectedComponent).nullish(),
     notifySubscribers: z.boolean().nullish(),
     monitoringIncidentId: z.string().uuid().nullish(),
+    templateId: z.string().uuid().nullish(),
+    backfill: z.boolean().nullish(),
+    startedAt: z.string().datetime({ offset: true }).nullish(),
+    resolvedAt: z.string().datetime({ offset: true }).nullish(),
   })
   .strict();
 export const UpdateStatusPageIncidentRequest = z
@@ -1920,6 +2012,11 @@ export const UpdateStatusPageIncidentRequest = z
     scheduledFor: z.string().datetime({ offset: true }).nullable(),
     scheduledUntil: z.string().datetime({ offset: true }).nullable(),
     autoResolve: z.boolean().nullable(),
+    reminderLeadMinutes: z
+      .array(z.number().int().gte(5).lte(20160))
+      .max(5)
+      .nullable(),
+    notifySubscribersOfPostmortem: z.boolean().nullable(),
   })
   .partial()
   .strict();
@@ -1942,6 +2039,7 @@ export const CreateStatusPageIncidentUpdateRequest = z
     body: z.string().min(1),
     notifySubscribers: z.boolean().nullish(),
     affectedComponents: z.array(AffectedComponent).nullish(),
+    createdAt: z.string().datetime({ offset: true }).nullish(),
   })
   .strict();
 export const UpdateStatusPageIncidentUpdateRequest = z
@@ -1984,15 +2082,96 @@ export const CreateStatusPageMaintenanceRequest = z
     scheduledUntil: z.string().datetime({ offset: true }).nullish(),
     autoResolve: z.boolean().nullish(),
     notifySubscribers: z.boolean().nullish(),
+    templateId: z.string().uuid().nullish(),
+    reminderLeadMinutes: z
+      .array(z.number().int().gte(5).lte(20160))
+      .max(5)
+      .nullish(),
   })
   .strict();
 export const AdminAddSubscriberRequest = z
   .object({
     email: z.string().min(0).max(320).email().nullable(),
-    channel: z.enum(["EMAIL", "SMS", "WEBHOOK"]).nullable(),
+    channel: z.enum(["EMAIL", "SMS", "WEBHOOK", "TEAMS"]).nullable(),
     destination: z.string().min(0).max(2048).nullable(),
     componentIds: z.array(z.string().uuid()).nullable(),
     requireConfirmation: z.boolean().nullable(),
+    componentGroupIds: z.array(z.string().uuid()).max(100).nullable(),
+  })
+  .partial()
+  .strict();
+export const UpdateSubscriberRequest = z
+  .object({
+    componentIds: z.array(z.string().uuid()).max(500),
+    componentGroupIds: z.array(z.string().uuid()).max(100).nullish(),
+  })
+  .strict();
+export const BulkDeleteSubscribersRequest = z
+  .object({ subscriberIds: z.array(z.string().uuid()).min(1).max(1000) })
+  .strict();
+export const BulkUpdateSubscriberScopeRequest = z
+  .object({
+    subscriberIds: z.array(z.string().uuid()).min(1).max(1000),
+    componentIds: z.array(z.string().uuid()).max(500).nullish(),
+    componentGroupIds: z.array(z.string().uuid()).max(100).nullish(),
+  })
+  .strict();
+export const ImportSubscriberRow = z
+  .object({
+    channel: z.enum(["EMAIL", "SMS", "WEBHOOK", "TEAMS"]),
+    destination: z.string().min(0).max(2048),
+    componentIds: z.array(z.string().uuid()).max(500).nullish(),
+    componentGroupIds: z.array(z.string().uuid()).max(100).nullish(),
+  })
+  .strict();
+export const ImportSubscribersRequest = z
+  .object({ rows: z.array(ImportSubscriberRow).min(1).max(5000) })
+  .strict();
+export const StatusPageTemplateComponent = z
+  .object({
+    componentId: z.string().uuid(),
+    status: z.enum([
+      "OPERATIONAL",
+      "DEGRADED_PERFORMANCE",
+      "PARTIAL_OUTAGE",
+      "MAJOR_OUTAGE",
+      "UNDER_MAINTENANCE",
+    ]),
+  })
+  .strict();
+export const StatusPageTemplateStage = z
+  .object({
+    body: z.string().min(0).max(10000),
+    components: z.array(StatusPageTemplateComponent).max(200).nullish(),
+  })
+  .strict();
+export const StatusPageTemplateRequest = z
+  .object({
+    kind: z.enum(["INCIDENT", "MAINTENANCE"]),
+    name: z.string().min(0).max(120),
+    title: z.string().min(0).max(500),
+    impact: z.enum(["NONE", "MINOR", "MAJOR", "CRITICAL"]).nullish(),
+    initialStatus: z
+      .enum(["INVESTIGATING", "IDENTIFIED", "MONITORING", "RESOLVED"])
+      .nullish(),
+    components: z.array(StatusPageTemplateComponent).max(200).nullish(),
+    stages: z.record(z.string(), StatusPageTemplateStage.nullable()).nullish(),
+    notifySubscribers: z.boolean().nullish(),
+    defaultDurationMinutes: z.number().int().gte(1).lte(10080).nullish(),
+    autoResolve: z.boolean().nullish(),
+    reminderLeadMinutes: z
+      .array(z.number().int().gte(5).lte(20160))
+      .max(5)
+      .nullish(),
+  })
+  .strict();
+export const RenderStatusPageTemplateRequest = z
+  .object({
+    stage: z
+      .enum(["INVESTIGATING", "IDENTIFIED", "MONITORING", "RESOLVED"])
+      .nullable(),
+    scheduledFor: z.string().datetime({ offset: true }).nullable(),
+    scheduledUntil: z.string().datetime({ offset: true }).nullable(),
   })
   .partial()
   .strict();
@@ -3033,6 +3212,8 @@ export const RunDto = z
     durationMs: z.number().int().nullish(),
     queueWaitMs: z.number().int().nullish(),
     queuePosition: z.number().int().nullish(),
+    delayed: z.boolean().nullish(),
+    evidenceIncomplete: z.boolean(),
     heartbeatAgeMs: z.number().int().nullish(),
     stream: z.boolean(),
     evidence: z.array(RunEvidenceDto),
@@ -3572,7 +3753,7 @@ export const StatusPageBrandingWireResponse = z
       .string()
       .min(0)
       .max(2048)
-      .regex(/^https?:\/\/.*/)
+      .regex(/^https:\/\/.*/)
       .nullable(),
     faviconUrl: z
       .string()
@@ -3620,6 +3801,8 @@ export const StatusPageBrandingWireResponse = z
       .nullable(),
     hidePoweredBy: z.boolean().default(false),
     showSubscribeButton: z.boolean().default(true),
+    noIndex: z.boolean().default(false),
+    timeZone: z.string().min(0).max(64).nullable(),
     customCss: z.string().min(0).max(50000).nullable(),
     customHeadHtml: z.string().min(0).max(50000).nullable(),
   })
@@ -3645,12 +3828,14 @@ export const StatusPageDto = z
     branding: StatusPageBrandingWireResponse,
     visibility: z.string(),
     enabled: z.boolean(),
+    emailSignIn: z.string().nullish(),
     incidentMode: z.string(),
     componentCount: z.number().int().nullish(),
     subscriberCount: z.number().int().nullish(),
     overallStatus: z.string().nullish(),
     openIncident: StatusPageOpenIncidentSummaryDto.nullish(),
     managedBy: z.string().nullish(),
+    subscriberChannels: z.array(z.string()),
     createdAt: z.string().datetime({ offset: true }),
     updatedAt: z.string().datetime({ offset: true }),
   })
@@ -3728,6 +3913,8 @@ export const MonitorDto = z
     flakySeverity: z.string().nullish(),
     lastCheckOutcome: z.string().nullish(),
     lastCheckRegion: z.string().nullish(),
+    lastCheckAt: z.string().datetime({ offset: true }).nullish(),
+    lastCheckResponseTimeMs: z.number().int().nullish(),
     lastFailureSummary: z.string().nullish(),
     lastStateChangeAt: z.string().datetime({ offset: true }).nullish(),
     regionHealth: z.array(MonitorRegionHealthDto).nullish(),
@@ -3896,6 +4083,24 @@ export const StatusEventDto = z
 export const CursorPageStatusEventDto = z
   .object({
     data: z.array(StatusEventDto),
+    nextCursor: z.string().nullish(),
+    hasMore: z.boolean(),
+  })
+  .passthrough();
+export const StatusPageAccessEventDto = z
+  .object({
+    id: z.string().uuid(),
+    occurredAt: z.string().datetime({ offset: true }),
+    eventType: z.string(),
+    endUserEmail: z.string().nullish(),
+    connectionId: z.string().uuid().nullish(),
+    failureReason: z.string().nullish(),
+    clientIp: z.string().nullish(),
+  })
+  .passthrough();
+export const CursorPageStatusPageAccessEventDto = z
+  .object({
+    data: z.array(StatusPageAccessEventDto),
     nextCursor: z.string().nullish(),
     hasMore: z.boolean(),
   })
@@ -4632,6 +4837,15 @@ export const MonitorVersionDto = z
     createdAt: z.string().datetime({ offset: true }),
   })
   .passthrough();
+export const MonthlyUptimeBucketDto = z
+  .object({
+    month: z.string(),
+    uptimePercentage: z.number().nullish(),
+    trackedDays: z.number().int(),
+    majorOutageSeconds: z.number().int(),
+    partialOutageSeconds: z.number().int(),
+  })
+  .passthrough();
 export const NetworkTimingDto = z
   .object({
     dnsMs: z.number().int().nullable(),
@@ -4764,6 +4978,14 @@ export const OrganizationDto = z
     size: z.string().nullish(),
     industry: z.string().nullish(),
     websiteUrl: z.string().nullish(),
+  })
+  .passthrough();
+export const OrgSsoSettingsDto = z
+  .object({
+    enforced: z.boolean(),
+    jitEnabled: z.boolean(),
+    defaultRole: z.string(),
+    enforcementReady: z.boolean(),
   })
   .passthrough();
 export const OverviewStepCellDto = z
@@ -5554,6 +5776,9 @@ export const SingleValueResponseNotificationPolicyDto = z
 export const SingleValueResponseOrganizationDto = z
   .object({ data: OrganizationDto })
   .passthrough();
+export const SingleValueResponseOrgSsoSettingsDto = z
+  .object({ data: OrgSsoSettingsDto })
+  .passthrough();
 export const SingleValueResponseOverviewStepsDto = z
   .object({ data: OverviewStepsDto })
   .passthrough();
@@ -5632,6 +5857,90 @@ export const SingleValueResponseServiceUptimeResponse = z
 export const SingleValueResponseSignedDownload = z
   .object({ data: SignedDownload })
   .passthrough();
+export const SsoCertificateDto = z
+  .object({
+    id: z.string().uuid(),
+    fingerprintSha256: z.string(),
+    subject: z.string(),
+    notBefore: z.string().datetime({ offset: true }),
+    notAfter: z.string().datetime({ offset: true }),
+    source: z.string(),
+    createdAt: z.string().datetime({ offset: true }),
+  })
+  .passthrough();
+export const SingleValueResponseSsoCertificateDto = z
+  .object({ data: SsoCertificateDto })
+  .passthrough();
+export const SsoDomainDto = z
+  .object({
+    id: z.string().uuid(),
+    domain: z.string(),
+    verificationToken: z.string(),
+    verifiedAt: z.string().datetime({ offset: true }).nullish(),
+    createdAt: z.string().datetime({ offset: true }),
+  })
+  .passthrough();
+export const SsoConnectionDto = z
+  .object({
+    id: z.string().uuid(),
+    statusPageId: z.string().uuid().nullish(),
+    name: z.string(),
+    enabled: z.boolean(),
+    signInScope: z.string(),
+    spEntityId: z.string(),
+    acsUrl: z.string(),
+    acsChangedAt: z.string().datetime({ offset: true }).nullish(),
+    idpEntityId: z.string().nullish(),
+    idpSsoUrl: z.string().nullish(),
+    idpMetadataUrl: z.string().nullish(),
+    metadataFetchedAt: z.string().datetime({ offset: true }).nullish(),
+    metadataError: z.string().nullish(),
+    domains: z.array(SsoDomainDto),
+    certificates: z.array(SsoCertificateDto),
+    createdAt: z.string().datetime({ offset: true }),
+    updatedAt: z.string().datetime({ offset: true }),
+  })
+  .passthrough();
+export const SingleValueResponseSsoConnectionDto = z
+  .object({ data: SsoConnectionDto })
+  .passthrough();
+export const SsoConnectionTestDto = z
+  .object({
+    id: z.string().uuid(),
+    status: z.string(),
+    failureReason: z.string().nullish(),
+    failureMessage: z.string().nullish(),
+    correlationId: z.string().nullish(),
+    assertedIssuer: z.string().nullish(),
+    assertedEmail: z.string().nullish(),
+    assertedName: z.string().nullish(),
+    createdAt: z.string().datetime({ offset: true }),
+    completedAt: z.string().datetime({ offset: true }).nullish(),
+  })
+  .passthrough();
+export const SingleValueResponseSsoConnectionTestDto = z
+  .object({ data: SsoConnectionTestDto })
+  .passthrough();
+export const SingleValueResponseSsoDomainDto = z
+  .object({ data: SsoDomainDto })
+  .passthrough();
+export const StaffSessionsRevokedDto = z
+  .object({ revoked: z.number().int() })
+  .passthrough();
+export const SingleValueResponseStaffSessionsRevokedDto = z
+  .object({ data: StaffSessionsRevokedDto })
+  .passthrough();
+export const StatusPageAccessPolicyDto = z
+  .object({
+    sessionAbsoluteTtlSeconds: z.number().int(),
+    sessionIdleTtlSeconds: z.number().int(),
+    explicit: z.boolean(),
+    updatedAt: z.string().datetime({ offset: true }).nullish(),
+  })
+  .passthrough();
+export const SingleValueResponseStatusPageAccessPolicyDto = z
+  .object({ data: StatusPageAccessPolicyDto })
+  .passthrough();
 export const StatusPageComponentDto = z
   .object({
     id: z.string().uuid(),
@@ -5672,6 +5981,8 @@ export const StatusPageComponentGroupDto = z
     pageOrder: z.number().int(),
     defaultOpen: z.boolean(),
     components: z.array(StatusPageComponentDto).nullish(),
+    status: z.string().optional().default("OPERATIONAL"),
+    componentCount: z.number().int().optional().default(0),
     createdAt: z.string().datetime({ offset: true }),
     updatedAt: z.string().datetime({ offset: true }),
   })
@@ -5703,6 +6014,80 @@ export const SingleValueResponseStatusPageCustomDomainDto = z
 export const SingleValueResponseStatusPageDto = z
   .object({ data: StatusPageDto })
   .passthrough();
+export const StatusPageEndUserBulkDeactivationDto = z
+  .object({
+    matched: z.number().int(),
+    unknown: z.number().int(),
+    unknownEmails: z.array(z.string()),
+  })
+  .passthrough();
+export const SingleValueResponseStatusPageEndUserBulkDeactivationDto = z
+  .object({ data: StatusPageEndUserBulkDeactivationDto })
+  .passthrough();
+export const StatusPageEndUserDto = z
+  .object({
+    id: z.string().uuid(),
+    email: z.string(),
+    name: z.string().nullish(),
+    status: z.string(),
+    lastSignInAt: z.string().datetime({ offset: true }).nullish(),
+    createdAt: z.string().datetime({ offset: true }),
+  })
+  .passthrough();
+export const SingleValueResponseStatusPageEndUserDto = z
+  .object({ data: StatusPageEndUserDto })
+  .passthrough();
+export const StatusPageEndUserInviteDto = z
+  .object({
+    id: z.string().uuid(),
+    endUser: StatusPageEndUserDto,
+    sentAt: z.string().datetime({ offset: true }),
+    expiresAt: z.string().datetime({ offset: true }),
+  })
+  .passthrough();
+export const SingleValueResponseStatusPageEndUserInviteDto = z
+  .object({ data: StatusPageEndUserInviteDto })
+  .passthrough();
+export const StatusPageEndUserInviteSkipDto = z
+  .object({ email: z.string(), reason: z.string() })
+  .passthrough();
+export const StatusPageEndUserInviteResultDto = z
+  .object({
+    invited: z.array(StatusPageEndUserInviteDto),
+    skipped: z.array(StatusPageEndUserInviteSkipDto),
+  })
+  .passthrough();
+export const SingleValueResponseStatusPageEndUserInviteResultDto = z
+  .object({ data: StatusPageEndUserInviteResultDto })
+  .passthrough();
+export const StatusPageGroupMemberDto = z
+  .object({
+    statusPageId: z.string().uuid(),
+    key: z.string().min(1),
+    position: z.number().int(),
+    slug: z.string().min(1),
+    name: z.string().min(1),
+    visibility: z.string(),
+  })
+  .passthrough();
+export const StatusPageGroupDto = z
+  .object({
+    id: z.string().uuid(),
+    organizationId: z.number().int(),
+    workspaceId: z.number().int(),
+    name: z.string().min(1),
+    slug: z.string().min(1),
+    mode: z.string(),
+    defaultStatusPageId: z.string().uuid().nullish(),
+    members: z.array(StatusPageGroupMemberDto),
+    customDomain: StatusPageCustomDomainDto.nullish(),
+    createdAt: z.string().datetime({ offset: true }),
+    updatedAt: z.string().datetime({ offset: true }),
+  })
+  .passthrough();
+export const SingleValueResponseStatusPageGroupDto = z
+  .object({ data: StatusPageGroupDto })
+  .passthrough();
 export const StatusPageIncidentComponentDto = z
   .object({
     statusPageComponentId: z.string().uuid(),
@@ -5733,6 +6118,11 @@ export const StatusPageIncidentDto = z
     scheduledUntil: z.string().datetime({ offset: true }).nullish(),
     autoResolve: z.boolean(),
     incidentId: z.string().uuid().nullish(),
+    templateId: z.string().uuid().nullish(),
+    reminderLeadMinutes: z.array(z.number().int()).nullish(),
+    backfilled: z.boolean().optional().default(false),
+    postmortemPublishedAt: z.string().datetime({ offset: true }).nullish(),
+    postmortemNotifiedAt: z.string().datetime({ offset: true }).nullish(),
     startedAt: z.string().datetime({ offset: true }),
     publishedAt: z.string().datetime({ offset: true }).nullish(),
     resolvedAt: z.string().datetime({ offset: true }).nullish(),
@@ -5771,6 +6161,15 @@ export const StatusPageMeasuredComponentUptimeDto = z
 export const SingleValueResponseStatusPageMeasuredComponentUptimeDto = z
   .object({ data: StatusPageMeasuredComponentUptimeDto })
   .passthrough();
+export const StatusPageMonthlyUptimeDto = z
+  .object({
+    components: z.record(z.string(), z.array(MonthlyUptimeBucketDto)),
+    groups: z.record(z.string(), z.array(MonthlyUptimeBucketDto)),
+  })
+  .passthrough();
+export const SingleValueResponseStatusPageMonthlyUptimeDto = z
+  .object({ data: StatusPageMonthlyUptimeDto })
+  .passthrough();
 export const StatusPageNotificationDeliveryDto = z
   .object({
     id: z.string().uuid(),
@@ -5793,6 +6192,16 @@ export const StatusPageNotificationDeliveryDto = z
 export const SingleValueResponseStatusPageNotificationDeliveryDto = z
   .object({ data: StatusPageNotificationDeliveryDto })
   .passthrough();
+export const StatusPageSubscriberBulkResultDto = z
+  .object({
+    matched: z.number().int(),
+    unknown: z.number().int(),
+    unknownIds: z.array(z.string().uuid()),
+  })
+  .passthrough();
+export const SingleValueResponseStatusPageSubscriberBulkResultDto = z
+  .object({ data: StatusPageSubscriberBulkResultDto })
+  .passthrough();
 export const StatusPageSubscriberDto = z
   .object({
     id: z.string().uuid(),
@@ -5800,13 +6209,87 @@ export const StatusPageSubscriberDto = z
     channel: z.string(),
     destination: z.string(),
     componentIds: z.array(z.string().uuid()).nullish(),
+    componentGroupIds: z.array(z.string().uuid()).nullish(),
     confirmed: z.boolean(),
+    source: z.string().nullish(),
     confirmationSent: z.boolean().nullish(),
     createdAt: z.string().datetime({ offset: true }),
   })
   .passthrough();
 export const SingleValueResponseStatusPageSubscriberDto = z
   .object({ data: StatusPageSubscriberDto })
+  .passthrough();
+export const StatusPageSubscriberImportErrorDto = z
+  .object({
+    row: z.number().int(),
+    code: z.string(),
+    field: z.string().nullish(),
+    message: z.string(),
+  })
+  .passthrough();
+export const StatusPageSubscriberImportResultDto = z
+  .object({
+    created: z.number().int(),
+    updated: z.number().int(),
+    errors: z.array(StatusPageSubscriberImportErrorDto),
+  })
+  .passthrough();
+export const SingleValueResponseStatusPageSubscriberImportResultDto = z
+  .object({ data: StatusPageSubscriberImportResultDto })
+  .passthrough();
+export const StatusPageTemplateComponentWireResponse = z
+  .object({ componentId: z.string().uuid(), status: z.string() })
+  .passthrough();
+export const StatusPageTemplateStageWireResponse = z
+  .object({
+    body: z.string().min(0).max(10000),
+    components: z
+      .array(StatusPageTemplateComponentWireResponse)
+      .max(200)
+      .nullish(),
+  })
+  .passthrough();
+export const StatusPageTemplateDto = z
+  .object({
+    id: z.string().uuid(),
+    statusPageId: z.string().uuid(),
+    kind: z.string(),
+    name: z.string(),
+    title: z.string(),
+    impact: z.string(),
+    initialStatus: z.string(),
+    components: z.array(StatusPageTemplateComponentWireResponse),
+    stages: z.record(z.string(), StatusPageTemplateStageWireResponse),
+    notifySubscribers: z.boolean(),
+    defaultDurationMinutes: z.number().int().nullish(),
+    autoResolve: z.boolean().nullish(),
+    reminderLeadMinutes: z.array(z.number().int()).nullish(),
+    createdAt: z.string().datetime({ offset: true }),
+    updatedAt: z.string().datetime({ offset: true }),
+  })
+  .passthrough();
+export const SingleValueResponseStatusPageTemplateDto = z
+  .object({ data: StatusPageTemplateDto })
+  .passthrough();
+export const StatusPageTemplateRenderDto = z
+  .object({
+    title: z.string(),
+    body: z.string().nullish(),
+    components: z.array(StatusPageTemplateComponentWireResponse),
+  })
+  .passthrough();
+export const SingleValueResponseStatusPageTemplateRenderDto = z
+  .object({ data: StatusPageTemplateRenderDto })
+  .passthrough();
+export const StatusPageVisibilityChangePreviewDto = z
+  .object({
+    convertedSubscribers: z.number().int(),
+    invitedEndUsers: z.number().int(),
+    droppedUnconfirmed: z.number().int(),
+  })
+  .passthrough();
+export const SingleValueResponseStatusPageVisibilityChangePreviewDto = z
+  .object({ data: StatusPageVisibilityChangePreviewDto })
   .passthrough();
 export const SingleValueResponseString = z.object({ data: z.string() }).passthrough();
 export const SyntheticsFamilyMetricsDto = z
@@ -5957,7 +6440,6 @@ export const WorkspaceDto = z
 export const SingleValueResponseWorkspaceDto = z
   .object({ data: WorkspaceDto })
   .passthrough();
-export const StreamingResponseBody = z.object({}).partial().passthrough();
 export const TableValueResultAlertChannelDto = z
   .object({
     data: z.array(AlertChannelDto),
@@ -6273,6 +6755,15 @@ export const TableValueResultServiceSubscriptionDto = z
     totalPages: z.number().int().nullish(),
   })
   .passthrough();
+export const TableValueResultSsoConnectionDto = z
+  .object({
+    data: z.array(SsoConnectionDto),
+    hasNext: z.boolean(),
+    hasPrev: z.boolean(),
+    totalElements: z.number().int().nullish(),
+    totalPages: z.number().int().nullish(),
+  })
+  .passthrough();
 export const TableValueResultStatusPageComponentDto = z
   .object({
     data: z.array(StatusPageComponentDto),
@@ -6309,6 +6800,33 @@ export const TableValueResultStatusPageDto = z
     totalPages: z.number().int().nullish(),
   })
   .passthrough();
+export const TableValueResultStatusPageEndUserDto = z
+  .object({
+    data: z.array(StatusPageEndUserDto),
+    hasNext: z.boolean(),
+    hasPrev: z.boolean(),
+    totalElements: z.number().int().nullish(),
+    totalPages: z.number().int().nullish(),
+  })
+  .passthrough();
+export const TableValueResultStatusPageEndUserInviteDto = z
+  .object({
+    data: z.array(StatusPageEndUserInviteDto),
+    hasNext: z.boolean(),
+    hasPrev: z.boolean(),
+    totalElements: z.number().int().nullish(),
+    totalPages: z.number().int().nullish(),
+  })
+  .passthrough();
+export const TableValueResultStatusPageGroupDto = z
+  .object({
+    data: z.array(StatusPageGroupDto),
+    hasNext: z.boolean(),
+    hasPrev: z.boolean(),
+    totalElements: z.number().int().nullish(),
+    totalPages: z.number().int().nullish(),
+  })
+  .passthrough();
 export const TableValueResultStatusPageIncidentDto = z
   .object({
     data: z.array(StatusPageIncidentDto),
@@ -6330,6 +6848,15 @@ export const TableValueResultStatusPageNotificationDeliveryDto = z
 export const TableValueResultStatusPageSubscriberDto = z
   .object({
     data: z.array(StatusPageSubscriberDto),
+    hasNext: z.boolean(),
+    hasPrev: z.boolean(),
+    totalElements: z.number().int().nullish(),
+    totalPages: z.number().int().nullish(),
+  })
+  .passthrough();
+export const TableValueResultStatusPageTemplateDto = z
+  .object({
+    data: z.array(StatusPageTemplateDto),
     hasNext: z.boolean(),
     hasPrev: z.boolean(),
     totalElements: z.number().int().nullish(),
@@ -6602,6 +7129,12 @@ export const schemas: Record<string, z.ZodTypeAny> = {
   UpdateNotificationPolicyRequest,
   TestNotificationPolicyRequest,
   UpdateOrgDetailsRequest,
+  CreateSsoConnectionRequest,
+  UpdateSsoConnectionRequest,
+  AddSsoCertificateRequest,
+  AddSsoDomainRequest,
+  SetIdpMetadataRequest,
+  UpdateOrgSsoSettingsRequest,
   RetryStrategy,
   CreateResourceGroupRequest,
   UpdateResourceGroupRequest,
@@ -6627,15 +7160,24 @@ export const schemas: Record<string, z.ZodTypeAny> = {
   WriteSecretEnvironmentValueRequest,
   UpdateAlertSensitivityRequest,
   ServiceSubscribeRequest,
+  CreateStatusPageGroupRequest,
+  UpdateStatusPageGroupRequest,
+  SetStatusPageGroupDefaultPageRequest,
+  AddCustomDomainRequest,
+  AddStatusPageGroupMemberRequest,
+  ReorderStatusPageGroupMembersRequest,
   StatusPageBranding,
   CreateStatusPageRequest,
   UpdateStatusPageRequest,
+  UpdateStatusPageAccessPolicyRequest,
   CreateStatusPageComponentRequest,
   UpdateStatusPageComponentRequest,
   SetStatusPageComponentOverrideRequest,
   ComponentPosition,
   ReorderComponentsRequest,
-  AddCustomDomainRequest,
+  BulkDeactivateEndUsersRequest,
+  InviteStatusPageEndUsersRequest,
+  StreamingResponseBody,
   CreateStatusPageComponentGroupRequest,
   UpdateStatusPageComponentGroupRequest,
   AffectedComponent,
@@ -6649,6 +7191,15 @@ export const schemas: Record<string, z.ZodTypeAny> = {
   ReorderPageLayoutRequest,
   CreateStatusPageMaintenanceRequest,
   AdminAddSubscriberRequest,
+  UpdateSubscriberRequest,
+  BulkDeleteSubscribersRequest,
+  BulkUpdateSubscriberScopeRequest,
+  ImportSubscriberRow,
+  ImportSubscribersRequest,
+  StatusPageTemplateComponent,
+  StatusPageTemplateStage,
+  StatusPageTemplateRequest,
+  RenderStatusPageTemplateRequest,
   CreateTagRequest,
   UpdateTagRequest,
   InboundWebhookHttpResponsePatch,
@@ -6845,6 +7396,8 @@ export const schemas: Record<string, z.ZodTypeAny> = {
   OrgIncidentAnnotationDto,
   StatusEventDto,
   CursorPageStatusEventDto,
+  StatusPageAccessEventDto,
+  CursorPageStatusPageAccessEventDto,
   WebhookEventDto,
   CursorPageWebhookEventDto,
   MonitorsSummaryDto,
@@ -6927,6 +7480,7 @@ export const schemas: Record<string, z.ZodTypeAny> = {
   MonitorValidationProjectionDto,
   MonitorValidationResultDto,
   MonitorVersionDto,
+  MonthlyUptimeBucketDto,
   NetworkTimingDto,
   NetworkRowDto,
   NoSlaContext,
@@ -6938,6 +7492,7 @@ export const schemas: Record<string, z.ZodTypeAny> = {
   NotificationPolicyDto,
   OfficialSla,
   OrganizationDto,
+  OrgSsoSettingsDto,
   OverviewStepCellDto,
   OverviewStepDto,
   OverviewStepsDto,
@@ -7058,6 +7613,7 @@ export const schemas: Record<string, z.ZodTypeAny> = {
   SingleValueResponseNotificationDispatchDto,
   SingleValueResponseNotificationPolicyDto,
   SingleValueResponseOrganizationDto,
+  SingleValueResponseOrgSsoSettingsDto,
   SingleValueResponseOverviewStepsDto,
   SingleValueResponsePolicySnapshotDto,
   SingleValueResponseRegionResultSeriesDto,
@@ -7086,6 +7642,18 @@ export const schemas: Record<string, z.ZodTypeAny> = {
   SingleValueResponseServiceSubscriptionDto,
   SingleValueResponseServiceUptimeResponse,
   SingleValueResponseSignedDownload,
+  SsoCertificateDto,
+  SingleValueResponseSsoCertificateDto,
+  SsoDomainDto,
+  SsoConnectionDto,
+  SingleValueResponseSsoConnectionDto,
+  SsoConnectionTestDto,
+  SingleValueResponseSsoConnectionTestDto,
+  SingleValueResponseSsoDomainDto,
+  StaffSessionsRevokedDto,
+  SingleValueResponseStaffSessionsRevokedDto,
+  StatusPageAccessPolicyDto,
+  SingleValueResponseStatusPageAccessPolicyDto,
   StatusPageComponentDto,
   SingleValueResponseStatusPageComponentDto,
   StatusPageComponentGroupDto,
@@ -7093,6 +7661,18 @@ export const schemas: Record<string, z.ZodTypeAny> = {
   StatusPageCustomDomainDto,
   SingleValueResponseStatusPageCustomDomainDto,
   SingleValueResponseStatusPageDto,
+  StatusPageEndUserBulkDeactivationDto,
+  SingleValueResponseStatusPageEndUserBulkDeactivationDto,
+  StatusPageEndUserDto,
+  SingleValueResponseStatusPageEndUserDto,
+  StatusPageEndUserInviteDto,
+  SingleValueResponseStatusPageEndUserInviteDto,
+  StatusPageEndUserInviteSkipDto,
+  StatusPageEndUserInviteResultDto,
+  SingleValueResponseStatusPageEndUserInviteResultDto,
+  StatusPageGroupMemberDto,
+  StatusPageGroupDto,
+  SingleValueResponseStatusPageGroupDto,
   StatusPageIncidentComponentDto,
   StatusPageIncidentUpdateDto,
   StatusPageIncidentDto,
@@ -7101,10 +7681,25 @@ export const schemas: Record<string, z.ZodTypeAny> = {
   StatusPageMeasuredUptimeDayDto,
   StatusPageMeasuredComponentUptimeDto,
   SingleValueResponseStatusPageMeasuredComponentUptimeDto,
+  StatusPageMonthlyUptimeDto,
+  SingleValueResponseStatusPageMonthlyUptimeDto,
   StatusPageNotificationDeliveryDto,
   SingleValueResponseStatusPageNotificationDeliveryDto,
+  StatusPageSubscriberBulkResultDto,
+  SingleValueResponseStatusPageSubscriberBulkResultDto,
   StatusPageSubscriberDto,
   SingleValueResponseStatusPageSubscriberDto,
+  StatusPageSubscriberImportErrorDto,
+  StatusPageSubscriberImportResultDto,
+  SingleValueResponseStatusPageSubscriberImportResultDto,
+  StatusPageTemplateComponentWireResponse,
+  StatusPageTemplateStageWireResponse,
+  StatusPageTemplateDto,
+  SingleValueResponseStatusPageTemplateDto,
+  StatusPageTemplateRenderDto,
+  SingleValueResponseStatusPageTemplateRenderDto,
+  StatusPageVisibilityChangePreviewDto,
+  SingleValueResponseStatusPageVisibilityChangePreviewDto,
   SingleValueResponseString,
   SyntheticsFamilyMetricsDto,
   SingleValueResponseSyntheticsFamilyMetricsDto,
@@ -7131,7 +7726,6 @@ export const schemas: Record<string, z.ZodTypeAny> = {
   SingleValueResponseWebhookTestResult,
   WorkspaceDto,
   SingleValueResponseWorkspaceDto,
-  StreamingResponseBody,
   TableValueResultAlertChannelDto,
   TableValueResultAlertDeliveryDto,
   TableValueResultApiKeyDto,
@@ -7167,13 +7761,18 @@ export const schemas: Record<string, z.ZodTypeAny> = {
   TableValueResultServiceComponentDto,
   TableValueResultServiceIncidentDto,
   TableValueResultServiceSubscriptionDto,
+  TableValueResultSsoConnectionDto,
   TableValueResultStatusPageComponentDto,
   TableValueResultStatusPageComponentGroupDto,
   TableValueResultStatusPageCustomDomainDto,
   TableValueResultStatusPageDto,
+  TableValueResultStatusPageEndUserDto,
+  TableValueResultStatusPageEndUserInviteDto,
+  TableValueResultStatusPageGroupDto,
   TableValueResultStatusPageIncidentDto,
   TableValueResultStatusPageNotificationDeliveryDto,
   TableValueResultStatusPageSubscriberDto,
+  TableValueResultStatusPageTemplateDto,
   TableValueResultTagDto,
   TableValueResultTestChannelResult,
   VoiceLanguageDto,

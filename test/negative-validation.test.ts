@@ -105,6 +105,7 @@ const validStatusPageDto = {
   id: UUID, organizationId: 1, workspaceId: 1,
   name: 'Status', slug: 'status', branding: validBranding,
   visibility: 'PUBLIC', enabled: true, incidentMode: 'MANUAL',
+  subscriberChannels: ['EMAIL', 'WEBHOOK'],
   createdAt: ISO, updatedAt: ISO,
 }
 
