@@ -22,6 +22,7 @@ const validStatusPageDto = {
   visibility: 'PUBLIC', enabled: true,
   incidentMode: 'MANUAL',
   subscriberChannels: ['EMAIL', 'WEBHOOK'],
+  emailSender: {},
   componentCount: 0, subscriberCount: 0,
   overallStatus: 'OPERATIONAL',
   createdAt: '2024-01-01T00:00:00Z', updatedAt: '2024-01-01T00:00:00Z',
@@ -39,6 +40,7 @@ const validIncidentDto = {
   resolvedAt: null,
   createdByUserId: null,
   postmortemBody: null, postmortemUrl: null,
+  audienceIds: [],
   updates: [], affectedComponents: [],
   createdAt: '2024-01-01T00:00:00Z', updatedAt: '2024-01-01T00:00:00Z',
 }
