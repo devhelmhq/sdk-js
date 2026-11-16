@@ -2502,6 +2502,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/monitors/batch-summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Result summaries for several monitors
+         * @description The results summary of up to 100 monitors in one call, so a list page needs no per-monitor request. Monitors outside the workspace are left out.
+         */
+        get: operations["batchSummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/monitors/bulk": {
         parameters: {
             query?: never;
@@ -3024,6 +3044,42 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orgs/{orgId}/sso/role-mappings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the IdP group to role mappings */
+        get: operations["listOrgSsoRoleMappings"];
+        put?: never;
+        /** Map an IdP group to a role */
+        post: operations["createOrgSsoRoleMapping"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orgs/{orgId}/sso/role-mappings/{mappingId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove an IdP group to role mapping */
+        delete: operations["deleteOrgSsoRoleMapping"];
+        options?: never;
+        head?: never;
+        /** Change an IdP group to role mapping */
+        patch: operations["updateOrgSsoRoleMapping"];
         trace?: never;
     };
     "/api/v1/orgs/{orgId}/sso/sessions": {
@@ -4621,6 +4677,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/status-pages/{id}/end-users/{endUserId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete an end user with their subscriptions and sign-in history */
+        delete: operations["deleteStatusPageEndUser"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/status-pages/{id}/end-users/{endUserId}/deactivate": {
         parameters: {
             query?: never;
@@ -4689,6 +4762,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/status-pages/{id}/end-users/{endUserId}/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Sign one end user out everywhere */
+        delete: operations["signOutStatusPageEndUser"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/status-pages/{id}/end-users/bulk-deactivate": {
         parameters: {
             query?: never;
@@ -4700,6 +4790,23 @@ export interface paths {
         put?: never;
         /** Deactivate end users by email */
         post: operations["bulkDeactivateStatusPageEndUsers"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/status-pages/{id}/end-users/bulk-sign-out": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sign end users out everywhere by email */
+        post: operations["bulkSignOutStatusPageEndUsers"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4718,6 +4825,26 @@ export interface paths {
         put?: never;
         /** Invite end users by email */
         post: operations["inviteStatusPageEndUsers"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/status-pages/{id}/export/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download a status page report as CSV or JSON
+         * @description One row per component or component group, as in GET /reports. Each page allows 6 report exports an hour; more get 429 RATE_LIMITED. Every export is audited.
+         */
+        get: operations["exportStatusPageReport"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -5077,6 +5204,26 @@ export interface paths {
          * @description Queues a FAILED delivery for another attempt. Refuses terminal attempt_count (~5). Idempotent when already RETRY_PENDING.
          */
         post: operations["retryNotificationDelivery"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/status-pages/{id}/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Uptime, downtime and incidents per component or component group over a date range
+         * @description The range is in UTC days, at most 366 days long, and defaults to the last 30 days. The same report downloads as CSV or JSON from /export/reports.
+         */
+        get: operations["getStatusPageReport"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -5928,7 +6075,10 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** Set workspace execution environment */
+        /**
+         * Set workspace execution environment (deprecated)
+         * @description Deprecated. Choose the runtime per synthetic monitor with config.runtimeId.
+         */
         put: operations["updateRuntime"];
         post?: never;
         delete?: never;
@@ -6513,6 +6663,10 @@ export interface components {
             /** @description Emails to deactivate (1–1000) */
             emails: string[];
         };
+        BulkSignOutEndUsersRequest: {
+            /** @description Emails to sign out everywhere (1–1000) */
+            emails: string[];
+        };
         BulkDeleteSubscribersRequest: {
             /** @description Subscriber IDs to remove (1–1000); IDs not on this page are reported, not removed */
             subscriberIds: string[];
@@ -6636,7 +6790,7 @@ export interface components {
              * @description New role to assign
              * @enum {string}
              */
-            orgRole: "OWNER" | "ADMIN" | "MEMBER";
+            orgRole: "OWNER" | "ADMIN" | "MEMBER" | "INCIDENT_AUTHOR" | "VIEWER";
         };
         /** @description Update an organization member's status */
         ChangeStatusRequest: {
@@ -7170,7 +7324,7 @@ export interface components {
              * @description Role to assign on acceptance
              * @enum {string}
              */
-            roleOffered: "OWNER" | "ADMIN" | "MEMBER";
+            roleOffered: "OWNER" | "ADMIN" | "MEMBER" | "INCIDENT_AUTHOR" | "VIEWER";
         };
         CreateMaintenanceWindowRequest: {
             /**
@@ -7298,6 +7452,16 @@ export interface components {
              * @default 0
              */
             priority: number | null;
+        };
+        /** @description Map an identity provider group to an organization role */
+        CreateOrgSsoRoleMappingRequest: {
+            /** @description Group name or ID as the identity provider sends it (max 256) */
+            idpGroup: string;
+            /**
+             * @description Role for members of this group; any role except OWNER
+             * @enum {string}
+             */
+            role: "OWNER" | "ADMIN" | "MEMBER" | "INCIDENT_AUTHOR" | "VIEWER";
         };
         /** @description Request body for creating a resource group */
         CreateResourceGroupRequest: {
@@ -10005,8 +10169,10 @@ export interface components {
             email: string;
             /** @description Member display name; null if not set */
             name?: string | null;
-            /** @description Member role within this organization (OWNER, ADMIN, MEMBER) */
+            /** @description Member role within this organization */
             orgRole: string;
+            /** @description Where the role came from: MANUAL, or SSO when the identity provider's groups set it */
+            roleSource: string;
             /** @description Membership status (ACTIVE, PENDING, SUSPENDED) */
             status: string;
             /**
@@ -10026,6 +10192,8 @@ export interface components {
             oldRole: string;
             /** @description Role the member holds after the change */
             newRole: string;
+            /** @description SSO when the identity provider's groups set the role; null for a manual change */
+            source?: string | null;
         };
         /** @description Multi-step API usage totals */
         Meter: {
@@ -10090,6 +10258,20 @@ export interface components {
             ticks: components["schemas"]["MonitorHistoryTickDto"][];
             /** @description 48 display buckets; present only when density=48 */
             displayTicks?: components["schemas"]["MonitorDisplayTickDto"][] | null;
+        };
+        /** @description Result summaries for a set of monitors */
+        MonitorBatchSummaryDto: {
+            /** @description One entry per requested monitor that exists in the workspace */
+            monitors: components["schemas"]["MonitorBatchSummaryItemDto"][];
+        };
+        /** @description Result summary of one monitor */
+        MonitorBatchSummaryItemDto: {
+            /**
+             * Format: uuid
+             * @description Monitor identifier
+             */
+            id: string;
+            summary: components["schemas"]["ResultSummaryDto"];
         };
         /** @description Run allowance that is keeping a code monitor from running */
         MonitorCappedDto: {
@@ -11423,6 +11605,28 @@ export interface components {
             /** @description Organization name */
             name: string;
         };
+        /** @description An identity provider group that grants an organization role at SSO sign-in */
+        OrgSsoRoleMappingDto: {
+            /**
+             * Format: uuid
+             * @description Mapping identifier
+             */
+            id: string;
+            /** @description Group name or ID as the identity provider sends it */
+            idpGroup: string;
+            /** @description Role a member of this group gets; the highest matching role wins */
+            role: string;
+            /**
+             * Format: date-time
+             * @description When the mapping was created
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description When the mapping last changed
+             */
+            updatedAt: string;
+        };
         OrgSsoSettingsDto: {
             /** @description Members must sign in through SSO; owners keep a break-glass sign-in */
             enforced: boolean;
@@ -11432,6 +11636,8 @@ export interface components {
             defaultRole: string;
             /** @description Whether the caller may require SSO now: they signed in through it, and a connection works */
             enforcementReady: boolean;
+            /** @description SAML attribute that carries the person's groups for role mapping */
+            groupAttribute: string;
         };
         /** @description One cell on the overview step last-30 strip */
         OverviewStepCellDto: {
@@ -13369,7 +13575,7 @@ export interface components {
              */
             diff: number;
         };
-        /** @description Default execution environment; null uses the catalog default */
+        /** @description Deprecated workspace runtime default */
         RuntimeProfileDto: {
             /** @description Runtime environment identifier */
             id: string;
@@ -13481,7 +13687,7 @@ export interface components {
              * @description Maximum execution time in seconds (5–240)
              */
             timeoutSeconds?: number | null;
-            /** @description Runtime pin; omit to use the platform default */
+            /** @description Runtime this monitor runs on */
             runtimeId?: string | null;
         };
         /** @description Last update time and author for a secret */
@@ -13975,7 +14181,7 @@ export interface components {
             enabled: boolean;
         };
         SetIdpMetadataRequest: {
-            /** @description IdP metadata XML; give either xml or url */
+            /** @description IdP metadata XML, at most 1 MiB; give either xml or url */
             xml?: string | null;
             /** @description HTTPS URL of the IdP metadata, re-fetched every 15 minutes; give either xml or url */
             url?: string | null;
@@ -13993,9 +14199,9 @@ export interface components {
             reason?: string | null;
             /**
              * Format: date-time
-             * @description When the override expires (must be in the future, at most 24h from now)
+             * @description When the override expires (future, at most 24h ahead); null keeps it until cleared
              */
-            expiresAt: string;
+            expiresAt?: string | null;
         };
         SetStatusPageGroupDefaultPageRequest: {
             /**
@@ -14150,6 +14356,9 @@ export interface components {
         SingleValueResponseMonitorBatchHistoryDto: {
             data: components["schemas"]["MonitorBatchHistoryDto"];
         };
+        SingleValueResponseMonitorBatchSummaryDto: {
+            data: components["schemas"]["MonitorBatchSummaryDto"];
+        };
         SingleValueResponseMonitorDriftDto: {
             data: components["schemas"]["MonitorDriftDto"];
         };
@@ -14209,6 +14418,9 @@ export interface components {
         };
         SingleValueResponseOrganizationDto: {
             data: components["schemas"]["OrganizationDto"];
+        };
+        SingleValueResponseOrgSsoRoleMappingDto: {
+            data: components["schemas"]["OrgSsoRoleMappingDto"];
         };
         SingleValueResponseOrgSsoSettingsDto: {
             data: components["schemas"]["OrgSsoSettingsDto"];
@@ -14336,6 +14548,9 @@ export interface components {
         SingleValueResponseStatusPageEndUserBulkDeactivationDto: {
             data: components["schemas"]["StatusPageEndUserBulkDeactivationDto"];
         };
+        SingleValueResponseStatusPageEndUserBulkSignOutDto: {
+            data: components["schemas"]["StatusPageEndUserBulkSignOutDto"];
+        };
         SingleValueResponseStatusPageEndUserDto: {
             data: components["schemas"]["StatusPageEndUserDto"];
         };
@@ -14362,6 +14577,9 @@ export interface components {
         };
         SingleValueResponseStatusPageNotificationDeliveryDto: {
             data: components["schemas"]["StatusPageNotificationDeliveryDto"];
+        };
+        SingleValueResponseStatusPageReportDto: {
+            data: components["schemas"]["StatusPageReportDto"];
         };
         SingleValueResponseStatusPageSubscriberBulkResultDto: {
             data: components["schemas"]["StatusPageSubscriberBulkResultDto"];
@@ -14856,7 +15074,7 @@ export interface components {
             overrideReason?: string | null;
             /**
              * Format: date-time
-             * @description When the active override expires; null when unset or expired
+             * @description When the active override expires; null when it lasts until cleared or none is active
              */
             overrideExpiresAt?: string | null;
             /**
@@ -14953,6 +15171,11 @@ export interface components {
             managedBy?: string | null;
             /** @description Channels visitors can subscribe with on the public page (EMAIL, TEAMS, WEBHOOK) */
             subscriberChannels: string[];
+            /**
+             * Format: int32
+             * @description Minutes without an update before the team is reminded; null when reminders are off
+             */
+            unresolvedReminderMinutes?: number | null;
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
@@ -14962,6 +15185,20 @@ export interface components {
             /**
              * Format: int32
              * @description Emails that belong to people on the page, now deactivated
+             */
+            matched: number;
+            /**
+             * Format: int32
+             * @description Emails that belong to nobody on the page
+             */
+            unknown: number;
+            /** @description The emails counted in unknown, lowercase */
+            unknownEmails: string[];
+        };
+        StatusPageEndUserBulkSignOutDto: {
+            /**
+             * Format: int32
+             * @description Emails that belong to people on the page, now signed out
              */
             matched: number;
             /**
@@ -14994,6 +15231,9 @@ export interface components {
              * @description When the person was first added
              */
             createdAt: string;
+            /** @description How the person came onto the page */
+            source: string;
+            ssoConnection?: components["schemas"]["SsoConnectionDto"] | null;
         };
         StatusPageEndUserInviteDto: {
             /**
@@ -15036,6 +15276,8 @@ export interface components {
             name: string;
             slug: string;
             mode: string;
+            /** @description Where end users open the group: its served custom domain, else its first-party host */
+            url: string;
             /** Format: uuid */
             defaultStatusPageId?: string | null;
             members: components["schemas"]["StatusPageGroupMemberDto"][];
@@ -15054,6 +15296,8 @@ export interface components {
             slug: string;
             name: string;
             visibility: string;
+            /** @description Where end users open this page: the group host and its code, or the page's own host */
+            url: string;
         };
         StatusPageIncidentComponentDto: {
             /** Format: uuid */
@@ -15265,6 +15509,95 @@ export interface components {
              * @description When the incident was last updated (ISO 8601)
              */
             updatedAt: string;
+        };
+        /** @description Uptime and incidents per component or component group over a date range (UTC days) */
+        StatusPageReportDto: {
+            /**
+             * Format: date
+             * @description First day of the range (UTC)
+             */
+            from: string;
+            /**
+             * Format: date
+             * @description Last day of the range (UTC), capped at today
+             */
+            to: string;
+            /** @description What the rows are grouped by */
+            groupBy: string;
+            /** @description One row per component, or per component group plus each ungrouped component */
+            rows: components["schemas"]["StatusPageReportRowDto"][];
+            /** @description Published incidents (not maintenance) that overlap the range, oldest first */
+            incidents: components["schemas"]["StatusPageReportIncidentDto"][];
+        };
+        /** @description A published incident that overlaps the report's range */
+        StatusPageReportIncidentDto: {
+            /**
+             * Format: uuid
+             * @description Incident id
+             */
+            id: string;
+            /** @description Incident title */
+            title: string;
+            /** @description Incident impact */
+            impact: string;
+            /** @description Current incident status */
+            status: string;
+            /**
+             * Format: date-time
+             * @description When the incident started
+             */
+            startedAt: string;
+            /**
+             * Format: date-time
+             * @description When the incident was resolved; null while it is open
+             */
+            resolvedAt?: string | null;
+            /** @description Ids of the components the incident affected */
+            componentIds: string[];
+        };
+        /** @description Uptime, downtime and incidents of one component or component group over the report's range */
+        StatusPageReportRowDto: {
+            /**
+             * Format: uuid
+             * @description Component or component group id
+             */
+            id: string;
+            /** @description Whether the row is a component or a component group */
+            kind: string;
+            /** @description Component or component group name */
+            name: string;
+            /**
+             * Format: double
+             * @description Mean daily uptime percentage over the tracked days; null when no day was tracked
+             */
+            uptimePercentage?: number | null;
+            /**
+             * Format: int32
+             * @description Days in the range the item was tracked, including today's partial day
+             */
+            trackedDays: number;
+            /**
+             * Format: int64
+             * @description Outage minutes weighted like uptime: major outage in full, partial outage at 30%
+             */
+            downtimeMinutes: number;
+            /**
+             * Format: int64
+             * @description Minutes of major outage in the range
+             */
+            majorOutageMinutes: number;
+            /**
+             * Format: int64
+             * @description Minutes of partial outage in the range
+             */
+            partialOutageMinutes: number;
+            /**
+             * Format: int32
+             * @description Published incidents in the range that affected the item
+             */
+            incidentCount: number;
+            /** @description Ids of those incidents, oldest first; details are in the report's incidents */
+            incidentIds: string[];
         };
         StatusPageSubscriberBulkResultDto: {
             /**
@@ -15755,6 +16088,15 @@ export interface components {
         };
         TableValueResultNotificationPolicyDto: {
             data: components["schemas"]["NotificationPolicyDto"][];
+            hasNext: boolean;
+            hasPrev: boolean;
+            /** Format: int64 */
+            totalElements?: number | null;
+            /** Format: int32 */
+            totalPages?: number | null;
+        };
+        TableValueResultOrgSsoRoleMappingDto: {
+            data: components["schemas"]["OrgSsoRoleMappingDto"][];
             hasNext: boolean;
             hasPrev: boolean;
             /** Format: int64 */
@@ -16651,16 +16993,28 @@ export interface components {
             /** @description Organization website URL (max 255 chars) */
             websiteUrl?: string | null;
         };
+        /** @description Change an SSO role mapping */
+        UpdateOrgSsoRoleMappingRequest: {
+            /** @description New group name or ID; null preserves current */
+            idpGroup?: string | null;
+            /**
+             * @description New role (not OWNER); null preserves current
+             * @enum {string|null}
+             */
+            role?: "OWNER" | "ADMIN" | "MEMBER" | "INCIDENT_AUTHOR" | "VIEWER" | null;
+        };
         UpdateOrgSsoSettingsRequest: {
             /** @description Require SSO for members (owners keep a break-glass sign-in); null keeps the current value */
             enforced?: boolean | null;
             /** @description Let people from a verified domain join on first sign-in; null keeps the current value */
             jitEnabled?: boolean | null;
             /**
-             * @description Role of people who join on first sign-in (ADMIN or MEMBER); null keeps the current value
+             * @description Role of people who join on first sign-in (not OWNER); null keeps the current value
              * @enum {string|null}
              */
-            defaultRole?: "OWNER" | "ADMIN" | "MEMBER" | null;
+            defaultRole?: "OWNER" | "ADMIN" | "MEMBER" | "INCIDENT_AUTHOR" | "VIEWER" | null;
+            /** @description SAML attribute with the person's groups (default: groups); null keeps the current value */
+            groupAttribute?: string | null;
         };
         UpdatePagerDutyChannelConfig: {
             /** @enum {string} */
@@ -16960,6 +17314,11 @@ export interface components {
             confirmPublic?: boolean | null;
             /** @description Confirms making a page private converts its email subscribers to invited end users */
             confirmConvertSubscribers?: boolean | null;
+            /**
+             * Format: int32
+             * @description Minutes without an update before the team is reminded (15–1440), 0 turns off; null preserves current
+             */
+            unresolvedReminderMinutes?: number | null;
         };
         UpdateSubscriberRequest: {
             /** @description Components to hear about; empty with no component groups means the whole page */
@@ -17038,9 +17397,9 @@ export interface components {
             /** @description New workspace name */
             name: string;
         };
-        /** @description Workspace execution environment selection */
+        /** @description Deprecated workspace runtime default */
         UpdateWorkspaceRuntimeRequest: {
-            /** @description Runtime environment identifier; null uses the catalog default */
+            /** @description Deprecated runtime default */
             runtimeId?: string | null;
         };
         UpdateZapierChannelConfig: {
@@ -39425,6 +39784,133 @@ export interface operations {
             };
         };
     };
+    batchSummary: {
+        parameters: {
+            query: {
+                /** @description Monitor ids, comma-separated; at most 100 */
+                ids: string[];
+                /** @description Chart window: 24h returns hourly buckets, 7d/30d/90d return daily buckets */
+                chartWindow?: "24h" | "7d" | "30d" | "90d";
+            };
+            header?: {
+                /** @description Calling surface and version, e.g. cli/1.4.0 or sdk-js/2.0.0 */
+                "X-DevHelm-Client"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SingleValueResponseMonitorBatchSummaryDto"];
+                };
+            };
+            /** @description Bad request — the payload failed validation */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized — missing or invalid credentials */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Payment required — the plan or quota does not allow this */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden — the actor lacks permission for this resource */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not found — the requested resource does not exist */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict — the request collides with current resource state */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Gone — the resource is no longer available */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many requests — retry after the window resets */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal server error — see the message field for details */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Bad gateway — an upstream provider returned an error */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service unavailable — try again shortly */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     bulkAction: {
         parameters: {
             query?: never;
@@ -43910,6 +44396,512 @@ export interface operations {
                 };
                 content: {
                     "*/*": string;
+                };
+            };
+            /** @description Bad request — the payload failed validation */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized — missing or invalid credentials */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Payment required — the plan or quota does not allow this */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden — the actor lacks permission for this resource */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not found — the requested resource does not exist */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict — the request collides with current resource state */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Gone — the resource is no longer available */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many requests — retry after the window resets */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal server error — see the message field for details */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Bad gateway — an upstream provider returned an error */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service unavailable — try again shortly */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    listOrgSsoRoleMappings: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Calling surface and version, e.g. cli/1.4.0 or sdk-js/2.0.0 */
+                "X-DevHelm-Client"?: string;
+            };
+            path: {
+                orgId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TableValueResultOrgSsoRoleMappingDto"];
+                };
+            };
+            /** @description Bad request — the payload failed validation */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized — missing or invalid credentials */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Payment required — the plan or quota does not allow this */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden — the actor lacks permission for this resource */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not found — the requested resource does not exist */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict — the request collides with current resource state */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Gone — the resource is no longer available */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many requests — retry after the window resets */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal server error — see the message field for details */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Bad gateway — an upstream provider returned an error */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service unavailable — try again shortly */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    createOrgSsoRoleMapping: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Replays the stored response for 24h when the same key is sent again (1–255 visible ASCII) */
+                "Idempotency-Key"?: string;
+                /** @description Calling surface and version, e.g. cli/1.4.0 or sdk-js/2.0.0 */
+                "X-DevHelm-Client"?: string;
+            };
+            path: {
+                orgId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateOrgSsoRoleMappingRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SingleValueResponseOrgSsoRoleMappingDto"];
+                };
+            };
+            /** @description Bad request — the payload failed validation */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized — missing or invalid credentials */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Payment required — the plan or quota does not allow this */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden — the actor lacks permission for this resource */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not found — the requested resource does not exist */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict — the request collides with current resource state */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Gone — the resource is no longer available */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many requests — retry after the window resets */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal server error — see the message field for details */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Bad gateway — an upstream provider returned an error */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service unavailable — try again shortly */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    deleteOrgSsoRoleMapping: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Calling surface and version, e.g. cli/1.4.0 or sdk-js/2.0.0 */
+                "X-DevHelm-Client"?: string;
+            };
+            path: {
+                orgId: number;
+                mappingId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Bad request — the payload failed validation */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized — missing or invalid credentials */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Payment required — the plan or quota does not allow this */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden — the actor lacks permission for this resource */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not found — the requested resource does not exist */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict — the request collides with current resource state */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Gone — the resource is no longer available */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many requests — retry after the window resets */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal server error — see the message field for details */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Bad gateway — an upstream provider returned an error */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service unavailable — try again shortly */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    updateOrgSsoRoleMapping: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Calling surface and version, e.g. cli/1.4.0 or sdk-js/2.0.0 */
+                "X-DevHelm-Client"?: string;
+            };
+            path: {
+                orgId: number;
+                mappingId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateOrgSsoRoleMappingRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SingleValueResponseOrgSsoRoleMappingDto"];
                 };
             };
             /** @description Bad request — the payload failed validation */
@@ -57467,6 +58459,7 @@ export interface operations {
             query?: {
                 search?: string;
                 status?: "INVITED" | "ACTIVE" | "DEACTIVATED";
+                source?: "SSO" | "INVITED" | "SUBSCRIBER";
                 /** @description Zero-based page index (0..N) */
                 page?: number;
                 /** @description The size of the page to be returned */
@@ -57493,6 +58486,129 @@ export interface operations {
                 content: {
                     "*/*": components["schemas"]["TableValueResultStatusPageEndUserDto"];
                 };
+            };
+            /** @description Bad request — the payload failed validation */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized — missing or invalid credentials */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Payment required — the plan or quota does not allow this */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden — the actor lacks permission for this resource */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not found — the requested resource does not exist */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict — the request collides with current resource state */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Gone — the resource is no longer available */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many requests — retry after the window resets */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal server error — see the message field for details */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Bad gateway — an upstream provider returned an error */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service unavailable — try again shortly */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    deleteStatusPageEndUser: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Calling surface and version, e.g. cli/1.4.0 or sdk-js/2.0.0 */
+                "X-DevHelm-Client"?: string;
+            };
+            path: {
+                id: string;
+                endUserId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Bad request — the payload failed validation */
             400: {
@@ -58099,6 +59215,129 @@ export interface operations {
             };
         };
     };
+    signOutStatusPageEndUser: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Calling surface and version, e.g. cli/1.4.0 or sdk-js/2.0.0 */
+                "X-DevHelm-Client"?: string;
+            };
+            path: {
+                id: string;
+                endUserId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Bad request — the payload failed validation */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized — missing or invalid credentials */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Payment required — the plan or quota does not allow this */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden — the actor lacks permission for this resource */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not found — the requested resource does not exist */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict — the request collides with current resource state */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Gone — the resource is no longer available */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many requests — retry after the window resets */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal server error — see the message field for details */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Bad gateway — an upstream provider returned an error */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service unavailable — try again shortly */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     bulkDeactivateStatusPageEndUsers: {
         parameters: {
             query?: never;
@@ -58126,6 +59365,136 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["SingleValueResponseStatusPageEndUserBulkDeactivationDto"];
+                };
+            };
+            /** @description Bad request — the payload failed validation */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized — missing or invalid credentials */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Payment required — the plan or quota does not allow this */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden — the actor lacks permission for this resource */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not found — the requested resource does not exist */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict — the request collides with current resource state */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Gone — the resource is no longer available */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many requests — retry after the window resets */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal server error — see the message field for details */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Bad gateway — an upstream provider returned an error */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service unavailable — try again shortly */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    bulkSignOutStatusPageEndUsers: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Replays the stored response for 24h when the same key is sent again (1–255 visible ASCII) */
+                "Idempotency-Key"?: string;
+                /** @description Calling surface and version, e.g. cli/1.4.0 or sdk-js/2.0.0 */
+                "X-DevHelm-Client"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BulkSignOutEndUsersRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SingleValueResponseStatusPageEndUserBulkSignOutDto"];
                 };
             };
             /** @description Bad request — the payload failed validation */
@@ -58387,6 +59756,140 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["SingleValueResponseStatusPageEndUserInviteResultDto"];
+                };
+            };
+            /** @description Bad request — the payload failed validation */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized — missing or invalid credentials */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Payment required — the plan or quota does not allow this */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden — the actor lacks permission for this resource */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not found — the requested resource does not exist */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict — the request collides with current resource state */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Gone — the resource is no longer available */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many requests — retry after the window resets */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal server error — see the message field for details */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Bad gateway — an upstream provider returned an error */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service unavailable — try again shortly */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    exportStatusPageReport: {
+        parameters: {
+            query?: {
+                /** @description First day of the range (UTC), e.g. 2026-10-01; set with to */
+                from?: string;
+                /** @description Last day of the range (UTC), e.g. 2026-10-31; set with from */
+                to?: string;
+                /** @description Rows per component or componentGroup (default: component) */
+                groupBy?: string;
+                /** @description File format: csv or json (default: csv) */
+                format?: string;
+            };
+            header?: {
+                /** @description Calling surface and version, e.g. cli/1.4.0 or sdk-js/2.0.0 */
+                "X-DevHelm-Client"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": components["schemas"]["StreamingResponseBody"];
+                    "application/json": components["schemas"]["StreamingResponseBody"];
                 };
             };
             /** @description Bad request — the payload failed validation */
@@ -62210,6 +63713,137 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["SingleValueResponseStatusPageNotificationDeliveryDto"];
+                };
+            };
+            /** @description Bad request — the payload failed validation */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized — missing or invalid credentials */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Payment required — the plan or quota does not allow this */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden — the actor lacks permission for this resource */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not found — the requested resource does not exist */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict — the request collides with current resource state */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Gone — the resource is no longer available */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many requests — retry after the window resets */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal server error — see the message field for details */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Bad gateway — an upstream provider returned an error */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service unavailable — try again shortly */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getStatusPageReport: {
+        parameters: {
+            query?: {
+                /** @description First day of the range (UTC), e.g. 2026-10-01; set with to */
+                from?: string;
+                /** @description Last day of the range (UTC), e.g. 2026-10-31; set with from */
+                to?: string;
+                /** @description Rows per component or componentGroup (default: component) */
+                groupBy?: string;
+            };
+            header?: {
+                /** @description Calling surface and version, e.g. cli/1.4.0 or sdk-js/2.0.0 */
+                "X-DevHelm-Client"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SingleValueResponseStatusPageReportDto"];
                 };
             };
             /** @description Bad request — the payload failed validation */
