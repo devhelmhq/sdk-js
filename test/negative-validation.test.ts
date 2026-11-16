@@ -106,6 +106,7 @@ const validStatusPageDto = {
   name: 'Status', slug: 'status', branding: validBranding,
   visibility: 'PUBLIC', enabled: true, incidentMode: 'MANUAL',
   subscriberChannels: ['EMAIL', 'WEBHOOK'],
+  emailSender: {},
   createdAt: ISO, updatedAt: ISO,
 }
 
@@ -126,6 +127,7 @@ const validStatusPageIncidentDto = {
   id: UUID, statusPageId: UUID2, title: 'Outage',
   status: 'INVESTIGATING', impact: 'MAJOR',
   scheduled: false, autoResolve: false,
+  audienceIds: [],
   startedAt: ISO, createdAt: ISO, updatedAt: ISO,
 }
 
