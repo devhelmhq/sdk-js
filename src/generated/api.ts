@@ -15171,6 +15171,10 @@ export interface components {
             failureMessage?: string | null;
             /** @description Identifier that finds the failure in the logs; null unless it failed */
             correlationId?: string | null;
+            /** @description Status codes the IdP refused the sign-in with, e.g. Responder/InvalidNameIDPolicy */
+            idpStatusCode?: string | null;
+            /** @description Message the IdP sent with its refusal */
+            idpStatusMessage?: string | null;
             /** @description Entity ID the IdP signed the assertion as */
             assertedIssuer?: string | null;
             /** @description Email address the IdP asserted */
