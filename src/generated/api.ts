@@ -15627,6 +15627,8 @@ export interface components {
             enabled: boolean;
             /** @description Email sign-in method besides SSO: PASSWORD or MAGIC_LINK; null when off */
             emailSignIn?: string | null;
+            /** @description How sign-in reaches SSO connections: EMAIL_DOMAIN or BUTTONS */
+            ssoRoutingMode?: string | null;
             incidentMode: string;
             /** Format: int32 */
             componentCount?: number | null;
@@ -17917,6 +17919,11 @@ export interface components {
              */
             unresolvedReminderMinutes?: number | null;
             emailSender?: components["schemas"]["StatusPageEmailSenderRequest"] | null;
+            /**
+             * @description How sign-in reaches SSO connections: EMAIL_DOMAIN or BUTTONS; null preserves current
+             * @enum {string|null}
+             */
+            ssoRoutingMode?: "EMAIL_DOMAIN" | "BUTTONS" | null;
         };
         UpdateSubscriberRequest: {
             /** @description Components to hear about; empty with no component groups means the whole page */
