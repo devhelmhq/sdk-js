@@ -9010,7 +9010,7 @@ export interface components {
             plan?: string | null;
             /**
              * @description Page where an admin can change the plan
-             * @example https://app.devhelm.io/settings/billing
+             * @example https://app.devhelm.io/dashboard/settings/billing
              */
             upgradeUrl?: string | null;
             /**
