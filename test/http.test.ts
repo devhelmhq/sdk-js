@@ -199,10 +199,30 @@ describe('surface telemetry headers', () => {
       expect(headers.get('x-devhelm-x')).toBeNull()
       // Auth + tenant must still ride along.
       expect(headers.get('authorization')).toBe('Bearer t')
-      expect(headers.get('x-phelm-org-id')).toBe('1')
+      expect(headers.get('x-phelm-org-id')).toBeNull()
     } finally {
       delete process.env['DEVHELM_TELEMETRY']
     }
+  })
+
+  it('omits both scope headers when nothing sets them', async () => {
+    const saved = {o: process.env['DEVHELM_ORG_ID'], w: process.env['DEVHELM_WORKSPACE_ID']}
+    delete process.env['DEVHELM_ORG_ID']
+    delete process.env['DEVHELM_WORKSPACE_ID']
+    try {
+      const headers = await captureRequest({token: 't', orgId: '', workspaceId: ''})
+      expect(headers.get('x-phelm-org-id')).toBeNull()
+      expect(headers.get('x-phelm-workspace-id')).toBeNull()
+    } finally {
+      if (saved.o !== undefined) process.env['DEVHELM_ORG_ID'] = saved.o
+      if (saved.w !== undefined) process.env['DEVHELM_WORKSPACE_ID'] = saved.w
+    }
+  })
+
+  it('sends org and workspace headers unchanged when set explicitly', async () => {
+    const headers = await captureRequest({token: 't', orgId: '5', workspaceId: '7'})
+    expect(headers.get('x-phelm-org-id')).toBe('5')
+    expect(headers.get('x-phelm-workspace-id')).toBe('7')
   })
 
   it('omits the workspace header when neither config nor env sets one', async () => {

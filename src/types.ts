@@ -187,9 +187,9 @@ export interface DevhelmConfig {
   token?: string
   /** Base URL for the DevHelm API. Defaults to `DEVHELM_API_URL`, the CLI context, then https://api.devhelm.io */
   baseUrl?: string
-  /** Organization ID header. Defaults to env DEVHELM_ORG_ID or "1". */
+  /** Organization ID header. Defaults to env DEVHELM_ORG_ID; omitted: the API uses the key's organization. */
   orgId?: string
-  /** Workspace ID header. Set this, or DEVHELM_WORKSPACE_ID, when the organization has more than one workspace. */
+  /** Workspace ID header. Defaults to env DEVHELM_WORKSPACE_ID; omitted: the API uses the organization's default workspace. Set it to pin one. */
   workspaceId?: string
   /**
    * `X-DevHelm-Client` value, `<surface>/<version>`. Defaults to
