@@ -185,7 +185,7 @@ export interface paths {
         options?: never;
         head?: never;
         /** Update API key */
-        patch: operations["update_17"];
+        patch: operations["update_18"];
         trace?: never;
     };
     "/api/v1/api-keys/{id}/regenerate": {
@@ -1079,14 +1079,14 @@ export interface paths {
          * Get incident details including update timeline
          * @description Shell payload: incident row, updates, and linked status-page incidents. Trigger enrichment (forensics / check_results) is GET /{id}/trigger so first paint is not blocked on hypertable reads.
          */
-        get: operations["get_9"];
+        get: operations["get_10"];
         put?: never;
         post?: never;
         delete?: never;
         options?: never;
         head?: never;
         /** Update incident title and/or severity */
-        patch: operations["update_16"];
+        patch: operations["update_17"];
         trace?: never;
     };
     "/api/v1/incidents/{id}/acknowledge": {
@@ -1103,6 +1103,26 @@ export interface paths {
          * @description Atomically acknowledges every DELIVERED or ESCALATING dispatch for the incident. Already-acknowledged and non-acknowledgeable dispatches are returned in skipped (not errors). MEMBER+.
          */
         post: operations["acknowledgeAll"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/incidents/{id}/alert-deliveries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List alert deliveries of an incident
+         * @description Every delivery of the incident on both routes (DIRECT channels and notification policies), oldest first.
+         */
+        get: operations["listAlertDeliveries"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -3980,7 +4000,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get a subscription by its ID */
-        get: operations["get_12"];
+        get: operations["get_9"];
         put?: never;
         post?: never;
         /**
@@ -3990,7 +4010,11 @@ export interface paths {
         delete: operations["unsubscribe_1"];
         options?: never;
         head?: never;
-        patch?: never;
+        /**
+         * Update a subscription
+         * @description Sets the alert sensitivity and the channels notified for this dependency's incidents. Omitted fields keep their value; an empty alertChannelIds list clears the channels.
+         */
+        patch: operations["update_16"];
         trace?: never;
     };
     "/api/v1/service-subscriptions/{id}/alert-sensitivity": {
@@ -4024,7 +4048,7 @@ export interface paths {
         put?: never;
         /**
          * Subscribe to a service or a component of a service
-         * @description Idempotent — returns the existing subscription if an identical one exists. Omit the request body or set componentId to null for a whole-service subscription. When alertSensitivity is omitted, new subscriptions default to AWARENESS (silent tracking — the incident appears on the dashboard but no alert channels fire). PATCH /alert-sensitivity to opt in to paging. Free tier: max 10 subscriptions. Paid tier: unlimited.
+         * @description Idempotent — returns the existing subscription if an identical one exists, applying the alertSensitivity and alertChannelIds of the request when given. Omit the request body or set componentId to null for a whole-service subscription. When alertSensitivity is omitted, new subscriptions default to AWARENESS (silent tracking — the incident appears on the dashboard but no alert channels fire). PATCH the subscription to opt in to paging. Free tier: max 10 subscriptions. Paid tier: unlimited.
          */
         post: operations["subscribe_1"];
         delete?: never;
@@ -5951,7 +5975,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["get_11"];
+        get: operations["get_12"];
         put?: never;
         post?: never;
         delete?: never;
@@ -6009,26 +6033,6 @@ export interface paths {
         post?: never;
         /** Delete a tag (cascades to all monitor associations) */
         delete: operations["delete_2"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/vaults/rotate": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Rotate DEK
-         * @description Generates a new Data Encryption Key, re-encrypts all secrets and alert-channel configs, and bumps the vault version. Admin-only. Pipeline DEK caches expire within ~10 minutes.
-         */
-        post: operations["rotateDek"];
-        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -6563,9 +6567,11 @@ export interface components {
             status: string;
             /** @description Incident lifecycle event that triggered this delivery */
             eventType: string;
+            /** @description Route that queued this delivery: DIRECT or POLICY */
+            route?: string | null;
             /**
              * Format: int32
-             * @description 1-based escalation step this delivery belongs to
+             * @description Escalation step (1-based); 0 for direct-channel deliveries
              */
             stepNumber: number;
             /**
@@ -7724,9 +7730,11 @@ export interface components {
             description?: string | null;
             /**
              * Format: uuid
-             * @description Optional notification policy to apply for this group
+             * @description Notification policy that runs for this group's incidents
              */
             alertPolicyId?: string | null;
+            /** @description Channels notified for this group's incidents */
+            alertChannelIds?: string[] | null;
             /**
              * Format: int32
              * @description Default check frequency in seconds applied to members (30–86400)
@@ -7735,7 +7743,10 @@ export interface components {
             /** @description Default regions applied to member monitors */
             defaultRegions?: string[] | null;
             defaultRetryStrategy?: components["schemas"]["RetryStrategy"] | null;
-            /** @description Default alert channel IDs applied to member monitors */
+            /**
+             * @deprecated
+             * @description Deprecated alias of alertChannelIds
+             */
             defaultAlertChannels?: string[] | null;
             /**
              * Format: uuid
@@ -8219,7 +8230,7 @@ export interface components {
             channelType: "datadog";
             /** @description Datadog API key */
             apiKey: string;
-            /** @description Datadog site region (e.g. datadoghq.com, datadoghq.eu, us3.datadoghq.com) */
+            /** @description Datadog site: datadoghq.com (default), us3, us5, eu, ap1, ap2 or gov */
             site?: string | null;
             /** @description Comma-separated tags to attach to events */
             tags?: string | null;
@@ -8312,34 +8323,6 @@ export interface components {
             /** @description Note from the latest publish */
             note?: string | null;
             activatedByActor?: components["schemas"]["ActorDisplayDto"] | null;
-        };
-        /** @description Result of a data encryption key rotation operation */
-        DekRotationResultDto: {
-            /**
-             * Format: int32
-             * @description DEK version before rotation
-             */
-            previousDekVersion: number;
-            /**
-             * Format: int32
-             * @description DEK version after rotation
-             */
-            newDekVersion: number;
-            /**
-             * Format: int32
-             * @description Number of secrets re-encrypted with the new DEK
-             */
-            secretsReEncrypted: number;
-            /**
-             * Format: int32
-             * @description Number of alert channels re-encrypted with the new DEK
-             */
-            channelsReEncrypted: number;
-            /**
-             * Format: date-time
-             * @description Timestamp when the rotation was performed
-             */
-            rotatedAt: string;
         };
         /** @description Summary of policies affected by channel deletion */
         DeleteChannelResult: {
@@ -10092,7 +10075,7 @@ export interface components {
         JiraChannelConfig: {
             /** @enum {string} */
             channelType: "jira";
-            /** @description Atlassian instance domain (e.g. yourteam.atlassian.net) */
+            /** @description Atlassian Cloud domain, e.g. yourteam.atlassian.net */
             domain: string;
             /** @description Atlassian account email for API authentication */
             email: string;
@@ -12542,9 +12525,11 @@ export interface components {
             description?: string | null;
             /**
              * Format: uuid
-             * @description Notification policy applied to this group
+             * @description Notification policy that runs for this group's incidents
              */
             alertPolicyId?: string | null;
+            /** @description Channels notified for this group's incidents */
+            alertChannelIds?: string[] | null;
             /**
              * Format: int32
              * @description Default check frequency in seconds for member monitors
@@ -12553,7 +12538,10 @@ export interface components {
             /** @description Default regions for member monitors */
             defaultRegions?: string[] | null;
             defaultRetryStrategy?: components["schemas"]["RetryStrategy"] | null;
-            /** @description Default alert channel IDs for member monitors */
+            /**
+             * @deprecated
+             * @description Deprecated alias of alertChannelIds
+             */
             defaultAlertChannels?: string[] | null;
             /**
              * Format: uuid
@@ -14441,6 +14429,8 @@ export interface components {
             componentId?: string | null;
             /** @description Alert sensitivity: ALL (any status change), INCIDENTS_ONLY (real vendor incidents, page on every one), MAJOR_ONLY (only DOWN-level incidents), AWARENESS (track silently — show on dashboard, never send alerts). Defaults to AWARENESS when not provided — silent tracking is the friendliest first-run choice; switch to one of the paging modes to opt in to alert-channel fan-out. */
             alertSensitivity?: string | null;
+            /** @description Channels notified for this dependency's incidents */
+            alertChannelIds?: string[] | null;
         };
         /** @description An org-level service subscription with current status information */
         ServiceSubscriptionDto: {
@@ -14474,6 +14464,8 @@ export interface components {
             component?: components["schemas"]["ServiceComponentDto"] | null;
             /** @description Alert sensitivity: ALL (synthetic + real incidents, paged), INCIDENTS_ONLY (real vendor incidents, paged), MAJOR_ONLY (real + DOWN severity, paged), AWARENESS (real vendor incidents tracked silently — visible on dashboard, never paged; default for new subscriptions) */
             alertSensitivity: string;
+            /** @description Channels notified for this dependency's incidents */
+            alertChannelIds?: string[] | null;
             /**
              * Format: date-time
              * @description When the organization subscribed to this service
@@ -14621,9 +14613,6 @@ export interface components {
         };
         SingleValueResponseDefinitionHeadDto: {
             data: components["schemas"]["DefinitionHeadDto"];
-        };
-        SingleValueResponseDekRotationResultDto: {
-            data: components["schemas"]["DekRotationResultDto"];
         };
         SingleValueResponseDeployLockDto: {
             data: components["schemas"]["DeployLockDto"];
@@ -17058,6 +17047,15 @@ export interface components {
         TestChannelResult: {
             success: boolean;
             message: string;
+            /**
+             * Format: uuid
+             * @description Channel that was tested
+             */
+            channelId?: string | null;
+            /** @description Route that reaches the channel: DIRECT or POLICY */
+            route?: string | null;
+            /** @description True when the monitor has no route, so an incident would alert nobody */
+            noRoute?: boolean | null;
         };
         /** @description Result of a dry-run match evaluation against a notification policy */
         TestMatchResult: {
@@ -17332,7 +17330,7 @@ export interface components {
             channelType: "datadog";
             /** @description Datadog API key */
             apiKey?: string | null;
-            /** @description Datadog site region (e.g. datadoghq.com, datadoghq.eu, us3.datadoghq.com) */
+            /** @description Datadog site: datadoghq.com (default), us3, us5, eu, ap1, ap2 or gov */
             site?: string | null;
             /** @description Comma-separated tags to attach to events */
             tags?: string | null;
@@ -17412,7 +17410,7 @@ export interface components {
         UpdateJiraChannelConfig: {
             /** @enum {string} */
             channelType: "jira";
-            /** @description Atlassian instance domain (e.g. yourteam.atlassian.net) */
+            /** @description Atlassian Cloud domain, e.g. yourteam.atlassian.net */
             domain: string;
             /** @description Atlassian account email for API authentication */
             email: string;
@@ -17644,9 +17642,11 @@ export interface components {
             description?: string | null;
             /**
              * Format: uuid
-             * @description Optional notification policy to apply for this group; null clears the existing value
+             * @description Notification policy that runs for this group's incidents; null clears the existing value
              */
             alertPolicyId?: string | null;
+            /** @description Channels notified for this group's incidents; null clears the existing value */
+            alertChannelIds?: string[] | null;
             /**
              * Format: int32
              * @description Default check frequency in seconds for members (30–86400); null clears
@@ -17655,7 +17655,10 @@ export interface components {
             /** @description Default regions for member monitors; null clears */
             defaultRegions?: string[] | null;
             defaultRetryStrategy?: components["schemas"]["RetryStrategy"] | null;
-            /** @description Default alert channel IDs for member monitors; null clears */
+            /**
+             * @deprecated
+             * @description Deprecated alias of alertChannelIds; null clears the existing value
+             */
             defaultAlertChannels?: string[] | null;
             /**
              * Format: uuid
@@ -17698,6 +17701,13 @@ export interface components {
         UpdateSecretRequest: {
             /** @description New secret value, stored encrypted (max 32KB) */
             value: string;
+        };
+        /** @description Request body for updating a service subscription */
+        UpdateServiceSubscriptionRequest: {
+            /** @description New sensitivity; null preserves current */
+            alertSensitivity?: string | null;
+            /** @description Channels notified for this dependency's incidents; null preserves current */
+            alertChannelIds?: string[] | null;
         };
         UpdateSlackChannelConfig: {
             /** @enum {string} */
@@ -20247,7 +20257,7 @@ export interface operations {
             };
         };
     };
-    update_17: {
+    update_18: {
         parameters: {
             query?: never;
             header?: {
@@ -27728,7 +27738,7 @@ export interface operations {
             };
         };
     };
-    get_9: {
+    get_10: {
         parameters: {
             query?: never;
             header?: {
@@ -27852,7 +27862,7 @@ export interface operations {
             };
         };
     };
-    update_16: {
+    update_17: {
         parameters: {
             query?: never;
             header?: {
@@ -28003,6 +28013,130 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["SingleValueResponseAcknowledgeAllIncidentsResponse"];
+                };
+            };
+            /** @description Bad request — the payload failed validation */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized — missing or invalid credentials */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Payment required — the plan or quota does not allow this */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden — the actor lacks permission for this resource */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not found — the requested resource does not exist */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict — the request collides with current resource state */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Gone — the resource is no longer available */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many requests — retry after the window resets */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal server error — see the message field for details */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Bad gateway — an upstream provider returned an error */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service unavailable — try again shortly */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    listAlertDeliveries: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Calling surface and version, e.g. cli/1.4.0 or sdk-js/2.0.0 */
+                "X-DevHelm-Client"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TableValueResultAlertDeliveryDto"];
                 };
             };
             /** @description Bad request — the payload failed validation */
@@ -52930,7 +53064,7 @@ export interface operations {
             };
         };
     };
-    get_12: {
+    get_9: {
         parameters: {
             query?: never;
             header?: {
@@ -53074,6 +53208,134 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Bad request — the payload failed validation */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized — missing or invalid credentials */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Payment required — the plan or quota does not allow this */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden — the actor lacks permission for this resource */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not found — the requested resource does not exist */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict — the request collides with current resource state */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Gone — the resource is no longer available */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many requests — retry after the window resets */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal server error — see the message field for details */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Bad gateway — an upstream provider returned an error */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service unavailable — try again shortly */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    update_16: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Calling surface and version, e.g. cli/1.4.0 or sdk-js/2.0.0 */
+                "X-DevHelm-Client"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateServiceSubscriptionRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SingleValueResponseServiceSubscriptionDto"];
+                };
             };
             /** @description Bad request — the payload failed validation */
             400: {
@@ -71394,7 +71656,7 @@ export interface operations {
             };
         };
     };
-    get_11: {
+    get_12: {
         parameters: {
             query?: never;
             header?: {
@@ -72169,130 +72431,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
-            };
-            /** @description Bad request — the payload failed validation */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unauthorized — missing or invalid credentials */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Payment required — the plan or quota does not allow this */
-            402: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Forbidden — the actor lacks permission for this resource */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not found — the requested resource does not exist */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Conflict — the request collides with current resource state */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Gone — the resource is no longer available */
-            410: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Too many requests — retry after the window resets */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Internal server error — see the message field for details */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Bad gateway — an upstream provider returned an error */
-            502: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Service unavailable — try again shortly */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    rotateDek: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description Replays the stored response for 24h when the same key is sent again (1–255 visible ASCII) */
-                "Idempotency-Key"?: string;
-                /** @description Calling surface and version, e.g. cli/1.4.0 or sdk-js/2.0.0 */
-                "X-DevHelm-Client"?: string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["SingleValueResponseDekRotationResultDto"];
-                };
             };
             /** @description Bad request — the payload failed validation */
             400: {
