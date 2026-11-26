@@ -48,7 +48,7 @@ export interface ResolvedConfig {
   token: string
   tokenSource: TokenSource
   baseUrl: string
-  orgId: string
+  orgId: string | undefined
   workspaceId: string | undefined
   client: string
   maxAttempts: number
@@ -73,7 +73,8 @@ export const envPlatform: Platform = {
  * Apply the token and header rules of doc 42 §5.2:
  *   token:   explicit option → DEVHELM_API_TOKEN → CLI context
  *   baseUrl: explicit option → DEVHELM_API_URL → CLI context → production
- *   org / workspace: explicit option → DEVHELM_ORG_ID / DEVHELM_WORKSPACE_ID → CLI context
+ *   org / workspace: explicit option → DEVHELM_ORG_ID / DEVHELM_WORKSPACE_ID → CLI context → not sent
+ *   (the API then uses the key's org and the org's default workspace)
  */
 export function resolveConfig(config: DevhelmConfig, platform: Platform): ResolvedConfig {
   let token = config.token
@@ -100,16 +101,16 @@ export function resolveConfig(config: DevhelmConfig, platform: Platform): Resolv
     )
   }
   const baseUrl = (config.baseUrl ?? platform.env('DEVHELM_API_URL') ?? context?.apiUrl ?? DEFAULT_BASE_URL).replace(/\/+$/, '')
-  const orgId = config.orgId ?? platform.env('DEVHELM_ORG_ID') ?? context?.orgId ?? '1'
-  const workspaceId = config.workspaceId ?? platform.env('DEVHELM_WORKSPACE_ID') ?? context?.workspaceId
+  const orgId = config.orgId || platform.env('DEVHELM_ORG_ID') || context?.orgId || undefined
+  const workspaceId = config.workspaceId || platform.env('DEVHELM_WORKSPACE_ID') || context?.workspaceId || undefined
   const client = config.client ?? `${DEFAULT_SURFACE}/${SDK_VERSION}`
 
   const headers: Record<string, string> = {
     Authorization: `Bearer ${token}`,
-    'x-phelm-org-id': orgId,
     'X-DevHelm-Client': client,
     ...buildTelemetryHeaders(config, platform),
   }
+  if (orgId) headers['x-phelm-org-id'] = orgId
   if (workspaceId) headers['x-phelm-workspace-id'] = workspaceId
 
   const fetchImpl = config.fetch ?? globalThis.fetch

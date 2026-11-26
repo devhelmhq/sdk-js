@@ -115,8 +115,8 @@ import {Devhelm} from '@devhelm/sdk'
 
 const client = new Devhelm({
   token: 'your-api-token',           // or DEVHELM_API_TOKEN, or the `devhelm auth login` context
-  orgId: '1',                        // optional (or DEVHELM_ORG_ID; defaults to '1')
-  workspaceId: '1',                  // optional (or DEVHELM_WORKSPACE_ID; omit when the org has one workspace)
+  orgId: '1',                        // optional (or DEVHELM_ORG_ID; omitted: the API uses the key's org)
+  workspaceId: '1',                  // optional (or DEVHELM_WORKSPACE_ID; omitted: the org's default workspace)
   baseUrl: 'https://api.devhelm.io', // optional (or DEVHELM_API_URL)
 })
 ```
